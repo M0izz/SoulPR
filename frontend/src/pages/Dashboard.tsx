@@ -1,5 +1,5 @@
-import { useState, useEffect } from 'react'
-import { Link, useNavigate } from 'react-router-dom'
+import { useState } from 'react'
+import { Link } from 'react-router-dom'
 import BadgeDetailModal, { type BadgeData } from '../components/BadgeDetailModal'
 import { getAttestations } from '../lib/contract'
 
@@ -66,7 +66,6 @@ function formatMergeDuration(ts: number) {
 }
 
 export default function Dashboard() {
-  const navigate = useNavigate()
   const [query, setQuery] = useState('')
   const [badges, setBadges] = useState<BadgeData[]>(MOCK_BADGES)
   const [selected, setSelected] = useState<BadgeData | null>(null)
