@@ -10,15 +10,15 @@ export default function App() {
   return (
     <BrowserRouter>
       <Routes>
-        {/* Landing has its own full-page layout (no nav padding) */}
+        {/* Pages that do not share the default top nav bar layout */}
         <Route path="/" element={<Landing />} />
+        <Route path="/dashboard" element={<Dashboard />} />
 
         {/* All other pages share the nav */}
         <Route path="/*" element={
           <div className="page">
             <Nav />
             <Routes>
-              <Route path="/dashboard" element={<Dashboard />} />
               <Route path="/link-wallet" element={<LinkWallet />} />
               <Route path="/install" element={<Install />} />
               <Route path="/how-it-works" element={<HowItWorks />} />

@@ -5,7 +5,8 @@ export default function Landing() {
   const navigate = useNavigate()
 
   return (
-    <div style={{ position: 'relative', overflow: 'hidden', minHeight: '100vh' }}>
+    <div style={{ position: 'relative', overflow: 'hidden', minHeight: '100vh', background: '#0B0A09' }}>
+      
       {/* Floating Spark Particles (Forge embers) */}
       <div className="forge-embers" aria-hidden="true">
         <div className="ember" style={{ left: '10%', width: '3px', height: '3px', animationDelay: '0s', animationDuration: '6s' }} />
@@ -24,165 +25,147 @@ export default function Landing() {
 
       <Nav />
 
-      <main className="landing-outer animate-fade-in" style={{ padding: '3.5rem 1.5rem 5rem', position: 'relative', zIndex: 5 }}>
+      <main className="landing-outer animate-fade-in" style={{ padding: '4.5rem 1.5rem 5rem', position: 'relative', zIndex: 5, maxWidth: '1000px', margin: '0 auto' }}>
+        
         {/* 2-Column Split Hero Layout */}
-        <div className="hero-split-two">
+        <div className="hero-split-two" style={{ display: 'grid', gridTemplateColumns: '1.2fr 0.8fr', gap: '3.5rem', alignItems: 'center' }}>
           
-          {/* Column 1: Left Text & Connect CTA */}
-          <div className="hero-text-col" style={{ display: 'flex', flexDirection: 'column', alignSelf: 'center' }}>
-            <div className="landing-eyebrow animate-slide-up-1" style={{ marginBottom: '1.2rem' }}>
-              <span className="live-dot" />
-              <span className="eyebrow" style={{ color: 'var(--ink)' }}>live on monad testnet</span>
+          {/* Column 1: Left Text & CTA */}
+          <div className="hero-text-col" style={{ display: 'flex', flexDirection: 'column', alignSelf: 'center', textAlign: 'left' }}>
+            
+            {/* Tag/Pill at top */}
+            <div className="animate-slide-up-1" style={{ marginBottom: '1.5rem' }}>
+              <span style={{ fontSize: '9px', fontWeight: 800, textTransform: 'uppercase', color: '#FF7B00', background: 'rgba(255, 123, 0, 0.08)', border: '1px solid rgba(255, 123, 0, 0.25)', padding: '5px 12px', borderRadius: '99px', letterSpacing: '0.08em' }}>
+                🛡️ SOULBOUND. NON-TRANSFERABLE. FOREVER YOURS.
+              </span>
             </div>
 
-            <h1 className="forge-headline animate-slide-up-2" style={{ fontSize: '38px', lineHeight: '1.1', marginBottom: '1.2rem', color: 'var(--ink)', fontWeight: 800 }}>
-              Claim Your Unfakable Open Source Contribution Receipt.
+            <h1 className="forge-headline animate-slide-up-2" style={{ fontSize: '56px', lineHeight: '1.05', marginBottom: '1.5rem', color: '#FFF', fontWeight: 900, fontFamily: 'var(--font-display)' }}>
+              Your Code.<br />
+              Your Impact.<br />
+              <span style={{ color: '#FF7B00' }}>Your Proof.</span>
             </h1>
 
-            <p className="landing-body animate-slide-up-3" style={{ fontSize: '15px', color: 'var(--ink-muted)', marginBottom: '2rem', lineHeight: '1.6' }}>
-              Automatically convert your merged GitHub PRs into soulbound, verifiable badges on the Monad testnet.
+            <p className="landing-body animate-slide-up-3" style={{ fontSize: '15px', color: 'rgba(255, 255, 255, 0.65)', marginBottom: '2.5rem', lineHeight: '1.7', maxWidth: '480px' }}>
+              SoulPR turns every merged pull request into a permanent, on-chain attestation — verifiable by anyone, anywhere. Built in public. Earned forever.
             </p>
 
-            <div className="animate-slide-up-4">
+            <div className="animate-slide-up-4" style={{ display: 'flex', gap: '12px' }}>
               <button
-                id="cta-link-wallet"
+                id="cta-dashboard"
                 className="btn btn-primary"
-                onClick={() => navigate('/link-wallet')}
+                onClick={() => navigate('/dashboard')}
                 style={{
                   background: 'linear-gradient(135deg, #FF7B00 0%, #E05300 100%)',
                   color: 'white',
-                  borderRadius: '99px',
-                  padding: '0.85rem 1.8rem',
+                  borderRadius: '8px',
+                  padding: '0.95rem 2rem',
                   fontWeight: 700,
-                  fontSize: '15px'
+                  fontSize: '15px',
+                  border: 'none',
+                  cursor: 'pointer',
+                  boxShadow: '0 6px 20px rgba(255, 123, 0, 0.2)'
                 }}
               >
-                Connect GitHub & Wallet
+                Dashboard →
               </button>
-              <div style={{ marginTop: '0.8rem', fontSize: '13px', color: 'var(--ink-muted)' }}>
-                Already have an account? <span style={{ color: 'var(--stamp)', fontWeight: 600, cursor: 'pointer' }} onClick={() => navigate('/dashboard')}>Sign In</span>
-              </div>
+              <button
+                id="cta-lookup"
+                className="btn"
+                onClick={() => navigate('/dashboard')}
+                style={{
+                  background: 'rgba(255, 255, 255, 0.05)',
+                  color: '#FFF',
+                  borderRadius: '8px',
+                  padding: '0.95rem 2rem',
+                  fontWeight: 700,
+                  fontSize: '15px',
+                  border: '1px solid rgba(255,255,255,0.15)',
+                  cursor: 'pointer'
+                }}
+              >
+                Look up a contributor →
+              </button>
             </div>
+
+            {/* Scroll indicator anchor */}
+            <div style={{ marginTop: '4rem', display: 'flex', alignItems: 'center', gap: '10px', color: 'rgba(255,255,255,0.4)', fontSize: '10px', textTransform: 'uppercase', letterSpacing: '0.1em' }}>
+              <span style={{ width: '1px', height: '24px', background: 'rgba(255,255,255,0.2)' }} />
+              SCROLL TO EXPLORE
+            </div>
+
           </div>
 
-          {/* Column 2: Right Verifiable Profile Card */}
-          <div className="hero-profile-col animate-slide-up-3" style={{ display: 'flex', justifyContent: 'center' }}>
-            <div className="glass-panel" style={{ padding: '1.5rem', borderRadius: '16px', width: '100%', maxWidth: '320px' }}>
-              
-              <div style={{ fontSize: '12px', fontWeight: 700, color: 'var(--ink)' }}>Your Verifiable Contribution Profile</div>
-              <div style={{ fontSize: '11px', color: 'var(--ink-muted)', marginBottom: '1.2rem' }}>Preview a public dashboard</div>
-
-              {/* Profile Card Info */}
-              <div style={{ display: 'flex', alignItems: 'center', gap: '10px', background: 'var(--paper-raised)', padding: '8px 12px', borderRadius: '8px', border: '1px solid var(--rule)', marginBottom: '1.2rem' }}>
-                <div style={{ width: '32px', height: '32px', borderRadius: '50%', background: 'linear-gradient(135deg, #FF9F29 0%, #FF7B00 100%)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'white', fontWeight: 'bold', fontSize: '13px' }}>
-                  M
-                </div>
-                <div>
-                  <div style={{ fontWeight: 700, fontSize: '13px', color: 'var(--ink)' }}>moizz</div>
-                  <div className="stamp" style={{ transform: 'none', borderStyle: 'solid', borderWidth: '1px', fontSize: '8px', padding: '1px 6px', background: 'var(--success-bg)', color: 'var(--success)', borderColor: 'var(--success)', marginTop: '2px' }}>
-                    ✓ VERIFIED
-                  </div>
-                </div>
-              </div>
-
-              {/* Wallet lookup card copy bar */}
-              <div style={{ display: 'flex', gap: '6px', marginBottom: '1.2rem' }}>
-                <input
-                  readOnly
-                  value="0x8a3f...c19e"
-                  style={{ flex: 1, padding: '5px 10px', fontSize: '12px', background: 'var(--paper)', border: '1px solid var(--rule)', borderRadius: '6px', color: 'var(--ink-muted)', outline: 'none' }}
-                />
-                <button className="btn btn-sm" style={{ background: 'var(--stamp)', color: 'white', borderRadius: '6px', padding: '0 10px', fontSize: '11px', fontWeight: 700 }}>
-                  Copy
-                </button>
-              </div>
-
-              {/* Table list */}
-              <div style={{ fontSize: '11px', fontWeight: 700, color: 'var(--ink-muted)', marginBottom: '6px' }}>Repo Contributions</div>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '11px', borderBottom: '1px solid rgba(0,0,0,0.05)', paddingBottom: '4px', color: 'var(--ink-faint)' }}>
-                  <span>Repo</span>
-                  <span>PR</span>
-                  <span>Timestamp</span>
-                </div>
-                <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '11px', color: 'var(--ink)' }}>
-                  <span style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>🍴 filedrop</span>
-                  <span style={{ color: 'var(--stamp)', fontWeight: 600 }}>PR 106</span>
-                  <span style={{ color: 'var(--ink-muted)' }}>5 hours ago</span>
-                </div>
-                <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '11px', color: 'var(--ink)' }}>
-                  <span style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>🍴 CNTRL</span>
-                  <span style={{ color: 'var(--stamp)', fontWeight: 600 }}>PR 123</span>
-                  <span style={{ color: 'var(--ink-muted)' }}>7 hours ago</span>
-                </div>
-                <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '11px', color: 'var(--ink)' }}>
-                  <span style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>🍴 JugaadLang</span>
-                  <span style={{ color: 'var(--stamp)', fontWeight: 600 }}>PR 133</span>
-                  <span style={{ color: 'var(--ink-muted)' }}>7 hours ago</span>
-                </div>
-              </div>
-
+          {/* Column 2: Center/Right Glowing Monad Coin (Bigger representation) */}
+          <div className="hero-center-col animate-float" style={{ display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
+            <div style={{ position: 'relative' }}>
+              {/* Radial gradient background behind the coin */}
+              <div style={{ position: 'absolute', inset: '-50px', background: 'radial-gradient(circle, rgba(255, 123, 0, 0.15) 0%, rgba(255, 123, 0, 0) 70%)', filter: 'blur(30px)', zIndex: 1 }} />
+              <img 
+                src="/golden_monad_coin.png?v=3" 
+                alt="Golden Monad Refraction Coin" 
+                style={{ width: '100%', maxWidth: '350px', position: 'relative', zIndex: 2, filter: 'drop-shadow(0 20px 40px rgba(255, 123, 0, 0.2))', mixBlendMode: 'screen' }}
+              />
             </div>
           </div>
 
         </div>
 
-        <div className="landing-divider" style={{ margin: '3.5rem 0 2.5rem' }} />
+        <div className="landing-divider" style={{ margin: '4rem 0 3rem', background: 'rgba(78, 66, 56, 0.3)' }} />
 
-        {/* Bottom row: Features & CTA card */}
-        <div className="hero-bottom-row animate-slide-up-5" style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '1.5rem' }}>
+        {/* Bottom row: Features layout grid */}
+        <div className="hero-bottom-row animate-slide-up-5" style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '1.5rem', textAlign: 'left' }}>
           
-          <div className="glass-panel" style={{ padding: '1.5rem', borderRadius: '12px' }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '8px' }}>
-              <div style={{ width: '28px', height: '28px', borderRadius: '6px', background: 'var(--stamp-bg)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--stamp)', fontWeight: 'bold' }}>
-                🍴
+          <div className="glass-panel" style={{ padding: '1.8rem 1.5rem', borderRadius: '12px', background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(78, 66, 56, 0.3)' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '12px' }}>
+              <div style={{ width: '32px', height: '32px', borderRadius: '8px', background: 'rgba(255, 123, 0, 0.08)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#FF7B00', fontWeight: 'bold', border: '1px solid rgba(255,123,0,0.2)' }}>
+                🛡️
               </div>
-              <div style={{ fontWeight: 700, fontSize: '13px', color: 'var(--ink)' }}>Merged & Minted</div>
+              <div style={{ fontWeight: 800, fontSize: '14px', color: '#FFF', textTransform: 'uppercase', letterSpacing: '0.04em' }}>SOULBOUND</div>
             </div>
-            <div style={{ fontSize: '12px', color: 'var(--ink-muted)' }}>
-              Your merged PRs instantly become soulbound tokens.
+            <div style={{ fontSize: '12px', color: 'rgba(255,255,255,0.5)', lineHeight: '1.6' }}>
+              Non-transferable. Forever yours. Bound securely to your wallet.
             </div>
           </div>
 
-          <div className="glass-panel" style={{ padding: '1.5rem', borderRadius: '12px' }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '8px' }}>
-              <div style={{ width: '28px', height: '28px', borderRadius: '6px', background: 'var(--stamp-bg)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--stamp)', fontWeight: 'bold' }}>
-                ⛓
+          <div className="glass-panel" style={{ padding: '1.8rem 1.5rem', borderRadius: '12px', background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(78, 66, 56, 0.3)' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '12px' }}>
+              <div style={{ width: '32px', height: '32px', borderRadius: '8px', background: 'rgba(255, 123, 0, 0.08)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#FF7B00', fontWeight: 'bold', border: '1px solid rgba(255,123,0,0.2)' }}>
+                ⛓️
               </div>
-              <div style={{ fontWeight: 700, fontSize: '13px', color: 'var(--ink)' }}>Soulbound Proof</div>
+              <div style={{ fontWeight: 800, fontSize: '14px', color: '#FFF', textTransform: 'uppercase', letterSpacing: '0.04em' }}>VERIFIABLE</div>
             </div>
-            <div style={{ fontSize: '12px', color: 'var(--ink-muted)' }}>
-              Non-transferable verification, secured on-chain.
+            <div style={{ fontSize: '12px', color: 'rgba(255,255,255,0.5)', lineHeight: '1.6' }}>
+              On-chain forever. No central control. Anyone can query and verify.
             </div>
           </div>
 
-          <div className="glass-panel" style={{ padding: '1.2rem 1.5rem', borderRadius: '12px', display: 'flex', flexDirection: 'column', justifyContent: 'space-between', alignItems: 'center' }}>
-            <div style={{ fontWeight: 700, fontSize: '13px', color: 'var(--ink)', textAlign: 'center', marginBottom: '8px' }}>
-              Build Your Verifiable Portfolio Today
+          <div className="glass-panel" style={{ padding: '1.8rem 1.5rem', borderRadius: '12px', background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(78, 66, 56, 0.3)' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '12px' }}>
+              <div style={{ width: '32px', height: '32px', borderRadius: '8px', background: 'rgba(255, 123, 0, 0.08)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#FF7B00', fontWeight: 'bold', border: '1px solid rgba(255,123,0,0.2)' }}>
+                &lt;/&gt;
+              </div>
+              <div style={{ fontWeight: 800, fontSize: '14px', color: '#FFF', textTransform: 'uppercase', letterSpacing: '0.04em' }}>OPEN SOURCE</div>
             </div>
-            <button 
-              className="btn btn-sm"
-              onClick={() => navigate('/link-wallet')}
-              style={{ background: 'linear-gradient(135deg, #FF7B00 0%, #E05300 100%)', color: 'white', borderRadius: '99px', width: '100%', maxWidth: '140px', fontWeight: 700, padding: '6px 0', cursor: 'pointer' }}
-            >
-              Get Started
-            </button>
+            <div style={{ fontSize: '12px', color: 'rgba(255,255,255,0.5)', lineHeight: '1.6' }}>
+              Built for builders. Trusted by the community. Always transparent.
+            </div>
+          </div>
+
+          <div className="glass-panel" style={{ padding: '1.8rem 1.5rem', borderRadius: '12px', background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(78, 66, 56, 0.3)' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '12px' }}>
+              <div style={{ width: '32px', height: '32px', borderRadius: '8px', background: 'rgba(255, 123, 0, 0.08)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#FF7B00', fontWeight: 'bold', border: '1px solid rgba(255,123,0,0.2)' }}>
+                ⚡
+              </div>
+              <div style={{ fontWeight: 800, fontSize: '14px', color: '#FFF', textTransform: 'uppercase', letterSpacing: '0.04em' }}>BUILT ON MONAD</div>
+            </div>
+            <div style={{ fontSize: '12px', color: 'rgba(255,255,255,0.5)', lineHeight: '1.6' }}>
+              Low gas fees. Extreme scalability performance. Ready for Web3 scale.
+            </div>
           </div>
 
         </div>
 
-        {/* Brand Footer */}
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '4rem', fontSize: '12px', color: 'var(--ink-muted)', borderTop: '1px solid var(--rule)', paddingTop: '1.5rem' }}>
-          <div style={{ display: 'flex', gap: '1.5rem' }}>
-            <span style={{ cursor: 'pointer' }} onClick={() => navigate('/how-it-works')}>How It Works</span>
-            <span style={{ cursor: 'pointer' }} onClick={() => navigate('/install')}>GitHub App</span>
-            <span style={{ cursor: 'pointer' }} onClick={() => navigate('/link-wallet')}>Connect Wallet</span>
-          </div>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-            <span style={{ width: '6px', height: '6px', borderRadius: '50%', background: 'var(--stamp)', display: 'inline-block' }} />
-            Monad testnet
-          </div>
-        </div>
       </main>
     </div>
   )

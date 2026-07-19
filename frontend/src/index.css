@@ -1551,3 +1551,64 @@ body::before {
     gap: 3rem;
   }
 }
+
+/* ============================================================
+   Modal Overlay & Card Styles
+   ============================================================ */
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.7);
+  backdrop-filter: blur(8px);
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1.5rem;
+  animation: fade-in-anim 0.25s ease-out;
+}
+
+@keyframes fade-in-anim {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+.modal-card {
+  animation: scale-up-anim 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+  max-height: 90vh;
+  overflow-y: auto;
+}
+
+@keyframes scale-up-anim {
+  from { opacity: 0; transform: scale(0.95); }
+  to { opacity: 1; transform: scale(1); }
+}
+
+.modal-close {
+  transition: color 0.15s ease;
+}
+
+.modal-close:hover {
+  color: #FFF !important;
+}
+
+/* Timeline & Card Hover Interactions */
+.timeline-item-row {
+  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.timeline-item-row:hover {
+  transform: translateY(-2px);
+  border-color: rgba(255, 123, 0, 0.35) !important;
+  box-shadow: 0 6px 16px rgba(255, 123, 0, 0.04);
+  background: #FFF !important;
+}
+
+.sidebar-link {
+  transition: all 0.2s ease;
+}
+.sidebar-link:hover {
+  background: #FAF8F5;
+  color: #FF7B00 !important;
+}
