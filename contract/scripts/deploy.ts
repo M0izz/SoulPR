@@ -3,10 +3,9 @@ import * as fs from "fs";
 import * as path from "path";
 
 async function main() {
-  const backendMinter = process.env.BACKEND_MINTER_ADDRESS;
-  if (!backendMinter) {
-    throw new Error("Set BACKEND_MINTER_ADDRESS in your .env before deploying");
-  }
+  const signers = await ethers.getSigners();
+  const backendMinter = process.env.BACKEND_MINTER_ADDRESS || signers[0].address;
+  console.log(`[Deploy] Using backend minter address: ${backendMinter}`);
 
   const Factory = await ethers.getContractFactory("SoulPR");
   const contract = await Factory.deploy(backendMinter);
