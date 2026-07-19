@@ -1,0 +1,1553 @@
+/* ============================================================
+   Receipt — Premium Design System & Stylesheet (v2 Redesign)
+   ============================================================ */
+
+@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap');
+
+:root {
+  /* -- palette: gold-glass (default premium light mockup theme) -- */
+  --paper: #FAF6F0;
+  /* Warm cream clay */
+  --paper-raised: rgba(255, 255, 255, 0.45);
+  /* Elegant glass overlay */
+  --paper-overlay: rgba(250, 246, 240, 0.85);
+  --rule: rgba(212, 172, 137, 0.35);
+  /* Translucent golden dividers */
+  --rule-strong: rgba(255, 123, 0, 0.3);
+  --ink: #4D290C;
+  /* Deep bronze text */
+  --ink-muted: #7E6C5C;
+  /* Soft bronze ash */
+  --ink-faint: #A69687;
+  /* Golden sand placeholder */
+
+  /* -- branding / stamp accent -- */
+  --stamp: #FF7B00;
+  /* Monad orange */
+  --stamp-bg: rgba(255, 123, 0, 0.08);
+  --spark: #FFAE42;
+  /* Gold spark */
+  --success: #2E7D32;
+  /* Emerald verified */
+  --success-bg: rgba(46, 125, 50, 0.08);
+
+  /* -- layout / typography -- */
+  --font-display: 'Outfit', sans-serif;
+  --font-body: 'Plus Jakarta Sans', sans-serif;
+  --font-mono: 'JetBrains Mono', monospace;
+  --radius: 12px;
+  --radius-inner: 8px;
+  --max-width: 960px;
+  /* Slightly wider for splitscreen hero */
+}
+
+[data-theme='forge'] {
+  --paper: #0B0A09;
+  /* Deep rich obsidian charcoal */
+  --paper-raised: #161412;
+  /* Premium slag/surface background */
+  --paper-overlay: rgba(22, 20, 18, 0.7);
+  --rule: rgba(78, 66, 56, 0.2);
+  --rule-strong: rgba(255, 106, 26, 0.25);
+  --ink: #F7F5F2;
+  /* Hot metal white */
+  --ink-muted: #BDB5AA;
+  /* Ash gray */
+  --ink-faint: #6E655B;
+  /* Warm charcoal placeholder */
+  --stamp: #FF6A1A;
+  /* Hot ember */
+  --stamp-bg: rgba(255, 106, 26, 0.1);
+  --spark: #FFB347;
+  /* Ember spark glow */
+  --success: #10B981;
+  /* Emerald verified */
+  --success-bg: rgba(16, 185, 129, 0.1);
+}
+
+/* ============================================================
+   Core Resets & Scrollbars
+   ============================================================ */
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html,
+body {
+  min-height: 100vh;
+  background: var(--paper);
+  color: var(--ink);
+  font-family: var(--font-body);
+  font-size: 15px;
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+  transition: background 0.3s cubic-bezier(0.4, 0, 0.2, 1), color 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+button {
+  font-family: inherit;
+  cursor: pointer;
+  border: none;
+  background: none;
+}
+
+input {
+  font-family: inherit;
+}
+
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--paper);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--rule);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--rule-strong);
+}
+
+/* ============================================================
+   Radial Mesh Gradient Backgrounds
+   ============================================================ */
+
+body::before {
+  content: '';
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  width: 150vmax;
+  height: 150vmax;
+  margin-top: -75vmax;
+  margin-left: -75vmax;
+  background: 
+    radial-gradient(circle at 50% 50%, rgba(253, 248, 244, 0.7) 0%, rgba(253, 248, 244, 0.95) 90%),
+    url('/golden_monad_coin.png?v=3') center/contain no-repeat;
+  z-index: -2;
+  pointer-events: none;
+  mix-blend-mode: multiply;
+  animation: spin-bg-coin 80s linear infinite;
+}
+
+[data-theme='forge'] body::before {
+  background: 
+    radial-gradient(circle at 50% 50%, rgba(11, 10, 9, 0.75) 0%, #0B0A09 95%),
+    url('/golden_monad_coin.png?v=3') center/contain no-repeat;
+  mix-blend-mode: screen;
+}
+
+@keyframes spin-bg-coin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+/* ============================================================
+   Navigation Header
+   ============================================================ */
+
+.nav {
+  position: sticky;
+  top: 1.2rem;
+  z-index: 100;
+  background: rgba(255, 255, 255, 0.45);
+  backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.65);
+  border-radius: 99px;
+  padding: 0.75rem 2.2rem;
+  margin: 1.2rem auto 0;
+  max-width: 960px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  transition: all 0.3s ease;
+  box-shadow: 0 10px 35px rgba(181, 127, 85, 0.05);
+}
+
+[data-theme='forge'] .nav {
+  background: rgba(11, 10, 9, 0.65);
+  border-color: rgba(78, 66, 56, 0.45);
+  box-shadow: 0 10px 35px rgba(0, 0, 0, 0.3);
+}
+
+.nav-brand {
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 18px;
+  letter-spacing: -0.03em;
+  color: var(--ink);
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.nav-brand-mark {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: var(--stamp);
+  box-shadow: 0 0 14px var(--stamp);
+}
+
+.nav-right {
+  display: flex;
+  align-items: center;
+  gap: 1.5rem;
+}
+
+.nav-links {
+  display: flex;
+  align-items: center;
+  gap: 1.2rem;
+}
+
+.nav-link {
+  font-family: var(--font-body);
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--ink-muted);
+  transition: color 0.2s ease;
+}
+
+.nav-link:hover,
+.nav-link.active {
+  color: var(--ink);
+}
+
+.theme-toggle {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  border: 1px solid var(--rule);
+  color: var(--ink-muted);
+  padding: 0.35rem 0.75rem;
+  border-radius: var(--radius);
+  letter-spacing: 0.04em;
+  background: var(--paper-raised);
+  transition: all 0.2s ease;
+}
+
+.theme-toggle:hover {
+  border-color: var(--stamp);
+  color: var(--ink);
+}
+
+/* ============================================================
+   Page Wrappers & Container Bounds
+   ============================================================ */
+
+.page {
+  max-width: var(--max-width);
+  margin: 0 auto;
+  padding: 3rem 1.5rem 5rem;
+}
+
+.eyebrow {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  letter-spacing: 0.06em;
+  color: var(--stamp);
+  text-transform: uppercase;
+  font-weight: 600;
+}
+
+.ruled {
+  border-top: 1px solid var(--rule);
+  margin: 2rem 0;
+}
+
+.ruled-strong {
+  border-top: 2px solid var(--rule-strong);
+  margin: 2rem 0;
+}
+
+/* ============================================================
+   Buttons & Inputs
+   ============================================================ */
+
+.btn {
+  font-family: var(--font-body);
+  font-size: 14px;
+  font-weight: 600;
+  background: var(--ink);
+  color: var(--paper);
+  border: none;
+  padding: 0.75rem 1.4rem;
+  border-radius: var(--radius);
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.btn:hover {
+  transform: translateY(-1.5px);
+  box-shadow: 0 0 0 3px var(--stamp-bg), 0 6px 16px rgba(0, 0, 0, 0.25);
+}
+
+.btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  transform: none;
+  box-shadow: none;
+}
+
+.btn-ghost {
+  font-family: var(--font-body);
+  font-weight: 600;
+  font-size: 14px;
+  background: transparent;
+  color: var(--ink);
+  border: 1px solid var(--rule-strong);
+  padding: 0.7rem 1.35rem;
+  border-radius: var(--radius);
+  transition: all 0.2s ease;
+}
+
+.btn-ghost:hover {
+  background: var(--stamp-bg);
+  border-color: var(--stamp);
+  color: var(--stamp);
+}
+
+.btn-full {
+  width: 100%;
+  justify-content: center;
+}
+
+.btn-sm {
+  font-size: 12px;
+  padding: 0.5rem 1rem;
+  border-radius: 6px;
+}
+
+.input {
+  font-family: var(--font-mono);
+  font-size: 14px;
+  background: var(--paper-raised);
+  border: 1px solid var(--rule);
+  border-radius: var(--radius);
+  padding: 0.8rem 1.1rem;
+  color: var(--ink);
+  width: 100%;
+  outline: none;
+  transition: all 0.2s ease;
+  box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.input:focus {
+  border-color: var(--stamp);
+  box-shadow: 0 0 0 3px var(--stamp-bg);
+}
+
+.input::placeholder {
+  color: var(--ink-faint);
+}
+
+/* ============================================================
+   Feature Grid & Layout (Premium Cards)
+   ============================================================ */
+
+.feature-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1.5rem;
+  margin-top: 3.5rem;
+}
+
+.feature-item {
+  background: var(--paper-raised);
+  border: 1px solid var(--rule);
+  padding: 2rem 1.5rem;
+  border-radius: var(--radius);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+}
+
+.feature-item:hover {
+  transform: translateY(-4px);
+  border-color: var(--stamp);
+  box-shadow: 0 8px 30px rgba(255, 106, 26, 0.05);
+}
+
+.feature-label {
+  font-family: var(--font-mono);
+  font-weight: 600;
+  font-size: 12px;
+  letter-spacing: 0.06em;
+  color: var(--stamp);
+  text-transform: uppercase;
+  margin-bottom: 8px;
+}
+
+.feature-desc {
+  font-size: 14px;
+  color: var(--ink-muted);
+  line-height: 1.6;
+}
+
+@media (max-width: 768px) {
+  .feature-grid {
+    grid-template-columns: 1fr;
+    gap: 1rem;
+  }
+}
+
+/* ============================================================
+   Landing Hero Layout
+   ============================================================ */
+
+.landing-outer {
+  max-width: var(--max-width);
+  margin: 0 auto;
+  padding: 5rem 1.5rem 6rem;
+}
+
+.landing-eyebrow {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  background: var(--paper-raised);
+  border: 1px solid var(--rule);
+  padding: 0.45rem 1.1rem;
+  border-radius: 99px;
+  margin-bottom: 2rem;
+}
+
+.live-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--stamp);
+  box-shadow: 0 0 10px var(--stamp);
+  animation: pulse 1.8s infinite;
+}
+
+.forge-headline {
+  font-family: var(--font-display);
+  font-weight: 800;
+  letter-spacing: -0.04em;
+  line-height: 1.05;
+  font-size: 54px;
+  margin: 0 0 1.5rem;
+}
+
+.landing-body {
+  font-size: 18px;
+  color: var(--ink-muted);
+  line-height: 1.7;
+  max-width: 580px;
+  margin-bottom: 3rem;
+}
+
+.landing-ctas {
+  display: flex;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+/* ============================================================
+   Dashboard Lookup Layout
+   ============================================================ */
+
+.search-row {
+  display: flex;
+  gap: 12px;
+  margin-bottom: 2.5rem;
+}
+
+.stats-row {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1rem;
+  margin-bottom: 2.5rem;
+}
+
+.stat-cell {
+  background: var(--paper-raised);
+  border: 1px solid var(--rule);
+  border-radius: var(--radius);
+  padding: 1.3rem 1.5rem;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.02);
+}
+
+.stat-label {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.05em;
+  color: var(--ink-faint);
+  text-transform: uppercase;
+  margin-bottom: 6px;
+}
+
+.stat-value {
+  font-family: var(--font-display);
+  font-size: 28px;
+  font-weight: 700;
+  color: var(--ink);
+}
+
+/* ============================================================
+   Ruled Table Rows (Lookup Result Rows)
+   ============================================================ */
+
+.badge-list-header {
+  font-family: var(--font-display);
+  font-size: 16px;
+  font-weight: 700;
+  padding-bottom: 0.8rem;
+  border-bottom: 2px solid var(--rule-strong);
+  margin-bottom: 0.5rem;
+}
+
+.ledger-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1.1rem 0.5rem;
+  border-bottom: 1px solid var(--rule);
+  cursor: pointer;
+  background: transparent;
+  transition: all 0.2s ease;
+}
+
+.ledger-row:hover {
+  background: var(--paper-raised);
+  padding-left: 0.8rem;
+  border-bottom-color: var(--rule-strong);
+}
+
+.ledger-left {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.badge-repo {
+  font-family: var(--font-mono);
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--ink);
+}
+
+.badge-title {
+  font-size: 13px;
+  color: var(--ink-muted);
+  margin-top: 3px;
+}
+
+.badge-date {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  color: var(--ink-faint);
+}
+
+.mono {
+  font-family: var(--font-mono);
+}
+
+/* ============================================================
+   The Rotating verified Stamp
+   ============================================================ */
+
+.stamp {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--stamp);
+  border: 2px dashed var(--stamp);
+  border-radius: 99px;
+  padding: 4px 12px;
+  transform: rotate(-3deg);
+  background: var(--stamp-bg);
+  box-shadow: 0 0 10px rgba(255, 106, 26, 0.05);
+}
+
+/* ============================================================
+   Torn-Receipt Detail Card
+   ============================================================ */
+
+.receipt-card {
+  background: var(--paper-raised);
+  border: 1px solid var(--rule-strong);
+  border-bottom: none;
+  border-radius: var(--radius) var(--radius) 0 0;
+  padding: 2.2rem;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.15);
+}
+
+.receipt-tear {
+  height: 18px;
+  background:
+    linear-gradient(135deg, var(--paper) 40%, transparent 40%) 0 0,
+    linear-gradient(-135deg, var(--paper) 40%, transparent 40%) 0 0;
+  background-size: 16px 16px;
+  background-repeat: repeat-x;
+  background-position: bottom;
+  background-color: var(--paper-raised);
+  border-left: 1px solid var(--rule-strong);
+  border-right: 1px solid var(--rule-strong);
+  border-bottom: 1px solid var(--rule-strong);
+  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.1);
+}
+
+.receipt-detail-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.95rem 0;
+  border-bottom: 1px solid var(--rule);
+  gap: 1.5rem;
+}
+
+.receipt-detail-row:last-child {
+  border-bottom: none;
+}
+
+.receipt-key {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--ink-faint);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  font-weight: 600;
+}
+
+.receipt-val {
+  font-family: var(--font-mono);
+  font-size: 13px;
+  color: var(--ink);
+  text-align: right;
+  word-break: break-all;
+}
+
+.receipt-footer {
+  padding: 1.5rem;
+  background: var(--paper);
+}
+
+/* ============================================================
+   Overlay & Modal Layouts
+   ============================================================ */
+
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(11, 10, 9, 0.85);
+  backdrop-filter: blur(8px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 999;
+  padding: 1.5rem;
+}
+
+.modal-inner {
+  width: 100%;
+  max-width: 440px;
+}
+
+.modal-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  margin-bottom: 1.5rem;
+}
+
+.modal-title {
+  font-family: var(--font-display);
+  font-size: 22px;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  text-transform: uppercase;
+}
+
+.modal-sub {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  color: var(--ink-muted);
+  margin-top: 4px;
+}
+
+.modal-close-btn {
+  color: var(--ink-faint);
+  font-size: 20px;
+  transition: color 0.2s ease;
+  line-height: 1;
+}
+
+.modal-close-btn:hover {
+  color: var(--ink);
+}
+
+/* ============================================================
+   Stepper — Link Wallet Wizard (Clean Progress Flow)
+   ============================================================ */
+
+.link-card {
+  background: var(--paper-raised);
+  border: 1px solid var(--rule);
+  border-radius: var(--radius);
+  padding: 2.5rem;
+  max-width: 500px;
+  margin: 4rem auto 0;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+}
+
+.link-title {
+  font-family: var(--font-display);
+  font-size: 26px;
+  font-weight: 800;
+  letter-spacing: -0.03em;
+  text-transform: uppercase;
+  margin-bottom: 6px;
+}
+
+.link-sub {
+  font-size: 14px;
+  color: var(--ink-muted);
+  margin-bottom: 2.5rem;
+}
+
+.step-row {
+  display: flex;
+  gap: 1.5rem;
+  position: relative;
+  padding-bottom: 2rem;
+}
+
+.step-row:last-child {
+  padding-bottom: 0;
+}
+
+.step-row:not(:last-child)::after {
+  content: '';
+  position: absolute;
+  left: 14px;
+  top: 30px;
+  width: 1px;
+  height: calc(100% - 16px);
+  background: var(--rule);
+}
+
+.step-circle {
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--font-mono);
+  font-size: 12px;
+  font-weight: 600;
+  z-index: 1;
+}
+
+.step-done {
+  background: var(--success-bg);
+  color: var(--success);
+  border: 1px solid var(--success);
+}
+
+.step-active {
+  background: var(--stamp);
+  color: var(--paper);
+  box-shadow: 0 0 14px var(--stamp-bg);
+}
+
+.step-pending {
+  background: var(--paper);
+  border: 1px solid var(--rule);
+  color: var(--ink-faint);
+}
+
+.step-content {
+  flex: 1;
+}
+
+.step-title {
+  font-size: 15px;
+  font-weight: 700;
+  margin-bottom: 4px;
+}
+
+.step-desc {
+  font-size: 13px;
+  color: var(--ink-muted);
+  margin-bottom: 12px;
+}
+
+/* ============================================================
+   Track Settings (Add Repository)
+   ============================================================ */
+
+.install-section {
+  background: var(--paper-raised);
+  border: 1px solid var(--rule);
+  border-radius: var(--radius);
+  padding: 2.2rem;
+  margin-bottom: 2rem;
+}
+
+.app-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding-bottom: 1.5rem;
+  border-bottom: 1px solid var(--rule);
+  margin-bottom: 1.5rem;
+}
+
+.app-row-label {
+  font-family: var(--font-display);
+  font-size: 18px;
+  font-weight: 700;
+  flex: 1;
+}
+
+.installed-mark {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--success);
+  background: var(--success-bg);
+  padding: 4px 12px;
+  border-radius: 99px;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.repo-ledger-row {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 1rem 0.5rem;
+  border-bottom: 1px solid var(--rule);
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.repo-ledger-row:hover {
+  background: var(--paper);
+  padding-left: 0.8rem;
+}
+
+.repo-checkbox {
+  width: 18px;
+  height: 18px;
+  border-radius: 4px;
+  border: 1.5px solid var(--rule);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+}
+
+.repo-checkbox.checked {
+  background: var(--stamp);
+  border-color: var(--stamp);
+}
+
+/* ============================================================
+   Disclosure FAQs (How It Works)
+   ============================================================ */
+
+.how-title {
+  font-family: var(--font-display);
+  font-size: 32px;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: -0.02em;
+  margin-bottom: 0.5rem;
+}
+
+.how-sub {
+  font-family: var(--font-mono);
+  font-size: 13px;
+  color: var(--ink-faint);
+  margin-bottom: 3.5rem;
+}
+
+.disclosure-item {
+  padding: 1.6rem 0;
+  border-bottom: 1px solid var(--rule);
+}
+
+.disclosure-q {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--stamp);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  margin-bottom: 8px;
+}
+
+.disclosure-a {
+  font-size: 15px;
+  color: var(--ink-muted);
+  line-height: 1.7;
+  max-width: 620px;
+}
+
+/* ============================================================
+   Common Empty & Loading States
+   ============================================================ */
+
+.empty {
+  padding: 4rem 1.5rem;
+  text-align: center;
+}
+
+.empty-label {
+  font-family: var(--font-display);
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--ink);
+  margin-bottom: 6px;
+}
+
+.empty-hint {
+  font-size: 14px;
+  color: var(--ink-muted);
+  max-width: 320px;
+  margin: 0 auto;
+}
+
+.spinner {
+  width: 16px;
+  height: 16px;
+  border: 2px solid var(--rule);
+  border-top-color: var(--ink);
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+  display: inline-block;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* ============================================================
+   Helper Spacings
+   ============================================================ */
+
+.mt-sm {
+  margin-top: 0.5rem;
+}
+
+.mt-md {
+  margin-top: 1rem;
+}
+
+.mt-lg {
+  margin-top: 1.5rem;
+}
+
+.mb-sm {
+  margin-bottom: 0.5rem;
+}
+
+.mb-md {
+  margin-bottom: 1rem;
+}
+
+.color-stamp {
+  color: var(--stamp);
+}
+
+.color-muted {
+  color: var(--ink-muted);
+}
+
+/* ============================================================
+   Splitscreen Hero Grid & Layout
+   ============================================================ */
+
+.hero-split {
+  display: grid;
+  grid-template-columns: 1.15fr 0.85fr;
+  gap: 3.5rem;
+  align-items: center;
+  margin-top: 1.5rem;
+}
+
+.hero-text-col {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  text-align: left;
+}
+
+.hero-card-col {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  position: relative;
+}
+
+.receipt-card-wrapper {
+  width: 100%;
+  max-width: 320px;
+}
+
+@media (max-width: 768px) {
+  .hero-split {
+    grid-template-columns: 1fr;
+    gap: 3rem;
+  }
+
+  .hero-card-col {
+    order: -1;
+    /* Display card on top on small screens */
+  }
+}
+
+/* ============================================================
+   Ember Floating Particle System (Motion Background)
+   ============================================================ */
+
+.forge-embers {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: -1;
+  overflow: hidden;
+}
+
+.ember {
+  position: absolute;
+  bottom: -20px;
+  background: var(--stamp);
+  border-radius: 50%;
+  opacity: 0;
+  filter: blur(1px);
+  box-shadow: 0 0 10px var(--stamp);
+  animation: float-ember linear infinite;
+}
+
+@keyframes float-ember {
+  0% {
+    transform: translateY(0) translateX(0) scale(1);
+    opacity: 0;
+  }
+
+  15% {
+    opacity: 0.5;
+  }
+
+  85% {
+    opacity: 0.3;
+  }
+
+  100% {
+    transform: translateY(-105vh) translateX(50px) scale(0.4);
+    opacity: 0;
+  }
+}
+
+/* ============================================================
+   Interactive Motion & Mount Animations
+   ============================================================ */
+
+/* Mockup Card Float motion */
+.animate-float {
+  animation: float-mockup-card 6s ease-in-out infinite;
+}
+
+@keyframes float-mockup-card {
+
+  0%,
+  100% {
+    transform: translateY(0) rotate(1deg);
+  }
+
+  50% {
+    transform: translateY(-12px) rotate(-1deg);
+    box-shadow: 0 30px 60px rgba(255, 106, 26, 0.12);
+  }
+}
+
+/* Mounting Staggers */
+.animate-fade-in {
+  animation: scale-in-fade 0.5s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+.animate-slide-up-1 {
+  animation: slide-up-reveal 0.6s cubic-bezier(0.16, 1, 0.3, 1) 0.1s both;
+}
+
+.animate-slide-up-2 {
+  animation: slide-up-reveal 0.6s cubic-bezier(0.16, 1, 0.3, 1) 0.2s both;
+}
+
+.animate-slide-up-3 {
+  animation: slide-up-reveal 0.6s cubic-bezier(0.16, 1, 0.3, 1) 0.3s both;
+}
+
+.animate-slide-up-4 {
+  animation: slide-up-reveal 0.6s cubic-bezier(0.16, 1, 0.3, 1) 0.4s both;
+}
+
+.animate-slide-up-5 {
+  animation: slide-up-reveal 0.6s cubic-bezier(0.16, 1, 0.3, 1) 0.5s both;
+}
+
+@keyframes scale-in-fade {
+  from {
+    opacity: 0;
+    transform: scale(0.99);
+  }
+
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@keyframes slide-up-reveal {
+  from {
+    opacity: 0;
+    transform: translateY(16px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* ============================================================
+   3-Column Split Hero Layout
+   ============================================================ */
+
+.hero-split-three {
+  display: grid;
+  grid-template-columns: 1.15fr 0.85fr 1fr;
+  gap: 2.5rem;
+  align-items: center;
+}
+
+.glass-panel {
+  transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.glass-panel:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 15px 35px rgba(255, 123, 0, 0.06);
+}
+
+@media (max-width: 992px) {
+  .hero-split-three {
+    grid-template-columns: 1fr;
+    gap: 3rem;
+  }
+
+  .hero-center-col {
+    order: -2;
+  }
+
+  .hero-profile-col {
+    order: -1;
+  }
+}
+
+@media (max-width: 768px) {
+  .hero-bottom-row {
+    grid-template-columns: 1fr !important;
+  }
+}
+
+/* ============================================================
+   Redesigned Timeline (Mockup Match)
+   ============================================================ */
+
+.custom-timeline {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  text-align: left;
+  margin-top: 1rem;
+}
+
+.timeline-item {
+  display: flex;
+  gap: 1.5rem;
+  padding: 0 0 2rem;
+  cursor: pointer;
+  position: relative;
+  transition: transform 0.2s ease;
+}
+
+.timeline-item:hover {
+  transform: translateX(4px);
+}
+
+.timeline-left {
+  display: flex;
+  align-items: flex-start;
+  gap: 1.2rem;
+  width: 90px;
+  flex-shrink: 0;
+  justify-content: flex-end;
+  position: relative;
+}
+
+.timeline-year {
+  font-family: var(--font-mono);
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--ink-muted);
+  line-height: 1;
+  margin-top: 2px;
+}
+
+.timeline-node-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  position: relative;
+  height: 100%;
+  width: 14px;
+  margin-top: 4px;
+}
+
+.timeline-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--stamp);
+  box-shadow: 0 0 10px var(--stamp);
+  border: 1px solid var(--paper);
+  z-index: 2;
+}
+
+.timeline-connector {
+  position: absolute;
+  top: 8px;
+  bottom: -2rem; /* Stretch down to next node */
+  width: 2px;
+  background: #C0824E; /* Custom gold/bronze timeline connector line */
+  opacity: 0.5;
+  z-index: 1;
+}
+
+.timeline-right {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  flex-grow: 1;
+}
+
+.timeline-title {
+  font-family: var(--font-body);
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--ink);
+  line-height: 1.3;
+  margin: 0;
+}
+
+.timeline-meta {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 6px;
+  font-family: var(--font-body);
+}
+
+.platform-icon {
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.code-icon {
+  background: #1A1816;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  color: var(--success);
+}
+
+.monad-icon {
+  background: #2D1D16;
+  border: 1px solid var(--rule-strong);
+  color: var(--stamp);
+  font-family: monospace;
+}
+
+.timeline-link {
+  font-size: 12px;
+  color: var(--ink-muted);
+  text-decoration: underline;
+  transition: color 0.15s ease;
+}
+
+.timeline-link:hover {
+  color: var(--stamp);
+}
+
+.timeline-pipe {
+  color: var(--rule);
+  font-size: 11px;
+}
+
+/* ============================================================
+   Redesigned Dashboard Layout Grid & Sidebar
+   ============================================================ */
+
+.dashboard-layout-grid {
+  display: grid;
+  grid-template-columns: 280px 1fr;
+  gap: 3rem;
+  align-items: start;
+  text-align: left;
+}
+
+.dashboard-sidebar {
+  position: sticky;
+  top: 6rem;
+  z-index: 10;
+}
+
+@media (max-width: 900px) {
+  .dashboard-layout-grid {
+    grid-template-columns: 1fr;
+    gap: 2.5rem;
+  }
+  .dashboard-sidebar {
+    position: static;
+  }
+}
+
+/* ============================================================
+   Telegram-Inspired Collectible SBT Cards
+   ============================================================ */
+
+.telegram-sbt-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+  gap: 1.2rem;
+  margin-top: 0.5rem;
+}
+
+.telegram-sbt-card {
+  background: rgba(255, 255, 255, 0.45);
+  border: 1px solid rgba(255, 255, 255, 0.65);
+  border-radius: 14px;
+  padding: 1.2rem 1.1rem;
+  box-shadow: 0 8px 24px rgba(181, 127, 85, 0.03);
+  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  display: flex;
+  flex-direction: column;
+}
+
+[data-theme='forge'] .telegram-sbt-card {
+  background: rgba(22, 20, 18, 0.55);
+  border-color: rgba(78, 66, 56, 0.4);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
+}
+
+.telegram-sbt-card:hover {
+  transform: translateY(-5px);
+  border-color: var(--stamp);
+  box-shadow: 0 15px 35px rgba(255, 123, 0, 0.08);
+}
+
+.sbt-badge-pill {
+  font-family: var(--font-mono);
+  font-size: 8px;
+  font-weight: 800;
+  text-transform: uppercase;
+  color: var(--stamp);
+  background: var(--stamp-bg);
+  border: 1px solid rgba(255, 123, 0, 0.2);
+  padding: 2px 7px;
+  border-radius: 99px;
+  letter-spacing: 0.05em;
+}
+
+.sbt-emblem-wrap {
+  height: 90px;
+  background: rgba(255, 255, 255, 0.3);
+  border: 1px solid rgba(255, 255, 255, 0.4);
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  overflow: hidden;
+}
+
+[data-theme='forge'] .sbt-emblem-wrap {
+  background: rgba(11, 10, 9, 0.4);
+  border-color: rgba(78, 66, 56, 0.3);
+}
+
+.sbt-glow-layer {
+  position: absolute;
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(255, 123, 0, 0.12) 0%, rgba(255, 123, 0, 0) 70%);
+  filter: blur(4px);
+  z-index: 1;
+}
+
+.sbt-emblem-icon {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #FF9F29 0%, #FF7B00 100%);
+  border: 2px solid rgba(255, 255, 255, 0.85);
+  box-shadow: 0 6px 14px rgba(255, 123, 0, 0.2);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  font-family: var(--font-display);
+  z-index: 2;
+}
+
+[data-theme='forge'] .sbt-emblem-icon {
+  border-color: rgba(11, 10, 9, 0.85);
+}
+
+/* ============================================================
+   Moving Background Coin Animation
+   ============================================================ */
+
+.bg-animation-container {
+  position: fixed;
+  inset: 0;
+  z-index: -2;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+.bg-anim-coin {
+  position: absolute;
+  background-image: url('/golden_monad_coin.png?v=3');
+  background-size: contain;
+  background-position: center;
+  background-repeat: no-repeat;
+  mix-blend-mode: screen;
+  pointer-events: none;
+}
+
+/* Center massive slow coin */
+.coin-main {
+  top: 50%;
+  left: 50%;
+  width: 110vh;
+  height: 110vh;
+  transform: translate(-50%, -50%);
+  opacity: 0.15;
+  animation: rotate-and-pulse 50s linear infinite;
+}
+
+[data-theme='forge'] .coin-main {
+  opacity: 0.08; /* Subtle watermark in dark mode */
+}
+
+/* Floating coin top-left */
+.coin-top-left {
+  top: -10%;
+  left: -10%;
+  width: 40vh;
+  height: 40vh;
+  opacity: 0.12;
+  animation: float-drift-left 35s ease-in-out infinite;
+}
+
+[data-theme='forge'] .coin-top-left {
+  opacity: 0.06;
+}
+
+/* Floating coin bottom-right */
+.coin-bottom-right {
+  bottom: -15%;
+  right: -10%;
+  width: 50vh;
+  height: 50vh;
+  opacity: 0.14;
+  animation: float-drift-right 40s ease-in-out infinite;
+}
+
+[data-theme='forge'] .coin-bottom-right {
+  opacity: 0.07;
+}
+
+@keyframes rotate-and-pulse {
+  0% {
+    transform: translate(-50%, -50%) rotate(0deg) scale(1);
+  }
+  50% {
+    transform: translate(-50%, -50%) rotate(180deg) scale(1.06);
+  }
+  100% {
+    transform: translate(-50%, -50%) rotate(360deg) scale(1);
+  }
+}
+
+@keyframes float-drift-left {
+  0%, 100% {
+    transform: translate(0, 0) rotate(0deg);
+  }
+  50% {
+    transform: translate(30px, 40px) rotate(180deg);
+  }
+}
+
+@keyframes float-drift-right {
+  0%, 100% {
+    transform: translate(0, 0) rotate(0deg);
+  }
+  50% {
+    transform: translate(-40px, -30px) rotate(-180deg);
+  }
+}
+
+/* ============================================================
+   2-Column Hero Split Grid
+   ============================================================ */
+
+.hero-split-two {
+  display: grid;
+  grid-template-columns: 1.2fr 0.8fr;
+  gap: 3.5rem;
+  align-items: center;
+}
+
+@media (max-width: 992px) {
+  .hero-split-two {
+    grid-template-columns: 1fr;
+    gap: 3rem;
+  }
+}
