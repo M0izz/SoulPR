@@ -41,19 +41,17 @@ class ChainService {
         return;
       }
 
-      // Load ABI from Hardhat artifact
-      const artifactPath = path.join(
-        __dirname,
-        "../../../contract/artifacts/contracts/SoulPR.sol/SoulPR.json"
-      );
+      // Hardcoded ABI array to prevent dependencies on Hardhat build artifact folders on hosting servers
+      const SOULPR_ABI = [
+        "function minted(bytes32 key) external view returns (bool)",
+        "function attest(address contributor, string repo, uint256 prNumber, string prTitle, string githubUsername, string mergeCommitSha, uint256 mergeTimestamp) external returns (uint256)",
+        "function attestations(uint256 tokenId) external view returns (address contributor, string repo, uint256 prNumber, string prTitle, string githubUsername, string mergeCommitSha, uint256 mergeTimestamp)",
+        "function tokensByOwner(address owner) external view returns (uint256[] memory)",
+        "function tokenURI(uint256 tokenId) external view returns (string memory)",
+        "event Attested(address indexed contributor, string repo, uint256 prNumber, string prTitle, string githubUsername, string mergeCommitSha, uint256 mergeTimestamp, uint256 indexed tokenId)"
+      ];
 
-      if (!fs.existsSync(artifactPath)) {
-        console.warn(`[ChainService] Hardhat artifact not found at ${artifactPath}. Run npx hardhat compile first.`);
-        return;
-      }
-
-      const artifact = JSON.parse(fs.readFileSync(artifactPath, "utf-8"));
-      this.contract = new ethers.Contract(contractAddress, artifact.abi, this.wallet);
+      this.contract = new ethers.Contract(contractAddress, SOULPR_ABI, this.wallet);
       this.initialized = true;
       console.log(`[ChainService] Initialized contract minter at ${contractAddress} with wallet ${this.wallet.address}`);
     } catch (e: any) {
