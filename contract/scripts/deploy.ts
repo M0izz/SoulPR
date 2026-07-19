@@ -4,6 +4,9 @@ import * as path from "path";
 
 async function main() {
   const signers = await ethers.getSigners();
+  if (signers.length === 0) {
+    throw new Error("No deployer accounts found. Please set DEPLOYER_PRIVATE_KEY in contract/.env before deploying.");
+  }
   const backendMinter = process.env.BACKEND_MINTER_ADDRESS || signers[0].address;
   console.log(`[Deploy] Using backend minter address: ${backendMinter}`);
 
