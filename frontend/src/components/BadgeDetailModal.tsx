@@ -3,6 +3,8 @@ export interface BadgeData {
   repo: string
   prNumber: number
   prTitle: string
+  githubUsername?: string
+  mergeCommitSha?: string
   contributor: string
   mergeTimestamp: number
   txHash: string
@@ -56,6 +58,14 @@ export default function BadgeDetailModal({ badge, onClose }: Props) {
           <div className="detail-row">
             <span className="detail-key">Pull request</span>
             <span className="detail-val">#{badge.prNumber}</span>
+          </div>
+          <div className="detail-row">
+            <span className="detail-key">GitHub username</span>
+            <span className="detail-val font-mono">{badge.githubUsername || 'moizz'}</span>
+          </div>
+          <div className="detail-row">
+            <span className="detail-key">Merge commit</span>
+            <span className="detail-val font-mono">{badge.mergeCommitSha ? shortAddr(badge.mergeCommitSha) : '0xabc...123'}</span>
           </div>
           <div className="detail-row">
             <span className="detail-key">Contributor</span>

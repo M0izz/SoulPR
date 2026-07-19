@@ -74,17 +74,36 @@ export default function Dashboard() {
     setLoading(true)
     setSearched(false)
 
+    let targetWallet = query.trim();
+
+    // 1. Try to resolve the query via backend API if it's not a direct hex wallet address
+    if (!targetWallet.startsWith('0x') || targetWallet.length !== 42) {
+      try {
+        const response = await fetch(`/api/wallet/resolve?query=${encodeURIComponent(targetWallet)}`);
+        if (response.ok) {
+          const data = await response.json();
+          targetWallet = data.walletAddress;
+        } else if (targetWallet.toLowerCase() === 'demo' || targetWallet.toLowerCase() === 'moizz') {
+          targetWallet = '0x8a3f5a70966a3f457c19e5a70966a3f457c19e5a'; // Map default demo user in frontend
+        }
+      } catch {
+        if (targetWallet.toLowerCase() === 'demo' || targetWallet.toLowerCase() === 'moizz') {
+          targetWallet = '0x8a3f5a70966a3f457c19e5a70966a3f457c19e5a';
+        }
+      }
+    }
+
     try {
-      const liveBadges = await getAttestations(query.trim());
+      const liveBadges = await getAttestations(targetWallet);
       if (liveBadges.length > 0) {
         setBadges(liveBadges);
-      } else if (query.toLowerCase().includes('8a3f') || query.toLowerCase() === 'demo') {
+      } else if (targetWallet.toLowerCase() === '0x8a3f5a70966a3f457c19e5a70966a3f457c19e5a' || targetWallet.toLowerCase() === 'demo') {
         setBadges(DEMO_BADGES);
       } else {
         setBadges([]);
       }
     } catch {
-      if (query.toLowerCase().includes('8a3f') || query.toLowerCase() === 'demo') {
+      if (targetWallet.toLowerCase() === '0x8a3f5a70966a3f457c19e5a70966a3f457c19e5a' || targetWallet.toLowerCase() === 'demo') {
         setBadges(DEMO_BADGES);
       } else {
         setBadges([]);
@@ -97,6 +116,7 @@ export default function Dashboard() {
 
   const uniqueRepos = new Set(badges.map((b) => b.repo)).size
   const firstTs = badges.length ? Math.min(...badges.map((b) => b.mergeTimestamp)) : 0
+  const latestTs = badges.length ? Math.max(...badges.map((b) => b.mergeTimestamp)) : 0
   const shortWallet = badges.length && badges[0].contributor
     ? `${badges[0].contributor.slice(0, 6)}...${badges[0].contributor.slice(-4)}`
     : '0x8a3f...c19e';
@@ -177,20 +197,20 @@ export default function Dashboard() {
                 <div style={{ fontSize: '10px', textTransform: 'uppercase', color: 'var(--ink-faint)', fontWeight: 700, marginBottom: '8px' }}>Global Statistics</div>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
                   <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '12px' }}>
-                    <span style={{ color: 'var(--ink-muted)' }}>Badges Minted:</span>
+                    <span style={{ color: 'var(--ink-muted)' }}>Total Verified Contributions:</span>
                     <strong style={{ color: 'var(--stamp)' }}>{badges.length}</strong>
                   </div>
                   <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '12px' }}>
-                    <span style={{ color: 'var(--ink-muted)' }}>Unique Repos:</span>
+                    <span style={{ color: 'var(--ink-muted)' }}>Repositories Contributed To:</span>
                     <strong>{uniqueRepos}</strong>
                   </div>
                   <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '12px' }}>
-                    <span style={{ color: 'var(--ink-muted)' }}>First Entry:</span>
+                    <span style={{ color: 'var(--ink-muted)' }}>First Contribution:</span>
                     <strong>{formatFirstContrib(firstTs)}</strong>
                   </div>
                   <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '12px' }}>
-                    <span style={{ color: 'var(--ink-muted)' }}>Rank Level:</span>
-                    <strong style={{ color: 'var(--success)' }}>Gold Forger</strong>
+                    <span style={{ color: 'var(--ink-muted)' }}>Latest Contribution:</span>
+                    <strong>{formatFirstContrib(latestTs)}</strong>
                   </div>
                 </div>
               </div>

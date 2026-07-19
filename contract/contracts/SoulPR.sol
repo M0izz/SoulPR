@@ -32,6 +32,9 @@ contract SoulPR is ERC721, Ownable {
         address contributor;
         string  repo;            // "owner/name"
         uint256 prNumber;
+        string  prTitle;
+        string  githubUsername;
+        string  mergeCommitSha;
         uint256 mergeTimestamp;  // original GitHub merge time (Unix seconds)
     }
 
@@ -43,6 +46,9 @@ contract SoulPR is ERC721, Ownable {
         address indexed contributor,
         string  repo,
         uint256 prNumber,
+        string  prTitle,
+        string  githubUsername,
+        string  mergeCommitSha,
         uint256 mergeTimestamp,
         uint256 tokenId
     );
@@ -56,7 +62,7 @@ contract SoulPR is ERC721, Ownable {
     address public backendMinter;
     uint256 private _tokenIdCounter = 1; // Start token ID at 1 to align with tests
 
-    /// @notice Idempotency guard — keccak256(abi.encodePacked(repo, prNumber)) => minted
+    /// @notice Idempotency guard — keccak256(abi.encodePacked(repo, prNumber, contributor, mergeCommitSha)) => minted
     mapping(bytes32  => bool)        public minted;
 
     /// @notice tokenId => Attestation data
@@ -94,9 +100,12 @@ contract SoulPR is ERC721, Ownable {
         address contributor,
         string calldata repo,
         uint256 prNumber,
+        string calldata prTitle,
+        string calldata githubUsername,
+        string calldata mergeCommitSha,
         uint256 mergeTimestamp
     ) external onlyBackend {
-        bytes32 key = keccak256(abi.encodePacked(repo, prNumber));
+        bytes32 key = keccak256(abi.encodePacked(repo, prNumber, contributor, mergeCommitSha));
         if (minted[key]) revert AlreadyAttested(key);
 
         minted[key] = true;
@@ -108,12 +117,15 @@ contract SoulPR is ERC721, Ownable {
             contributor: contributor,
             repo:            repo,
             prNumber:        prNumber,
+            prTitle:         prTitle,
+            githubUsername:  githubUsername,
+            mergeCommitSha:  mergeCommitSha,
             mergeTimestamp:  mergeTimestamp
         });
 
         _tokensByOwner[contributor].push(tokenId);
 
-        emit Attested(contributor, repo, prNumber, mergeTimestamp, tokenId);
+        emit Attested(contributor, repo, prNumber, prTitle, githubUsername, mergeCommitSha, mergeTimestamp, tokenId);
     }
 
     // -------------------------------------------------------------------------
@@ -152,11 +164,14 @@ contract SoulPR is ERC721, Ownable {
 
         string memory json = string(abi.encodePacked(
             '{"name":"SoulPR Contribution Badge #', tokenId.toString(), '",',
-            '"description":"Soulbound on-chain proof of an open-source contribution. Non-transferable.",',
+            '"description":"', a.prTitle, '",',
             '"image":"', imageURI, '",',
             '"attributes":[',
                 '{"trait_type":"Repository","value":"',  a.repo, '"},',
                 '{"trait_type":"Pull Request","value":"#', a.prNumber.toString(), '"},',
+                '{"trait_type":"PR Title","value":"',      a.prTitle, '"},',
+                '{"trait_type":"GitHub Username","value":"', a.githubUsername, '"},',
+                '{"trait_type":"Merge Commit SHA","value":"', a.mergeCommitSha, '"},',
                 '{"trait_type":"Contributor","value":"',  Strings.toHexString(a.contributor), '"},',
                 '{"trait_type":"Merged","value":',        a.mergeTimestamp.toString(), '},',
                 '{"trait_type":"Network","value":"Monad testnet"}',

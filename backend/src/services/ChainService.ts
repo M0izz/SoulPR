@@ -67,6 +67,9 @@ class ChainService {
    * @param contributor    Wallet address of the contributor
    * @param repo           Repository identifier, e.g. "moizz/CNTRL"
    * @param prNumber       PR number
+   * @param prTitle        PR title
+   * @param githubUsername GitHub username of the contributor
+   * @param mergeCommitSha Merge commit SHA
    * @param mergeTimestamp Unix timestamp of the merge
    * @returns Transaction hash
    */
@@ -74,6 +77,9 @@ class ChainService {
     contributor: string,
     repo: string,
     prNumber: number,
+    prTitle: string,
+    githubUsername: string,
+    mergeCommitSha: string,
     mergeTimestamp: number
   ): Promise<string> {
     if (!this.initialized || !this.contract) {
@@ -83,11 +89,13 @@ class ChainService {
     try {
       console.log(`[ChainService] Sending attest tx for ${contributor} - ${repo} #${prNumber}`);
       
-      // Estimate gas and execute
       const tx = await this.contract.attest(
         contributor.toLowerCase(),
         repo,
         prNumber,
+        prTitle,
+        githubUsername,
+        mergeCommitSha,
         mergeTimestamp
       );
       
@@ -103,12 +111,15 @@ class ChainService {
   }
 
   /**
-   * Helper to verify if a (repo, prNumber) combination was already minted
+   * Helper to verify if a contribution was already minted
    */
-  async isMinted(repo: string, prNumber: number): Promise<boolean> {
+  async isMinted(repo: string, prNumber: number, contributor: string, mergeCommitSha: string): Promise<boolean> {
     if (!this.initialized || !this.contract) return false;
     try {
-      const key = ethers.solidityPackedKeccak256(["string", "uint256"], [repo, prNumber]);
+      const key = ethers.solidityPackedKeccak256(
+        ["string", "uint256", "address", "string"],
+        [repo, prNumber, contributor.toLowerCase(), mergeCommitSha]
+      );
       return await this.contract.minted(key);
     } catch {
       return false;

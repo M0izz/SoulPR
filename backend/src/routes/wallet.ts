@@ -86,4 +86,34 @@ router.post("/logout", (req: Request, res: Response) => {
   return res.json({ success: true });
 });
 
+/**
+ * GET /wallet/resolve
+ * Resolves a search query (wallet address OR GitHub username) to a wallet address.
+ */
+router.get("/resolve", async (req: Request, res: Response) => {
+  const { query } = req.query;
+  if (!query || typeof query !== "string") {
+    return res.status(400).json({ error: "Missing query parameter" });
+  }
+
+  const cleanQuery = query.trim().toLowerCase();
+
+  // 1. Check if it's already a valid Ethereum wallet address
+  if (ethers.isAddress(cleanQuery)) {
+    return res.json({ walletAddress: cleanQuery });
+  }
+
+  try {
+    // 2. Try looking it up as a GitHub username
+    const link = await dbService.getWalletLink(cleanQuery);
+    if (link) {
+      return res.json({ walletAddress: link.walletAddress });
+    }
+
+    return res.status(404).json({ error: `No wallet linked for GitHub user '${query}'` });
+  } catch (e: any) {
+    return res.status(500).json({ error: e.message || "Resolution error" });
+  }
+});
+
 export default router;

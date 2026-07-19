@@ -17,23 +17,25 @@ class MintService {
 
     console.log(`[MintService] Processing merge for ${githubUsername} on ${repo} #${prNumber}`);
 
-    // 1. Idempotency check: check if already minted on-chain
-    const alreadyMinted = await chainService.isMinted(repo, prNumber);
-    if (alreadyMinted) {
-      console.log(`[MintService] Idempotency guard: PR ${repo} #${prNumber} already minted on-chain`);
-      return;
-    }
-
-    // 2. Wallet link check
+    // 1. Wallet link check
     const walletLink = await dbService.getWalletLink(githubUsername);
     if (walletLink) {
-      // User has a linked wallet! Mint immediately
+      // Idempotency check: check if already minted on-chain
+      const alreadyMinted = await chainService.isMinted(repo, prNumber, walletLink.walletAddress, pr.commitSha);
+      if (alreadyMinted) {
+        console.log(`[MintService] Idempotency guard: PR ${repo} #${prNumber} already minted on-chain`);
+        return;
+      }
+
       console.log(`[MintService] Linked wallet found: ${walletLink.walletAddress}. Minting receipt...`);
       try {
         const txHash = await chainService.attest(
           walletLink.walletAddress,
           repo,
           prNumber,
+          pr.prTitle,
+          githubUsername,
+          pr.commitSha,
           pr.mergeTimestamp
         );
         console.log(`[MintService] Successfully minted! Tx: ${txHash}`);
@@ -65,7 +67,7 @@ class MintService {
 
     for (const mint of pending) {
       // Double check idempotency before minting
-      const alreadyMinted = await chainService.isMinted(mint.repo, mint.prNumber);
+      const alreadyMinted = await chainService.isMinted(mint.repo, mint.prNumber, walletAddress, mint.commitSha);
       if (alreadyMinted) {
         console.log(`[MintService] Pending item ${mint.repo} #${mint.prNumber} was already minted. Skipping.`);
         continue;
@@ -76,6 +78,9 @@ class MintService {
           walletAddress,
           mint.repo,
           mint.prNumber,
+          mint.prTitle,
+          githubUsername,
+          mint.commitSha,
           mint.mergeTimestamp
         );
         console.log(`[MintService] Retroactively minted pending PR ${mint.repo} #${mint.prNumber}`);

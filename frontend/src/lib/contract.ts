@@ -3,10 +3,10 @@ import { ethers } from 'ethers';
 // Minimal ABI array to query the contract state
 const MINIMAL_ABI = [
   'function minted(bytes32 key) external view returns (bool)',
-  'function attestations(uint256 tokenId) external view returns (address contributor, string repo, uint256 prNumber, uint256 mergeTimestamp)',
+  'function attestations(uint256 tokenId) external view returns (address contributor, string repo, uint256 prNumber, string prTitle, string githubUsername, string mergeCommitSha, uint256 mergeTimestamp)',
   'function tokensByOwner(address owner) external view returns (uint256[] memory)',
   'function tokenURI(uint256 tokenId) external view returns (string memory)',
-  'event Attested(address indexed contributor, string repo, uint256 prNumber, uint256 mergeTimestamp, uint256 tokenId)'
+  'event Attested(address indexed contributor, string repo, uint256 prNumber, string prTitle, string githubUsername, string mergeCommitSha, uint256 mergeTimestamp, uint256 tokenId)'
 ];
 
 export interface BadgeData {
@@ -14,6 +14,8 @@ export interface BadgeData {
   repo: string;
   prNumber: number;
   prTitle: string;
+  githubUsername?: string;
+  mergeCommitSha?: string;
   contributor: string;
   mergeTimestamp: number;
   txHash: string;
@@ -73,25 +75,14 @@ export async function getAttestations(walletAddress: string): Promise<BadgeData[
     for (const id of tokenIds) {
       const tokenId = Number(id);
       const att = await contract.attestations(tokenId);
-      
-      // Parse tokenURI to get the title/metadata (including image)
-      let prTitle = 'OSS Contribution';
-      try {
-        const uri = await contract.tokenURI(tokenId);
-        const jsonBase64 = uri.split(',')[1];
-        const json = atob(jsonBase64);
-        const metadata = JSON.parse(json);
-        // Extract PR title from name/description or set default
-        prTitle = metadata.description || 'OSS Contribution';
-      } catch (err) {
-        console.warn(`[Contract] Failed to parse tokenURI for token ${tokenId}`, err);
-      }
 
       badges.push({
         tokenId,
         repo: att.repo,
         prNumber: Number(att.prNumber),
-        prTitle,
+        prTitle: att.prTitle || 'OSS Contribution',
+        githubUsername: att.githubUsername,
+        mergeCommitSha: att.mergeCommitSha,
         contributor: att.contributor,
         mergeTimestamp: Number(att.mergeTimestamp),
         // Since we are reading state, we use dummy tx hash or query logs for it if needed
