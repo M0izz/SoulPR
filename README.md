@@ -1,4 +1,4 @@
-# OSS Contribution Receipt
+# SoulPR
 
 Automatically converts merged GitHub pull requests into permanent, wallet-bound, soulbound proof of contribution (SBT) on Monad testnet.
 
