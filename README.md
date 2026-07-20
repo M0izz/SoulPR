@@ -95,7 +95,7 @@ OSS Contributer Recpiet/
 │   │   └── index.ts       # Server Entry Point
 │   └── render.yaml        # Production Deployment Config for Render
 │
-└── frontend/              # React + Vite Web Application
+└── frontend/              # React + Vite Web Application — Live: https://soul-pr-git-main-moizzs-projects.vercel.app/
     ├── src/
     │   ├── components/    # BadgeDetailModal, Nav, ThemeToggle, Icons
     │   ├── pages/         # Landing, Dashboard, LinkWallet, Install, HowItWorks
@@ -168,13 +168,15 @@ npm run dev
 
 ### 3. Frontend Dashboard (`/frontend`)
 
+- **Live Deployed Frontend**: [https://soul-pr-git-main-moizzs-projects.vercel.app/](https://soul-pr-git-main-moizzs-projects.vercel.app/)
+
 Create `frontend/.env`:
 ```env
 VITE_BACKEND_URL=http://localhost:3001
 VITE_CONTRACT_ADDRESS=0xYourDeployedContractAddress
 ```
 
-Start frontend server:
+Start frontend server locally:
 ```bash
 cd frontend
 npm install
