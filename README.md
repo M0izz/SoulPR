@@ -2,7 +2,6 @@
 
 > **Automated open-source contribution receipts rendered as Soulbound Tokens (SBTs) on the Monad Testnet.**
 
-[![Live Application](https://img.shields.io/badge/Live%20Demo-soul--pr.vercel.app-FF7B00?style=flat-square&logo=vercel)](https://soul-pr-git-main-moizzs-projects.vercel.app/)
 [![Monad Testnet](https://img.shields.io/badge/Network-Monad%20Testnet-8B5CF6?style=flat-square)](https://testnet-rpc.monad.xyz)
 [![Solidity](https://img.shields.io/badge/Solidity-0.8.20-363636?style=flat-square&logo=solidity)](./contract)
 [![Express Backend](https://img.shields.io/badge/Backend-Node.js%20%2F%20Express-000000?style=flat-square&logo=express)](./backend)
