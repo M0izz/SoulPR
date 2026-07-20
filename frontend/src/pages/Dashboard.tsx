@@ -10,7 +10,7 @@ import {
 } from '../components/Icons'
 
 // ─── Types ──────────────────────────────────────────────────
-type NavId = 'overview' | 'proofs' | 'sbts' | 'contributions' | 'settings'
+type NavId = 'overview' | 'sbts' | 'contributions' | 'settings'
 
 // ─── Mock data ───────────────────────────────────────────────
 const MOCK_BADGES: BadgeData[] = [
@@ -46,21 +46,6 @@ function RepoAvatar({ repo }: { repo: string }) {
 }
 
 // ─── Panel components ─────────────────────────────────────────
-
-function ProofsPanel({ badges, onSelect }: { badges: BadgeData[]; onSelect: (b: BadgeData) => void }) {
-  return (
-    <div>
-      <h2 style={{ fontSize: '20px', fontWeight: 900, color: '#1B1816', marginBottom: '1.5rem' }}>My Proofs</h2>
-      <div style={{ background: '#FFF', border: '1px solid rgba(78,66,56,0.1)', borderRadius: '16px', padding: '1.6rem' }}>
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-          {badges.map(b => (
-            <ProofRow key={b.tokenId} b={b} onSelect={onSelect} />
-          ))}
-        </div>
-      </div>
-    </div>
-  )
-}
 
 function SBTsPanel({ badges, onSelect }: { badges: BadgeData[]; onSelect: (b: BadgeData) => void }) {
   return (
@@ -255,11 +240,11 @@ function OverviewPanel({
   const navigate = useNavigate()
   return (
     <>
-      {/* Reputation card */}
+      {/* Builder score hero */}
       <section style={{ background: '#110F0E', color: 'white', borderRadius: '16px', padding: '2rem 2.5rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.8rem', position: 'relative', overflow: 'hidden' }}>
         <div style={{ position: 'absolute', inset: 0, background: 'radial-gradient(ellipse at 5% 30%, rgba(255,123,0,0.1) 0%, transparent 55%)' }} />
         <div style={{ position: 'relative', zIndex: 2 }}>
-          <div style={{ fontSize: '10px', fontWeight: 800, color: 'rgba(255,255,255,0.4)', textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: '10px' }}>YOUR REPUTATION SCORE</div>
+          <div style={{ fontSize: '10px', fontWeight: 800, color: 'rgba(255,255,255,0.4)', textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: '10px' }}>YOUR BUILDER XP</div>
           <div style={{ display: 'flex', alignItems: 'baseline', gap: '12px', marginBottom: '8px' }}>
             <span style={{ fontSize: '44px', fontWeight: 900, color: '#FFF', lineHeight: 1 }}>1,245</span>
             <span style={{ background: 'rgba(255,123,0,0.15)', border: '1px solid rgba(255,123,0,0.3)', borderRadius: '99px', padding: '4px 12px', fontSize: '10px', color: '#FF7B00', fontWeight: 800 }}>
@@ -278,16 +263,16 @@ function OverviewPanel({
         </div>
         <div style={{ position: 'relative', width: '130px', height: '130px', zIndex: 2, flexShrink: 0 }}>
           <div style={{ position: 'absolute', inset: 0, background: 'radial-gradient(circle, rgba(255,123,0,0.28) 0%, transparent 70%)', filter: 'blur(14px)' }} />
-          <img src="/reputation_shield.png" alt="Reputation Shield" className="animate-float" style={{ width: '100%', height: '100%', objectFit: 'contain', filter: 'drop-shadow(0 10px 24px rgba(255,123,0,0.4))', mixBlendMode: 'screen' }} />
+          <img src="/reputation_shield.png" alt="Builder Shield" className="animate-float" style={{ width: '100%', height: '100%', objectFit: 'contain', filter: 'drop-shadow(0 10px 24px rgba(255,123,0,0.4))', mixBlendMode: 'screen' }} />
         </div>
       </section>
 
       {/* 4 stats */}
       <section style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '1.2rem', marginBottom: '1.8rem' }}>
         {[
-          { icon: <IconCode size={14} color="#FF7B00" />,         label: 'Total Proofs',      value: '28',   sub: '+5 this month',       subColor: '#16A34A', nav: 'proofs' as NavId },
+          { icon: <IconCode size={14} color="#FF7B00" />,         label: 'Total Proofs',      value: '28',   sub: '+5 this month',       subColor: '#16A34A', nav: 'contributions' as NavId },
           { icon: <IconAward size={14} color="#FF7B00" />,        label: 'SBTs Minted',       value: '12',   sub: '+3 this month',       subColor: '#16A34A', nav: 'sbts' as NavId },
-          { icon: <IconShieldCheck size={14} color="#FF7B00" />,  label: 'Reputation Score',  value: '1,245',sub: 'Top 18% of builders', subColor: '#FF7B00', nav: undefined },
+          { icon: <IconShieldCheck size={14} color="#FF7B00" />,  label: 'Contribution Level',value: 'Lv. 3',sub: 'Top 18% of builders', subColor: '#FF7B00', nav: undefined },
           { icon: <IconFolder size={14} color="#FF7B00" />,       label: 'Repositories',      value: '8',    sub: 'Across all networks',  subColor: '#9E9089', nav: 'contributions' as NavId },
         ].map(({ icon, label, value, sub, subColor, nav }) => (
           <div
@@ -397,6 +382,7 @@ function OverviewPanel({
 
 // ─── Main component ───────────────────────────────────────────
 export default function Dashboard() {
+  const navigate = useNavigate()
   const [query, setQuery] = useState('')
   const [badges, setBadges] = useState<BadgeData[]>(MOCK_BADGES)
   const [selected, setSelected] = useState<BadgeData | null>(null)
@@ -425,36 +411,34 @@ export default function Dashboard() {
   }
 
   const sidebarLinks: { id: NavId; icon: React.ReactNode; label: string }[] = [
-    { id: 'overview',       icon: <IconHome size={15} />,         label: 'Overview' },
-    { id: 'proofs',         icon: <IconShieldCheck size={15} />,  label: 'My Proofs' },
-    { id: 'sbts',           icon: <IconAward size={15} />,        label: 'SBTs' },
-    { id: 'contributions',  icon: <IconCode size={15} />,         label: 'Contributions' },
-    { id: 'settings',       icon: <IconSettings size={15} />,     label: 'Settings' },
+    { id: 'overview',       icon: <IconHome size={16} />,         label: 'Overview' },
+    { id: 'sbts',           icon: <IconAward size={16} />,        label: 'SBTs' },
+    { id: 'contributions',  icon: <IconCode size={16} />,         label: 'Contributions' },
+    { id: 'settings',       icon: <IconSettings size={16} />,     label: 'Settings' },
   ]
 
   const pageTitle: Record<NavId, string> = {
     overview:       'Dashboard',
-    proofs:         'My Proofs',
     sbts:           'SBTs',
     contributions:  'Contributions',
     settings:       'Settings',
   }
 
   return (
-    <div style={{ display: 'flex', minHeight: '100vh', background: '#FAF8F5', color: '#1B1816', fontFamily: 'var(--font-body)', overflowX: 'hidden' }}>
+    <div style={{ display: 'flex', minHeight: '100vh', background: 'var(--paper)', color: 'var(--ink)', fontFamily: 'var(--font-body)', overflowX: 'hidden', transition: 'background 0.3s, color 0.3s' }}>
 
       {/* ── SIDEBAR ── */}
-      <aside style={{ width: '230px', background: '#FFFFFF', flexShrink: 0, borderRight: '1px solid rgba(78,66,56,0.1)', padding: '1.8rem 1rem', display: 'flex', flexDirection: 'column', justifyContent: 'space-between', position: 'sticky', top: 0, height: '100vh' }}>
+      <aside style={{ width: '260px', background: 'var(--paper-raised)', flexShrink: 0, borderRight: '1px solid var(--rule)', padding: '2rem 1.2rem', display: 'flex', flexDirection: 'column', justifyContent: 'space-between', position: 'sticky', top: 0, height: '100vh' }}>
         <div>
-          <Link to="/" style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '2.5rem', textDecoration: 'none' }}>
-            <IconSoulPRLogo size={28} />
+          <Link to="/" style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '2.5rem', textDecoration: 'none' }}>
+            <IconSoulPRLogo size={32} />
             <div style={{ display: 'flex', flexDirection: 'column', lineHeight: 1.1 }}>
-              <span style={{ fontWeight: 900, fontSize: '15px', color: '#1B1816' }}>SoulPR</span>
-              <span style={{ fontSize: '7px', textTransform: 'uppercase', color: '#E05300', letterSpacing: '0.06em', fontWeight: 700 }}>proof that builds you</span>
+              <span style={{ fontWeight: 900, fontSize: '17px', color: 'var(--ink)' }}>SoulPR</span>
+              <span style={{ fontSize: '8px', textTransform: 'uppercase', color: '#E05300', letterSpacing: '0.06em', fontWeight: 700 }}>proof that builds you</span>
             </div>
           </Link>
 
-          <nav style={{ display: 'flex', flexDirection: 'column', gap: '3px' }}>
+          <nav style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
             {sidebarLinks.map(({ id, icon, label }) => {
               const isActive = activeNav === id
               return (
@@ -462,11 +446,11 @@ export default function Dashboard() {
                   key={id}
                   id={`sidebar-${id}`}
                   onClick={() => setActiveNav(id)}
-                  style={{ display: 'flex', alignItems: 'center', gap: '10px', padding: '9px 12px', borderRadius: '8px', border: 'none', background: isActive ? '#FFF0E6' : 'transparent', color: isActive ? '#FF7B00' : '#5C544F', fontWeight: isActive ? 800 : 600, fontSize: '13px', cursor: 'pointer', width: '100%', textAlign: 'left', transition: 'background 0.15s, color 0.15s' }}
-                  onMouseEnter={e => { if (!isActive) (e.currentTarget as HTMLElement).style.background = '#FAF6F0' }}
+                  style={{ display: 'flex', alignItems: 'center', gap: '12px', padding: '11px 14px', borderRadius: '10px', border: 'none', background: isActive ? 'rgba(255,123,0,0.12)' : 'transparent', color: isActive ? '#FF7B00' : 'var(--ink-muted)', fontWeight: isActive ? 800 : 600, fontSize: '14.5px', cursor: 'pointer', width: '100%', textAlign: 'left', transition: 'background 0.15s, color 0.15s' }}
+                  onMouseEnter={e => { if (!isActive) (e.currentTarget as HTMLElement).style.background = 'rgba(255,123,0,0.05)' }}
                   onMouseLeave={e => { if (!isActive) (e.currentTarget as HTMLElement).style.background = 'transparent' }}
                 >
-                  <span style={{ color: isActive ? '#FF7B00' : '#9E9089' }}>{icon}</span>
+                  <span style={{ color: isActive ? '#FF7B00' : 'var(--ink-faint)' }}>{icon}</span>
                   {label}
                 </button>
               )
@@ -480,7 +464,7 @@ export default function Dashboard() {
             <IconShieldCheck size={22} color="#FF7B00" />
           </div>
           <div style={{ fontWeight: 800, fontSize: '12px', color: '#1B1816', marginBottom: '5px' }}>Build. Proof. Grow.</div>
-          <div style={{ fontSize: '11px', color: '#5C544F', marginBottom: '14px', lineHeight: 1.5 }}>Your reputation is your superpower.</div>
+          <div style={{ fontSize: '11px', color: '#5C544F', marginBottom: '14px', lineHeight: 1.5 }}>Your proof is your superpower.</div>
           <button
             id="sidebar-lookup-btn"
             onClick={() => setShowSearchModal(true)}
@@ -497,20 +481,23 @@ export default function Dashboard() {
         {/* Header */}
         <header style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem' }}>
           <div style={{ textAlign: 'left' }}>
-            <h1 style={{ fontSize: '26px', fontWeight: 900, color: '#1B1816', margin: 0 }}>{pageTitle[activeNav]}</h1>
-            {activeNav === 'overview' && <div style={{ fontSize: '13px', color: '#5C544F', marginTop: '3px' }}>Welcome back, builder!</div>}
+            <h1 style={{ fontSize: '26px', fontWeight: 900, color: 'var(--ink)', margin: 0, fontFamily: 'var(--font-display)' }}>{pageTitle[activeNav]}</h1>
+            {activeNav === 'overview' && <div style={{ fontSize: '13px', color: 'var(--ink-muted)', marginTop: '3px' }}>Welcome back, builder!</div>}
           </div>
           <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '6px', background: '#FFF', border: '1px solid rgba(78,66,56,0.15)', borderRadius: '8px', padding: '6px 14px', fontSize: '11px', fontWeight: 600, color: '#1B1816' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '6px', background: 'var(--paper-raised)', border: '1px solid var(--rule)', borderRadius: '8px', padding: '6px 14px', fontSize: '11px', fontWeight: 600, color: 'var(--ink)' }}>
               <span style={{ width: '6px', height: '6px', borderRadius: '50%', background: '#FF7B00', display: 'inline-block' }} />
               MONAD TESTNET
               <span style={{ fontSize: '8px', opacity: 0.5 }}>▼</span>
             </div>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '7px', background: '#FFF', border: '1px solid rgba(255,123,0,0.35)', borderRadius: '8px', padding: '6px 14px', fontSize: '11px', color: '#FF7B00', fontWeight: 700, cursor: 'pointer' }}>
+            <button
+              onClick={() => navigate('/link-wallet')}
+              style={{ display: 'flex', alignItems: 'center', gap: '7px', background: 'var(--paper-raised)', border: '1px solid rgba(255,123,0,0.35)', borderRadius: '8px', padding: '6px 14px', fontSize: '11px', color: '#FF7B00', fontWeight: 700, cursor: 'pointer' }}
+            >
               <IconWallet size={13} color="#FF7B00" />
               0xA7f2...9c4E
               <span style={{ fontSize: '8px', opacity: 0.5 }}>▼</span>
-            </div>
+            </button>
             <ThemeToggle />
           </div>
         </header>
@@ -520,12 +507,11 @@ export default function Dashboard() {
           <OverviewPanel
             badges={badges}
             onSelect={setSelected}
-            onViewAll={() => setActiveNav('proofs')}
+            onViewAll={() => setActiveNav('contributions')}
             onNavTo={setActiveNav}
             onSearch={() => setShowSearchModal(true)}
           />
         )}
-        {activeNav === 'proofs'        && <ProofsPanel        badges={badges} onSelect={setSelected} />}
         {activeNav === 'sbts'          && <SBTsPanel          badges={badges} onSelect={setSelected} />}
         {activeNav === 'contributions' && <ContributionsPanel badges={badges} />}
         {activeNav === 'settings'      && <SettingsPanel />}

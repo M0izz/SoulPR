@@ -23,6 +23,13 @@ export const IconShieldCheck = ({ size = 16, color = 'currentColor', strokeWidth
   </svg>
 )
 
+export const IconLock = ({ size = 16, color = 'currentColor', strokeWidth = 2, className, style }: IconProps) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth={strokeWidth} strokeLinecap="round" strokeLinejoin="round" className={className} style={style}>
+    <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
+    <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+  </svg>
+)
+
 export const IconCode = ({ size = 16, color = 'currentColor', strokeWidth = 2, className, style }: IconProps) => (
   <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth={strokeWidth} strokeLinecap="round" strokeLinejoin="round" className={className} style={style}>
     <polyline points="16,18 22,12 16,6"/>

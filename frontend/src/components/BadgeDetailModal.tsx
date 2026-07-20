@@ -93,7 +93,7 @@ export default function BadgeDetailModal({ badge, onClose }: Props) {
 
         {/* Nav links */}
         <div style={{ display: 'flex', gap: '2rem', alignItems: 'center' }}>
-          {['Dashboard', 'My Proofs', 'SBTs', 'Contributions'].map(lbl => {
+          {['Dashboard', 'SBTs', 'Contributions'].map(lbl => {
             const active = lbl === 'SBTs'
             return (
               <button

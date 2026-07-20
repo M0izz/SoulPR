@@ -2,13 +2,13 @@
    SoulPR — Premium Design System & Stylesheet
    ============================================================ */
 
-@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800;900&family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap');
 
 :root {
   /* -- Orange (Light) theme — default -- */
   --paper: #FAF6F0;
-  --paper-raised: rgba(255, 255, 255, 0.45);
-  --paper-overlay: rgba(250, 246, 240, 0.85);
+  --paper-raised: #FFFFFF;
+  --paper-overlay: rgba(250, 246, 240, 0.9);
   --rule: rgba(212, 172, 137, 0.35);
   --rule-strong: rgba(255, 123, 0, 0.3);
   --ink: #1B1816;
@@ -24,11 +24,11 @@
 
   /* -- layout / typography -- */
   --font-display: 'Outfit', sans-serif;
-  --font-body: 'Plus Jakarta Sans', sans-serif;
+  --font-body: 'Inter', sans-serif;
   --font-mono: 'JetBrains Mono', monospace;
   --radius: 12px;
   --radius-inner: 8px;
-  --max-width: 1100px;
+  --max-width: 1240px;
 }
 
 /* ── Black (Dark) theme — toggled by ThemeToggle component ── */
@@ -66,7 +66,7 @@ body {
   background: var(--paper);
   color: var(--ink);
   font-family: var(--font-body);
-  font-size: 15px;
+  font-size: 17px;
   line-height: 1.6;
   -webkit-font-smoothing: antialiased;
   transition: background 0.3s cubic-bezier(0.4, 0, 0.2, 1), color 0.3s cubic-bezier(0.4, 0, 0.2, 1);

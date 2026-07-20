@@ -7,9 +7,9 @@ export default function Nav() {
   const navigate = useNavigate()
 
   const linkStyle = (active: boolean): React.CSSProperties => ({
-    fontSize: '13px',
+    fontSize: '15px',
     fontWeight: active ? 700 : 500,
-    color: active ? '#FF7B00' : 'rgba(255,255,255,0.7)',
+    color: active ? '#FF7B00' : 'var(--ink-muted)',
     transition: 'color 0.2s',
     textDecoration: 'none',
     position: 'relative',
@@ -22,31 +22,64 @@ export default function Nav() {
       display: 'flex',
       justifyContent: 'space-between',
       alignItems: 'center',
-      background: 'rgba(11, 10, 9, 0.85)',
+      background: 'var(--paper-overlay)',
       backdropFilter: 'blur(12px)',
-      border: '1px solid rgba(78, 66, 56, 0.4)',
+      border: '1px solid var(--rule)',
       borderRadius: '99px',
-      padding: '0.6rem 1.6rem',
-      maxWidth: '1100px',
+      padding: '0.8rem 2rem',
+      maxWidth: '1240px',
       margin: '1.2rem auto 0',
+      transition: 'background 0.3s, border-color 0.3s',
     }}>
 
       {/* Brand */}
-      <Link to="/" style={{ display: 'flex', alignItems: 'center', gap: '8px', textDecoration: 'none' }}>
-        <IconSoulPRLogo size={28} />
+      <Link to="/" style={{ display: 'flex', alignItems: 'center', gap: '10px', textDecoration: 'none' }}>
+        <IconSoulPRLogo size={32} />
         <div style={{ display: 'flex', flexDirection: 'column', lineHeight: 1.1 }}>
-          <span style={{ fontFamily: 'var(--font-display)', fontWeight: 900, fontSize: '15px', color: '#FFF' }}>SoulPR</span>
-          <span style={{ fontSize: '7px', textTransform: 'uppercase', color: '#E05300', letterSpacing: '0.06em', fontWeight: 700 }}>proof that builds you</span>
+          <span style={{ fontFamily: 'var(--font-display)', fontWeight: 900, fontSize: '17px', color: 'var(--ink)' }}>SoulPR</span>
+          <span style={{ fontSize: '8px', textTransform: 'uppercase', color: '#E05300', letterSpacing: '0.06em', fontWeight: 700 }}>proof that builds you</span>
         </div>
       </Link>
 
       {/* Nav Links */}
       <div style={{ display: 'flex', gap: '1.6rem', alignItems: 'center' }}>
         <Link to="/" style={linkStyle(pathname === '/')}>Home</Link>
-        <Link to="/how-it-works" style={linkStyle(false)}>Features</Link>
-        <Link to="/how-it-works" style={linkStyle(pathname === '/how-it-works')}>How It Works</Link>
-        <Link to="/install" style={linkStyle(pathname === '/install')}>Docs</Link>
-        <Link to="/" style={linkStyle(false)}>About</Link>
+        <a
+          href="/#features"
+          onClick={(e) => {
+            if (pathname === '/') {
+              e.preventDefault()
+              document.getElementById('features')?.scrollIntoView({ behavior: 'smooth' })
+            }
+          }}
+          style={linkStyle(false)}
+        >
+          Features
+        </a>
+        <a
+          href="/#how-it-works"
+          onClick={(e) => {
+            if (pathname === '/') {
+              e.preventDefault()
+              document.getElementById('how-it-works')?.scrollIntoView({ behavior: 'smooth' })
+            }
+          }}
+          style={linkStyle(false)}
+        >
+          How It Works
+        </a>
+        <a
+          href="/#about"
+          onClick={(e) => {
+            if (pathname === '/') {
+              e.preventDefault()
+              document.getElementById('about')?.scrollIntoView({ behavior: 'smooth' })
+            }
+          }}
+          style={linkStyle(false)}
+        >
+          About
+        </a>
       </div>
 
       {/* Right: Network + Theme Toggle + Link Wallet */}
