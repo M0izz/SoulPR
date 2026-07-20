@@ -1,3 +1,4 @@
+import { useEffect } from 'react'
 import { BrowserRouter, Routes, Route } from 'react-router-dom'
 import Nav from './components/Nav'
 import Landing from './pages/Landing'
@@ -5,8 +6,14 @@ import Dashboard from './pages/Dashboard'
 import LinkWallet from './pages/LinkWallet'
 import Install from './pages/Install'
 import HowItWorks from './pages/HowItWorks'
+import { initTheme } from './components/ThemeToggle'
 
 export default function App() {
+  // Initialize theme from localStorage before first render
+  useEffect(() => {
+    initTheme()
+  }, [])
+
   return (
     <BrowserRouter>
       <Routes>
