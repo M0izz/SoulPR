@@ -1,4 +1,4 @@
-# ⚡ SoulPR — Proof That Builds You
+# SoulPR — Proof That Builds You
 
 > **Automated open-source contribution receipts rendered as Soulbound Tokens (SBTs) on the Monad Testnet.**
 
@@ -6,30 +6,30 @@
 [![Solidity](https://img.shields.io/badge/Solidity-0.8.20-363636?style=flat-square&logo=solidity)](./contract)
 [![Express Backend](https://img.shields.io/badge/Backend-Node.js%20%2F%20Express-000000?style=flat-square&logo=express)](./backend)
 [![Vite Frontend](https://img.shields.io/badge/Frontend-React%20%2F%20TypeScript-61DAFB?style=flat-square&logo=react)](./frontend)
-[![License: MIT](https://img.shields.io/badge/License-MIT-orange.svg?style=flat-square)](LICENSE)
+[![License: Proprietary](https://img.shields.io/badge/License-All%20Rights%20Reserved-red.svg?style=flat-square)](LICENSE)
 
 ---
 
-## 🌟 Overview
+## Overview
 
-**SoulPR** turns every merged GitHub Pull Request into a permanent, non-transferable **Soulbound Token (SBT)** minted directly to the contributor's wallet on the **Monad** network. 
+**SoulPR** turns every merged GitHub Pull Request into a permanent, non-transferable **Soulbound Token (SBT)** minted directly to the contributor's wallet on the **Monad** network.
 
 Open-source contributions represent a developer's true track record. SoulPR bridges GitHub activity with Web3 identity by producing tamper-proof, on-chain contribution receipts that are 100% gasless for contributors.
 
 ---
 
-## ✨ Key Features
+## Key Features
 
-- 🔄 **Automated Webhook Engine**: Listens for GitHub `pull_request.closed` events and verifies merge status in real time.
-- ⛽ **Zero Gas Costs for Contributors**: The backend minter wallet covers 100% of blockchain transaction fees. Contributors only sign a free off-chain signature once.
-- 🛡️ **Non-Transferable (Soulbound)**: Contract-level enforcement (`_update` override in Solidity) prevents token transfers or sales.
-- 🎨 **Holographic 3D SBT Showcase**: Interactive SBT modal featuring counter-rotating glow rings, star twinkling particles, floating hexagon cards, and bottom wave auroras.
-- 🌓 **Dynamic Theme Engine**: Seamless toggle between **Orange (Light)** and **Black (Dark)** modes using unified CSS design tokens (`Outfit` & `Inter` typography).
-- 🔍 **Contributor Lookup & Repositories**: Verify any wallet address or GitHub handle, search past proofs, and manage tracked organization repositories.
+- **Automated Webhook Engine**: Listens for GitHub `pull_request.closed` events and verifies merge status in real time.
+- **Zero Gas Costs for Contributors**: The backend minter wallet covers 100% of blockchain transaction fees. Contributors only sign a free off-chain signature once.
+- **Non-Transferable (Soulbound)**: Contract-level enforcement (`_update` override in Solidity) prevents token transfers or sales.
+- **Holographic 3D SBT Showcase**: Interactive SBT modal featuring counter-rotating glow rings, star twinkling particles, floating hexagon cards, and bottom wave auroras.
+- **Dynamic Theme Engine**: Seamless toggle between **Orange (Light)** and **Black (Dark)** modes using unified CSS design tokens (`Outfit` & `Inter` typography).
+- **Contributor Lookup & Repositories**: Verify any wallet address or GitHub handle, search past proofs, and manage tracked organization repositories.
 
 ---
 
-## 🏗️ Technical Architecture
+## Technical Architecture
 
 ```
                                  ┌────────────────────────┐
@@ -47,7 +47,7 @@ Open-source contributions represent a developer's true track record. SoulPR brid
 │   ├── 2. Check Tracked Repository Registry                                     │
 │   ├── 3. Map GitHub Handle ──► Wallet Address (Database / In-Memory)            │
 │   └── 4. Sign & Dispatch Mint Tx via Minter Wallet                             │
-└────────────────────────────────────────────┬───────────────────────────────────┘
+└────────────────────────────┬───────────────────────────────────┘
                                              │
                                   Attestation Transaction
                                              │
@@ -59,7 +59,7 @@ Open-source contributions represent a developer's true track record. SoulPR brid
 │   ├── Mint Non-Transferable ERC-721 Token                                      │
 │   ├── Emit On-Chain Attestation Event (repo, prNumber, contributor)            │
 │   └── Render Dynamic On-Chain SVG Metadata                                     │
-└────────────────────────────────────────────┬───────────────────────────────────┘
+└────────────────────────────┬───────────────────────────────────┘
                                              │
                                     Direct On-Chain Query
                                              │
@@ -75,7 +75,7 @@ Open-source contributions represent a developer's true track record. SoulPR brid
 
 ---
 
-## 📁 Repository Structure
+## Repository Structure
 
 ```
 OSS Contributer Recpiet/
@@ -103,7 +103,7 @@ OSS Contributer Recpiet/
 
 ---
 
-## 🔐 Smart Contract Specifications (`SoulPR.sol`)
+## Smart Contract Specifications (`SoulPR.sol`)
 
 - **Standard**: Non-Transferable ERC-721
 - **Solidity Version**: `0.8.20`
@@ -114,7 +114,7 @@ OSS Contributer Recpiet/
 
 ---
 
-## 🚀 Local Development Setup
+## Local Development Setup
 
 ### Prerequisites
 - **Node.js**: `v18+` or `v20+`
@@ -183,12 +183,8 @@ Open **[http://localhost:5173](http://localhost:5173)** in your browser.
 
 ---
 
-## 📜 License
+## License
 
-Distributed under the **MIT License**. See `LICENSE` for details.
+Copyright (c) 2026 SoulPR. **All Rights Reserved.**
 
----
-
-<p center align="center">
-Made with ❤️ for open-source contributors on <b>Monad</b>.
-</p>
+This repository and its source code are proprietary and confidential. Unauthorized copying, modification, distribution, sublicensing, or commercial deployment of this software is strictly prohibited. See [LICENSE](LICENSE) for full legal terms.
