@@ -119,7 +119,7 @@ body::before {
   height: 150vmax;
   margin-top: -75vmax;
   margin-left: -75vmax;
-  background: 
+  background:
     radial-gradient(circle at 50% 50%, rgba(253, 248, 244, 0.7) 0%, rgba(253, 248, 244, 0.95) 90%),
     url('/golden_monad_coin.png?v=3') center/contain no-repeat;
   z-index: -2;
@@ -129,15 +129,20 @@ body::before {
 }
 
 [data-theme='forge'] body::before {
-  background: 
+  background:
     radial-gradient(circle at 50% 50%, rgba(11, 10, 9, 0.75) 0%, #0B0A09 95%),
     url('/golden_monad_coin.png?v=3') center/contain no-repeat;
   mix-blend-mode: screen;
 }
 
 @keyframes spin-bg-coin {
-  0% { transform: rotate(0deg); }
-  100% { transform: rotate(360deg); }
+  0% {
+    transform: rotate(0deg);
+  }
+
+  100% {
+    transform: rotate(360deg);
+  }
 }
 
 /* ============================================================
@@ -1231,9 +1236,11 @@ body::before {
 .timeline-connector {
   position: absolute;
   top: 8px;
-  bottom: -2rem; /* Stretch down to next node */
+  bottom: -2rem;
+  /* Stretch down to next node */
   width: 2px;
-  background: #C0824E; /* Custom gold/bronze timeline connector line */
+  background: #C0824E;
+  /* Custom gold/bronze timeline connector line */
   opacity: 0.5;
   z-index: 1;
 }
@@ -1324,6 +1331,7 @@ body::before {
     grid-template-columns: 1fr;
     gap: 2.5rem;
   }
+
   .dashboard-sidebar {
     position: static;
   }
@@ -1456,7 +1464,8 @@ body::before {
 }
 
 [data-theme='forge'] .coin-main {
-  opacity: 0.08; /* Subtle watermark in dark mode */
+  opacity: 0.08;
+  /* Subtle watermark in dark mode */
 }
 
 /* Floating coin top-left */
@@ -1491,27 +1500,35 @@ body::before {
   0% {
     transform: translate(-50%, -50%) rotate(0deg) scale(1);
   }
+
   50% {
     transform: translate(-50%, -50%) rotate(180deg) scale(1.06);
   }
+
   100% {
     transform: translate(-50%, -50%) rotate(360deg) scale(1);
   }
 }
 
 @keyframes float-drift-left {
-  0%, 100% {
+
+  0%,
+  100% {
     transform: translate(0, 0) rotate(0deg);
   }
+
   50% {
     transform: translate(30px, 40px) rotate(180deg);
   }
 }
 
 @keyframes float-drift-right {
-  0%, 100% {
+
+  0%,
+  100% {
     transform: translate(0, 0) rotate(0deg);
   }
+
   50% {
     transform: translate(-40px, -30px) rotate(-180deg);
   }
@@ -1552,8 +1569,13 @@ body::before {
 }
 
 @keyframes fade-in-anim {
-  from { opacity: 0; }
-  to { opacity: 1; }
+  from {
+    opacity: 0;
+  }
+
+  to {
+    opacity: 1;
+  }
 }
 
 .modal-card {
@@ -1564,8 +1586,15 @@ body::before {
 }
 
 @keyframes scale-up-anim {
-  from { opacity: 0; transform: scale(0.95); }
-  to { opacity: 1; transform: scale(1); }
+  from {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
 }
 
 .modal-close {
@@ -1591,6 +1620,7 @@ body::before {
 .sidebar-link {
   transition: all 0.2s ease;
 }
+
 .sidebar-link:hover {
   background: #FAF8F5;
   color: #FF7B00 !important;
