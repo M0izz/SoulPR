@@ -50,14 +50,36 @@ export default function LinkWallet() {
     setError(null)
     try {
       const eth = (window as any).ethereum
+      const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent)
+
       if (!eth) {
-        setError('MetaMask is not installed. Please install it at metamask.io.')
-        return
+        // Universal Deep Link format for official MetaMask Mobile App
+        const cleanUrl = window.location.href.replace(/^https?:\/\//, '')
+        const deepLink = `https://metamask.app.link/dapp/${cleanUrl}`
+
+        if (isMobile) {
+          // On mobile, directly launch official MetaMask App & connection request
+          window.location.href = deepLink
+          return
+        } else {
+          // On desktop, open official MetaMask extension download portal in new tab
+          window.open('https://metamask.io/download/', '_blank')
+          setError('MetaMask extension not detected. Click below to install or open in official MetaMask App.')
+          return
+        }
       }
+
+      // Injected Web3 provider present — trigger official connection prompt popup
       const accounts: string[] = await eth.request({ method: 'eth_requestAccounts' })
-      setWallet(accounts[0])
+      if (accounts && accounts.length > 0) {
+        setWallet(accounts[0])
+      }
     } catch (e: any) {
-      setError(e.message ?? 'Wallet connection rejected')
+      if (e.code === 4001) {
+        setError('Wallet connection request was declined in MetaMask.')
+      } else {
+        setError(e.message ?? 'Wallet connection request failed.')
+      }
     }
   }
 
@@ -68,6 +90,10 @@ export default function LinkWallet() {
 
     try {
       const eth = (window as any).ethereum
+      if (!eth) {
+        setError('Web3 provider disconnected. Please reconnect your wallet.')
+        return
+      }
       const message = `Linking GitHub ${githubUser} to ${wallet} for SoulPR`
       const signature: string = await eth.request({
         method: 'personal_sign',
@@ -77,7 +103,11 @@ export default function LinkWallet() {
       await api.linkWallet(wallet, signature)
       setLinked(true)
     } catch (e: any) {
-      setError(e.message ?? 'Signing failed')
+      if (e.code === 4001) {
+        setError('Signature request was declined in MetaMask.')
+      } else {
+        setError(e.message ?? 'Signing failed')
+      }
     } finally {
       setLinking(false)
     }
@@ -263,16 +293,47 @@ export default function LinkWallet() {
 
           </div>
 
-          {/* Error Message */}
+          {/* Error Message & Interactive Actions */}
           {error && (
             <div style={{
-              marginTop: '1.5rem', padding: '10px 14px',
+              marginTop: '1.5rem', padding: '12px 16px',
               background: 'rgba(239,68,68,0.08)', border: '1px solid rgba(239,68,68,0.25)',
-              borderRadius: '10px', fontSize: '12px', color: '#EF4444', fontWeight: 600,
-              display: 'flex', alignItems: 'center', gap: '8px',
+              borderRadius: '12px', fontSize: '12px', color: '#EF4444', fontWeight: 600,
+              display: 'flex', flexDirection: 'column', gap: '10px', textAlign: 'left',
             }}>
-              <IconLock size={14} color="#EF4444" />
-              {error}
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <IconLock size={14} color="#EF4444" />
+                <span>{error}</span>
+              </div>
+
+              {error.toLowerCase().includes('metamask') && (
+                <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap', marginTop: '2px' }}>
+                  <a
+                    href={`https://metamask.app.link/dapp/${window.location.href.replace(/^https?:\/\//, '')}`}
+                    target="_blank"
+                    rel="noreferrer"
+                    style={{
+                      background: '#FF7B00', color: '#FFF', padding: '6px 14px',
+                      borderRadius: '6px', fontSize: '11px', fontWeight: 700,
+                      textDecoration: 'none', display: 'inline-flex', alignItems: 'center', gap: '4px',
+                    }}
+                  >
+                    Open in MetaMask App
+                  </a>
+                  <a
+                    href="https://metamask.io/download/"
+                    target="_blank"
+                    rel="noreferrer"
+                    style={{
+                      background: 'rgba(255,255,255,0.08)', color: 'var(--ink)', padding: '6px 14px',
+                      borderRadius: '6px', fontSize: '11px', fontWeight: 700,
+                      textDecoration: 'none', border: '1px solid var(--rule)',
+                    }}
+                  >
+                    Install MetaMask Extension
+                  </a>
+                </div>
+              )}
             </div>
           )}
 
