@@ -11,25 +11,22 @@ interface RepoItem {
 }
 
 export default function Install() {
-  const [repos, setRepos] = useState<RepoItem[]>([
-    { fullName: 'soulpr/website', tracked: true },
-    { fullName: 'soulpr/core', tracked: true },
-    { fullName: 'soulpr/docs', tracked: true },
-    { fullName: 'soulpr/sdk', tracked: false },
-  ])
+  const [repos, setRepos] = useState<RepoItem[]>([])
   const [saving, setSaving] = useState(false)
   const [saved, setSaved] = useState(false)
   const [loading, setLoading] = useState(true)
+  const [installationConfigured, setInstallationConfigured] = useState(false)
+  const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {
     const loadRepos = async () => {
       try {
         const data = await api.getTrackedRepos()
-        if (data && data.repos && data.repos.length > 0) {
-          setRepos(data.repos)
-        }
+        setInstallationConfigured(data.installationConfigured)
+        setRepos(data.repos)
       } catch (err: any) {
-        console.warn('[Install] Using fallback repos:', err.message)
+        console.warn('[Install] Failed to load repositories:', err.message)
+        setError('Unable to load repository configuration. Please try again later.')
       } finally {
         setLoading(false)
       }
@@ -44,13 +41,15 @@ export default function Install() {
 
   async function saveChanges() {
     setSaving(true)
+    setError(null)
+    setSaved(false)
     try {
       const trackedList = repos.filter(r => r.tracked).map(r => r.fullName)
       await api.saveTrackedRepos(trackedList)
       setSaved(true)
     } catch (err: any) {
       console.warn('[Install] Failed to save tracked repos:', err.message)
-      setSaved(true)
+      setError(err.message || 'Unable to save repository configuration.')
     } finally {
       setSaving(false)
     }
@@ -95,7 +94,7 @@ export default function Install() {
           boxShadow: '0 20px 60px rgba(0,0,0,0.12)',
         }}>
 
-          {/* App Status Banner */}
+          {/* Configuration status banner; the UI cannot independently verify GitHub installation state. */}
           <div style={{
             display: 'flex', justifyContent: 'space-between', alignItems: 'center',
             background: 'rgba(168,85,247,0.06)', border: '1px solid rgba(168,85,247,0.2)',
@@ -110,16 +109,21 @@ export default function Install() {
               </div>
               <div>
                 <div style={{ fontWeight: 800, fontSize: '13px', color: 'var(--ink)' }}>SoulPR GitHub App</div>
-                <div style={{ fontSize: '11px', color: 'var(--ink-muted)' }}>Connected to organization</div>
+                <div style={{ fontSize: '11px', color: 'var(--ink-muted)' }}>
+                  {installationConfigured ? 'Installation ID set in backend' : 'Installation is not configured'}
+                </div>
               </div>
             </div>
 
             <span style={{
               display: 'inline-flex', alignItems: 'center', gap: '5px',
-              background: 'rgba(22,163,74,0.12)', border: '1px solid rgba(22,163,74,0.25)',
-              borderRadius: '99px', padding: '4px 12px', fontSize: '10px', color: '#16A34A', fontWeight: 800,
+              background: installationConfigured ? 'rgba(22,163,74,0.12)' : 'rgba(239,68,68,0.08)',
+              border: `1px solid ${installationConfigured ? 'rgba(22,163,74,0.25)' : 'rgba(239,68,68,0.25)'}`,
+              borderRadius: '99px', padding: '4px 12px', fontSize: '10px',
+              color: installationConfigured ? '#16A34A' : '#DC2626', fontWeight: 800,
             }}>
-              <IconShieldCheck size={12} color="#16A34A" /> Installed
+              <IconShieldCheck size={12} color={installationConfigured ? '#16A34A' : '#DC2626'} />
+              {installationConfigured ? 'ID configured' : 'Not configured'}
             </span>
           </div>
 
@@ -129,7 +133,11 @@ export default function Install() {
           </div>
 
           <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', marginBottom: '1.8rem' }}>
-            {repos.map(repo => (
+            {repos.length === 0 ? (
+              <div role={error ? 'alert' : undefined} style={{ padding: '1.25rem', border: '1px dashed var(--rule)', borderRadius: '10px', color: 'var(--ink-muted)', fontSize: '12px' }}>
+                {error || 'No repository catalog is configured on the backend.'}
+              </div>
+            ) : repos.map(repo => (
               <div
                 key={repo.fullName}
                 onClick={() => toggleRepo(repo.fullName)}
@@ -165,7 +173,7 @@ export default function Install() {
           <div style={{ display: 'flex', gap: '12px' }}>
             <button
               onClick={saveChanges}
-              disabled={saving}
+              disabled={saving || !installationConfigured || repos.length === 0}
               style={{
                 flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px',
                 background: saved ? '#16A34A' : 'linear-gradient(135deg, #FF7B00 0%, #E05300 100%)',
@@ -191,6 +199,11 @@ export default function Install() {
               Manage App <IconExternalLink size={13} color="var(--ink)" />
             </a>
           </div>
+          {error && repos.length > 0 && (
+            <div role="alert" style={{ marginTop: '12px', color: '#DC2626', fontSize: '12px' }}>
+              {error}
+            </div>
+          )}
 
         </div>
       </div>

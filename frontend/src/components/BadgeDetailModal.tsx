@@ -15,7 +15,7 @@ export interface BadgeData {
   mergeCommitSha?: string
   contributor: string
   mergeTimestamp: number
-  txHash: string
+  txHash?: string
   network: string
 }
 
@@ -122,7 +122,7 @@ export default function BadgeDetailModal({ badge, onClose }: Props) {
           </div>
           <div style={{ display: 'flex', alignItems: 'center', gap: '6px', background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,123,0,0.38)', borderRadius: '8px', padding: '5px 12px', color: '#FF7B00', fontSize: '11px', fontWeight: 700 }}>
             <IconWallet size={13} color="#FF7B00" />
-            0xA7f2...9c4E
+            {short(badge.contributor)}
             <span style={{ fontSize: '7px', opacity: 0.5 }}>▼</span>
           </div>
         </div>
@@ -413,7 +413,7 @@ export default function BadgeDetailModal({ badge, onClose }: Props) {
                 {
                   icon: <IconCode size={13} color="rgba(255,255,255,0.32)" />,
                   label: 'Standard',
-                  val: <span style={{ color: '#FFF' }}>ERC-5192 (SBT)</span>,
+                  val: <span style={{ color: '#FFF' }}>ERC-5192 (locked)</span>,
                 },
               ].map(({ icon, label, val }, i, arr) => (
                 <div key={label} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: '12.5px', padding: '10px 0', borderBottom: i < arr.length - 1 ? '1px solid rgba(255,255,255,0.04)' : 'none' }}>
@@ -453,17 +453,23 @@ export default function BadgeDetailModal({ badge, onClose }: Props) {
               <p style={{ fontSize: '12px', color: 'rgba(255,255,255,0.42)', margin: '0 0 7px', lineHeight: 1.55 }}>
                 This Soulbound Token is non-transferable and permanently bound to your wallet.
               </p>
-              <a
-                id="verify-on-explorer"
-                href={`https://testnet.monadexplorer.com/tx/${badge.txHash}`}
-                target="_blank"
-                rel="noopener noreferrer"
-                style={{ display: 'inline-flex', alignItems: 'center', gap: '5px', fontSize: '12px', color: '#FF7B00', fontWeight: 800, textDecoration: 'none', transition: 'opacity 0.15s' }}
-                onMouseEnter={e => (e.currentTarget as HTMLElement).style.opacity = '0.7'}
-                onMouseLeave={e => (e.currentTarget as HTMLElement).style.opacity = '1'}
-              >
-                Verify on Monad Explorer <IconExternalLink size={12} color="#FF7B00" />
-              </a>
+              {badge.txHash ? (
+                <a
+                  id="verify-on-explorer"
+                  href={`https://testnet.monadexplorer.com/tx/${badge.txHash}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  style={{ display: 'inline-flex', alignItems: 'center', gap: '5px', fontSize: '12px', color: '#FF7B00', fontWeight: 800, textDecoration: 'none', transition: 'opacity 0.15s' }}
+                  onMouseEnter={e => (e.currentTarget as HTMLElement).style.opacity = '0.7'}
+                  onMouseLeave={e => (e.currentTarget as HTMLElement).style.opacity = '1'}
+                >
+                  Verify on Monad Explorer <IconExternalLink size={12} color="#FF7B00" />
+                </a>
+              ) : (
+                <span style={{ fontSize: '12px', color: 'rgba(255,255,255,0.42)' }}>
+                  Transaction hash unavailable from the current on-chain lookup.
+                </span>
+              )}
             </div>
           </div>
 

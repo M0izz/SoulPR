@@ -18,7 +18,7 @@ export interface BadgeData {
   mergeCommitSha?: string;
   contributor: string;
   mergeTimestamp: number;
-  txHash: string;
+  txHash?: string;
   network: string;
 }
 
@@ -27,6 +27,14 @@ export interface BadgeData {
  * Checks for monadTestnet first, then falls back to hardhat, then returns null.
  */
 export async function getContractConfig() {
+  const configuredAddress = import.meta.env.VITE_CONTRACT_ADDRESS?.trim();
+  if (configuredAddress) {
+    if (!ethers.isAddress(configuredAddress)) {
+      throw new Error('VITE_CONTRACT_ADDRESS is not a valid Ethereum address');
+    }
+    return { address: configuredAddress, network: 'Monad testnet' };
+  }
+
   try {
     // Vite supports import.meta.glob or dynamic import
     // Let's try importing monadTestnet first, then hardhat
@@ -85,8 +93,6 @@ export async function getAttestations(walletAddress: string): Promise<BadgeData[
         mergeCommitSha: att.mergeCommitSha,
         contributor: att.contributor,
         mergeTimestamp: Number(att.mergeTimestamp),
-        // Since we are reading state, we use dummy tx hash or query logs for it if needed
-        txHash: '0x' + '0'.repeat(64), 
         network: config.network,
       });
     }

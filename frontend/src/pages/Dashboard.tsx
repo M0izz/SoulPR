@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
+import { ethers } from 'ethers'
 import BadgeDetailModal, { type BadgeData } from '../components/BadgeDetailModal'
 import { getAttestations } from '../lib/contract'
 import api from '../lib/api'
@@ -189,7 +190,7 @@ function SettingsPanel({
           <div style={{ fontSize: '12px', color: 'var(--ink-muted)', marginBottom: '12px' }}>Your on-chain identity for SBT minting on Monad</div>
           <div style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '10px 14px', border: '1px solid rgba(255,123,0,0.25)', borderRadius: '8px', background: 'rgba(255,123,0,0.06)', color: '#FF7B00', fontSize: '12px', fontWeight: 700, fontFamily: 'var(--font-mono)' }}>
             <IconWallet size={14} color="#FF7B00" />
-            {walletAddress || '0xA7f2d5e3052E9B663a8a3f5a70966a3f457c19e5'}
+            {walletAddress || 'No wallet linked'}
           </div>
         </div>
 
@@ -271,6 +272,7 @@ function OverviewPanel({
   onViewAll,
   onNavTo,
   onSearch,
+  navigate,
 }: {
   badges: BadgeData[]
   ghStats: GitHubStats | null
@@ -279,6 +281,7 @@ function OverviewPanel({
   onViewAll: () => void
   onNavTo: (id: NavId) => void
   onSearch: () => void
+  navigate: (path: string) => void
 }) {
   // Real metrics calculation
   const mergedPRsCount = ghStats?.mergedPrCount ?? badges.length
@@ -487,6 +490,7 @@ export default function Dashboard() {
   const [selected, setSelected] = useState<BadgeData | null>(null)
   const [loading, setLoading] = useState(false)
   const [loadingStats, setLoadingStats] = useState(true)
+  const [lookupError, setLookupError] = useState<string | null>(null)
   const [showSearchModal, setShowSearchModal] = useState(false)
   const [activeNav, setActiveNav] = useState<NavId>('overview')
   const [userGithub, setUserGithub] = useState<string>('moizz')
@@ -497,7 +501,7 @@ export default function Dashboard() {
     async function initDashboard() {
       setLoadingStats(true)
       let currentGhUser = 'moizz'
-      let currentWallet = '0xA7f2d5e3052E9B663a8a3f5a70966a3f457c19e5'
+      let currentWallet: string | null = null
 
       try {
         const status = await api.getWalletStatus()
@@ -518,15 +522,16 @@ export default function Dashboard() {
       setGhStats(stats)
 
       // Fetch real on-chain attestations for wallet
-      try {
-        const live = await getAttestations(currentWallet)
-        setBadges(live)
-      } catch (err) {
-        console.warn('[Dashboard] Attestation fetch fallback:', err)
-        setBadges([])
-      } finally {
-        setLoadingStats(false)
+      if (currentWallet) {
+        try {
+          const live = await getAttestations(currentWallet)
+          setBadges(live)
+        } catch (err) {
+          console.warn('[Dashboard] Attestation fetch failed:', err)
+          setBadges([])
+        }
       }
+      setLoadingStats(false)
     }
 
     initDashboard()
@@ -537,40 +542,49 @@ export default function Dashboard() {
     if (!lookupQuery.trim()) return
     setLoading(true)
     setLoadingStats(true)
+    setLookupError(null)
+    setBadges([])
     const target = lookupQuery.trim().replace(/^@/, '')
-    let resolvedWallet = target
-
-    if (!target.startsWith('0x') || target.length !== 42) {
-      // Lookup GitHub handle
-      setUserGithub(target)
-      const ghData = await fetchGitHubUserStats(target)
-      if (ghData) {
-        setGhStats(ghData)
-      }
-      try {
-        const res = await fetch(`/api/wallet/resolve?query=${encodeURIComponent(target)}`)
-        if (res.ok) {
-          const d = await res.json()
-          resolvedWallet = d.walletAddress
-        } else {
-          resolvedWallet = '0xA7f2d5e3052E9B663a8a3f5a70966a3f457c19e5'
-        }
-      } catch {
-        resolvedWallet = '0xA7f2d5e3052E9B663a8a3f5a70966a3f457c19e5'
-      }
-    } else {
-      setUserWallet(target)
-    }
-
     try {
+      let resolvedWallet: string
+      if (ethers.isAddress(target)) {
+        resolvedWallet = target
+        setUserWallet(target)
+        setGhStats(null)
+      } else {
+        setUserGithub(target)
+        setUserWallet(null)
+        const ghData = await fetchGitHubUserStats(target)
+        setGhStats(ghData)
+
+        const data = await api.resolveWallet(target)
+        if (data === null) {
+          setLookupError('No wallet is linked to this GitHub account. Link a wallet to view its SBTs.')
+          return
+        }
+
+        if (
+          typeof data !== 'object' ||
+          data === null ||
+          !('walletAddress' in data) ||
+          typeof data.walletAddress !== 'string' ||
+          !ethers.isAddress(data.walletAddress)
+        ) {
+          throw new Error('Wallet lookup returned an invalid address')
+        }
+        resolvedWallet = data.walletAddress
+      }
+
       const live = await getAttestations(resolvedWallet)
       setBadges(live)
-    } catch {
+      setShowSearchModal(false)
+    } catch (err) {
+      console.warn('[Dashboard] Contributor lookup failed:', err)
       setBadges([])
+      setLookupError('Unable to look up this contributor. Please try again.')
     } finally {
       setLoading(false)
       setLoadingStats(false)
-      setShowSearchModal(false)
     }
   }
 
@@ -590,7 +604,7 @@ export default function Dashboard() {
 
   const displayWallet = userWallet
     ? `${userWallet.slice(0, 6)}...${userWallet.slice(-4)}`
-    : '0xA7f2...19e5'
+    : 'Not linked'
 
   return (
     <div style={{ display: 'flex', minHeight: '100vh', background: 'var(--paper)', color: 'var(--ink)', fontFamily: 'var(--font-body)', overflowX: 'hidden', transition: 'background 0.3s, color 0.3s' }}>
@@ -635,7 +649,10 @@ export default function Dashboard() {
           <div style={{ fontSize: '11px', color: 'var(--ink-muted)', marginBottom: '14px', lineHeight: 1.5 }}>Your proof is your superpower.</div>
           <button
             id="sidebar-lookup-btn"
-            onClick={() => setShowSearchModal(true)}
+            onClick={() => {
+              setLookupError(null)
+              setShowSearchModal(true)
+            }}
             style={{ width: '100%', background: '#FF7B00', color: '#FFF', border: 'none', borderRadius: '6px', padding: '7px 0', fontSize: '11px', fontWeight: 700, cursor: 'pointer' }}
           >
             Look up a contributor
@@ -683,7 +700,11 @@ export default function Dashboard() {
             onSelect={setSelected}
             onViewAll={() => setActiveNav('contributions')}
             onNavTo={setActiveNav}
-            onSearch={() => setShowSearchModal(true)}
+            onSearch={() => {
+              setLookupError(null)
+              setShowSearchModal(true)
+            }}
+            navigate={navigate}
           />
         )}
         {activeNav === 'sbts' && <SBTsPanel badges={badges} onSelect={setSelected} />}
@@ -712,7 +733,10 @@ export default function Dashboard() {
                 id="lookup-input"
                 placeholder="GitHub username or wallet address"
                 value={query}
-                onChange={e => setQuery(e.target.value)}
+                onChange={e => {
+                  setQuery(e.target.value)
+                  setLookupError(null)
+                }}
                 onKeyDown={e => e.key === 'Enter' && handleLookup(query)}
                 style={{ flex: 1, padding: '10px 14px', border: '1px solid var(--rule)', borderRadius: '8px', fontSize: '13px', fontFamily: 'inherit', outline: 'none', color: 'var(--ink)', background: 'var(--paper)' }}
               />
@@ -720,6 +744,11 @@ export default function Dashboard() {
                 {loading ? '...' : 'Search'}
               </button>
             </div>
+            {lookupError && (
+              <div role="alert" style={{ marginTop: '10px', color: '#DC2626', fontSize: '12px' }}>
+                {lookupError}
+              </div>
+            )}
           </div>
         </div>
       )}

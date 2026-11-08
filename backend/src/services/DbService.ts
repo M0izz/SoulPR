@@ -1,4 +1,5 @@
-import * as admin from "firebase-admin";
+import { cert, initializeApp } from "firebase-admin/app";
+import { getFirestore } from "firebase-admin/firestore";
 
 export interface WalletLink {
   githubUsername: string;
@@ -38,10 +39,10 @@ class DbService {
     if (serviceAccountVar) {
       try {
         const serviceAccount = JSON.parse(serviceAccountVar);
-        admin.initializeApp({
-          credential: admin.credential.cert(serviceAccount),
+        initializeApp({
+          credential: cert(serviceAccount),
         });
-        this.db = admin.firestore();
+        this.db = getFirestore();
         console.log("[DbService] Firebase Firestore initialized successfully");
       } catch (e: any) {
         console.error("[DbService] Error parsing FIREBASE_SERVICE_ACCOUNT_JSON, falling back to memory db:", e.message);
@@ -104,30 +105,64 @@ class DbService {
     const usernameLower = mint.githubUsername.toLowerCase();
     if (this.isFallback) {
       const list = this.memoryPendingMints.get(usernameLower) ?? [];
+      if (list.some((item) => item.repo === mint.repo && item.prNumber === mint.prNumber)) return;
       list.push(mint);
       this.memoryPendingMints.set(usernameLower, list);
       return;
     }
-    const docId = `${mint.repo.replace("/", "-")}-${mint.prNumber}`;
-    await this.db.collection("pendingMints").doc(docId).set(mint);
+    await this.db.collection("pendingMints").doc(this.pendingMintDocId(mint)).set(mint);
   }
 
-  async deletePendingMints(githubUsername: string): Promise<void> {
+  private pendingMintDocId(mint: PendingMint) {
+    return `${encodeURIComponent(mint.repo)}-${mint.prNumber}`;
+  }
+
+  async deletePendingMints(githubUsername: string, processedMints?: PendingMint[]): Promise<void> {
     const usernameLower = githubUsername.toLowerCase();
     if (this.isFallback) {
+      if (processedMints) {
+        const processedIds = new Set(processedMints.map((mint) => `${mint.repo}-${mint.prNumber}`));
+        const remaining = (this.memoryPendingMints.get(usernameLower) ?? []).filter(
+          (mint) => !processedIds.has(`${mint.repo}-${mint.prNumber}`)
+        );
+        if (remaining.length > 0) this.memoryPendingMints.set(usernameLower, remaining);
+        else this.memoryPendingMints.delete(usernameLower);
+        return;
+      }
       this.memoryPendingMints.delete(usernameLower);
       return;
     }
+    if (processedMints) {
+      const collection = this.db.collection("pendingMints");
+      for (let offset = 0; offset < processedMints.length; offset += 500) {
+        const batch = this.db.batch();
+        for (const mint of processedMints.slice(offset, offset + 500)) {
+          batch.delete(collection.doc(this.pendingMintDocId(mint)));
+        }
+        await batch.commit();
+      }
+      return;
+    }
+
     const snapshot = await this.db
       .collection("pendingMints")
       .where("githubUsername", "==", usernameLower)
       .get();
 
-    const batch = this.db.batch();
-    snapshot.forEach((doc: any) => {
-      batch.delete(doc.ref);
-    });
-    await batch.commit();
+    const docs = snapshot.docs as any[];
+    for (let offset = 0; offset < docs.length; offset += 500) {
+      const batch = this.db.batch();
+      for (const doc of docs.slice(offset, offset + 500)) {
+        batch.delete(doc.ref);
+      }
+      await batch.commit();
+    }
+  }
+
+  async listPendingUsernames(): Promise<string[]> {
+    if (this.isFallback) return Array.from(this.memoryPendingMints.keys());
+    const snapshot = await this.db.collection("pendingMints").select("githubUsername").get();
+    return Array.from(new Set(snapshot.docs.map((doc: any) => doc.get("githubUsername") as string)));
   }
 
   // --- Tracked Repositories ---
