@@ -14,6 +14,7 @@ export default function LinkWallet() {
   const [githubUser, setGithubUser] = useState<string | null>(null)
   const [wallet, setWallet] = useState<string | null>(null)
   const [linking, setLinking] = useState(false)
+  const [checkingStatus, setCheckingStatus] = useState(true)
   const [linked, setLinked] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
@@ -36,6 +37,9 @@ export default function LinkWallet() {
         }
       } catch (err: any) {
         console.warn('[LinkWallet] Session status check:', err.message)
+        setError('Unable to check your current wallet link. You can continue with the setup below.')
+      } finally {
+        setCheckingStatus(false)
       }
     }
     checkStatus()
@@ -120,8 +124,8 @@ export default function LinkWallet() {
   // Success view
   if (linked) {
     return (
-      <main style={{ minHeight: 'calc(100vh - 90px)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '2rem 1rem' }}>
-        <div style={{
+      <main className="wallet-page" style={{ minHeight: 'calc(100vh - 90px)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '2rem 1rem' }}>
+        <div className="wallet-success-card" style={{
           background: 'rgba(255,255,255,0.03)',
           border: '1px solid rgba(255,123,0,0.25)',
           borderRadius: '20px', padding: '3rem 2.5rem',
@@ -166,7 +170,7 @@ export default function LinkWallet() {
   }
 
   return (
-    <main style={{ minHeight: 'calc(100vh - 90px)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '3rem 1.5rem' }}>
+    <main className="wallet-page" style={{ minHeight: 'calc(100vh - 90px)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '3rem 1.5rem' }}>
       <div style={{ maxWidth: '520px', width: '100%' }}>
 
         {/* Card Header */}
@@ -188,7 +192,7 @@ export default function LinkWallet() {
         </div>
 
         {/* Card Body */}
-        <div style={{
+        <div className="wallet-card" style={{
           background: 'rgba(255,255,255,0.03)',
           border: '1px solid rgba(78,66,56,0.25)',
           borderRadius: '20px', padding: '2rem 2.2rem',
@@ -197,6 +201,12 @@ export default function LinkWallet() {
         }}>
 
           <div style={{ display: 'flex', flexDirection: 'column', gap: '1.8rem' }}>
+            {checkingStatus && (
+              <div role="status" aria-live="polite" style={{ display: 'flex', alignItems: 'center', gap: '8px', color: 'var(--ink-muted)', fontSize: '12px' }}>
+                <span className="spinner" aria-hidden="true" />
+                Checking your current wallet link...
+              </div>
+            )}
 
             {/* Step 1: GitHub */}
             <div style={{ display: 'flex', gap: '1rem', alignItems: 'flex-start' }}>
@@ -276,6 +286,7 @@ export default function LinkWallet() {
                   <button
                     onClick={signAndLink}
                     disabled={linking}
+                    aria-busy={linking}
                     style={{
                       display: 'inline-flex', alignItems: 'center', gap: '8px',
                       background: 'linear-gradient(135deg, #FF7B00 0%, #E05300 100%)',
@@ -295,7 +306,7 @@ export default function LinkWallet() {
 
           {/* Error Message & Interactive Actions */}
           {error && (
-            <div style={{
+            <div className="status-message" role="alert" aria-live="assertive" style={{
               marginTop: '1.5rem', padding: '12px 16px',
               background: 'rgba(239,68,68,0.08)', border: '1px solid rgba(239,68,68,0.25)',
               borderRadius: '12px', fontSize: '12px', color: '#EF4444', fontWeight: 600,

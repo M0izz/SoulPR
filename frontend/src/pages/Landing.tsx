@@ -16,6 +16,7 @@ export default function Landing() {
   ) => (
     <div
       key={title}
+      className="landing-feature-card"
       style={{
         padding: '1.8rem',
         borderRadius: '16px',
@@ -81,7 +82,7 @@ export default function Landing() {
   )
 
   return (
-    <div style={{ position: 'relative', overflow: 'hidden', minHeight: '100vh', background: 'var(--paper)', color: 'var(--ink)', transition: 'background 0.3s, color 0.3s' }}>
+    <div className="landing-page" style={{ position: 'relative', overflow: 'hidden', minHeight: '100vh', background: 'var(--paper)', color: 'var(--ink)', transition: 'background 0.3s, color 0.3s' }}>
 
       {/* Floating ember particles */}
       <div className="forge-embers" aria-hidden="true">
@@ -101,10 +102,10 @@ export default function Landing() {
 
       <Nav />
 
-      <main style={{ padding: '5rem 2rem 5rem', position: 'relative', zIndex: 5, maxWidth: '1240px', margin: '0 auto' }}>
+      <main className="landing-main" style={{ padding: '5rem 2rem 5rem', position: 'relative', zIndex: 5, maxWidth: '1240px', margin: '0 auto' }}>
 
         {/* 2-Column Hero */}
-        <div style={{ display: 'grid', gridTemplateColumns: '1.15fr 0.85fr', gap: '4rem', alignItems: 'center', marginBottom: '5rem' }}>
+        <div className="landing-hero-grid" style={{ display: 'grid', gridTemplateColumns: '1.15fr 0.85fr', gap: '4rem', alignItems: 'center', marginBottom: '5rem' }}>
 
           {/* Left column */}
           <div className="animate-fade-in" style={{ display: 'flex', flexDirection: 'column', textAlign: 'left' }}>
@@ -324,7 +325,7 @@ export default function Landing() {
         <div style={{ height: '1px', background: 'rgba(78, 66, 56, 0.28)', marginBottom: '3.5rem' }} />
 
         {/* Feature cards row */}
-        <div id="features" style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '1.5rem', scrollMarginTop: '100px' }}>
+        <div id="features" className="landing-feature-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '1.5rem', scrollMarginTop: '100px' }}>
           {featureCard(
             <IconShield size={16} color="#FF7B00" />,
             'Soulbound',
@@ -352,7 +353,7 @@ export default function Landing() {
         </div>
 
         {/* How It Works section */}
-        <div id="how-it-works" style={{ marginTop: '5rem', padding: '3.5rem 2.5rem', background: 'var(--paper-raised)', border: '1px solid var(--rule)', borderRadius: '20px', textAlign: 'center', scrollMarginTop: '100px' }}>
+        <div id="how-it-works" className="landing-section" style={{ marginTop: '5rem', padding: '3.5rem 2.5rem', background: 'var(--paper-raised)', border: '1px solid var(--rule)', borderRadius: '20px', textAlign: 'center', scrollMarginTop: '100px' }}>
           <div style={{ fontSize: '10px', fontWeight: 800, color: '#FF7B00', letterSpacing: '0.12em', textTransform: 'uppercase', marginBottom: '10px' }}>
             HOW IT WORKS & FAQ
           </div>
@@ -389,7 +390,7 @@ export default function Landing() {
         </div>
 
         {/* About section */}
-        <div id="about" style={{ marginTop: '4rem', padding: '4rem 2.5rem', background: 'var(--paper-raised)', border: '1px solid var(--rule)', borderRadius: '20px', textAlign: 'center', scrollMarginTop: '100px' }}>
+        <div id="about" className="landing-section" style={{ marginTop: '4rem', padding: '4rem 2.5rem', background: 'var(--paper-raised)', border: '1px solid var(--rule)', borderRadius: '20px', textAlign: 'center', scrollMarginTop: '100px' }}>
           <div style={{ fontSize: '10px', fontWeight: 800, color: '#FF7B00', letterSpacing: '0.12em', textTransform: 'uppercase', marginBottom: '10px' }}>
             ABOUT SOULPR
           </div>
@@ -401,7 +402,7 @@ export default function Landing() {
           </p>
 
           {/* About Pillars Grid */}
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '1.5rem', textAlign: 'left' }}>
+          <div className="landing-about-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '1.5rem', textAlign: 'left' }}>
             <div style={{ padding: '1.5rem', background: 'rgba(255,255,255,0.02)', border: '1px solid var(--rule)', borderRadius: '14px' }}>
               <div style={{ color: '#FF7B00', fontWeight: 800, fontSize: '14px', marginBottom: '8px', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
                 01. Trustless Reputation

@@ -58,13 +58,15 @@ export default function Install() {
   if (loading) {
     return (
       <main style={{ minHeight: 'calc(100vh - 90px)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-        <div style={{ fontSize: '13px', color: 'var(--ink-muted)', fontWeight: 600 }}>Loading repositories...</div>
+        <div role="status" aria-live="polite" style={{ fontSize: '13px', color: 'var(--ink-muted)', fontWeight: 600 }}>
+          <span className="spinner" aria-hidden="true" /> Loading repositories...
+        </div>
       </main>
     )
   }
 
   return (
-    <main style={{ minHeight: 'calc(100vh - 90px)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '3rem 1.5rem' }}>
+    <main className="install-page" style={{ minHeight: 'calc(100vh - 90px)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '3rem 1.5rem' }}>
       <div style={{ maxWidth: '560px', width: '100%' }}>
 
         {/* Header */}
@@ -86,7 +88,7 @@ export default function Install() {
         </div>
 
         {/* Card */}
-        <div style={{
+        <div className="install-card" style={{
           background: 'rgba(255,255,255,0.03)',
           border: '1px solid rgba(78,66,56,0.25)',
           borderRadius: '20px', padding: '2rem 2.2rem',
@@ -95,7 +97,7 @@ export default function Install() {
         }}>
 
           {/* Configuration status banner; the UI cannot independently verify GitHub installation state. */}
-          <div style={{
+          <div className="install-status" style={{
             display: 'flex', justifyContent: 'space-between', alignItems: 'center',
             background: 'rgba(168,85,247,0.06)', border: '1px solid rgba(168,85,247,0.2)',
             borderRadius: '12px', padding: '1rem 1.2rem', marginBottom: '1.8rem',
@@ -140,7 +142,18 @@ export default function Install() {
             ) : repos.map(repo => (
               <div
                 key={repo.fullName}
+                role="checkbox"
+                tabIndex={0}
+                aria-checked={repo.tracked}
+                aria-label={`Track repository ${repo.fullName}`}
+                className="install-repo-option"
                 onClick={() => toggleRepo(repo.fullName)}
+                onKeyDown={event => {
+                  if (event.key === 'Enter' || event.key === ' ') {
+                    event.preventDefault()
+                    toggleRepo(repo.fullName)
+                  }
+                }}
                 style={{
                   display: 'flex', justifyContent: 'space-between', alignItems: 'center',
                   padding: '12px 14px', borderRadius: '10px',
@@ -170,10 +183,11 @@ export default function Install() {
           </div>
 
           {/* Action buttons */}
-          <div style={{ display: 'flex', gap: '12px' }}>
+          <div className="install-actions" style={{ display: 'flex', gap: '12px' }}>
             <button
               onClick={saveChanges}
               disabled={saving || !installationConfigured || repos.length === 0}
+              aria-busy={saving}
               style={{
                 flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px',
                 background: saved ? '#16A34A' : 'linear-gradient(135deg, #FF7B00 0%, #E05300 100%)',
@@ -200,10 +214,11 @@ export default function Install() {
             </a>
           </div>
           {error && repos.length > 0 && (
-            <div role="alert" style={{ marginTop: '12px', color: '#DC2626', fontSize: '12px' }}>
+            <div className="status-message" role="alert" aria-live="assertive" style={{ marginTop: '12px', color: '#DC2626', fontSize: '12px' }}>
               {error}
             </div>
           )}
+          {saved && <div role="status" aria-live="polite" style={{ marginTop: '12px', color: 'var(--success)', fontSize: '12px', fontWeight: 700 }}>Repository configuration saved.</div>}
 
         </div>
       </div>

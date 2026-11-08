@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { Link } from 'react-router-dom'
 import {
   IconArrowLeft, IconCheck, IconCopy, IconCalendar,
@@ -56,6 +56,43 @@ const STARS = [
 
 export default function BadgeDetailModal({ badge, onClose }: Props) {
   const [copied, setCopied] = useState(false)
+  const rootRef = useRef<HTMLDivElement>(null)
+  const backButtonRef = useRef<HTMLButtonElement>(null)
+
+  useEffect(() => {
+    const previousFocus = document.activeElement instanceof HTMLElement ? document.activeElement : null
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') {
+        onClose()
+        return
+      }
+
+      if (event.key === 'Tab') {
+        const focusable = rootRef.current?.querySelectorAll<HTMLElement>(
+          'a[href], button:not(:disabled), input:not(:disabled), [tabindex]:not([tabindex="-1"])',
+        )
+        if (!focusable?.length) return
+
+        const first = focusable[0]
+        const last = focusable[focusable.length - 1]
+        if (event.shiftKey && document.activeElement === first) {
+          event.preventDefault()
+          last.focus()
+        } else if (!event.shiftKey && document.activeElement === last) {
+          event.preventDefault()
+          first.focus()
+        }
+      }
+    }
+
+    window.addEventListener('keydown', handleKeyDown)
+    backButtonRef.current?.focus()
+
+    return () => {
+      window.removeEventListener('keydown', handleKeyDown)
+      previousFocus?.focus()
+    }
+  }, [onClose])
 
   function copyAddr() {
     navigator.clipboard.writeText(badge.contributor).then(() => {
@@ -65,7 +102,7 @@ export default function BadgeDetailModal({ badge, onClose }: Props) {
   }
 
   return (
-    <div style={{
+    <div ref={rootRef} className="proof-detail-root" role="dialog" aria-modal="true" aria-labelledby="proof-detail-title" style={{
       position: 'fixed', inset: 0, zIndex: 1000,
       background: '#08060F',
       display: 'flex', flexDirection: 'column',
@@ -74,7 +111,7 @@ export default function BadgeDetailModal({ badge, onClose }: Props) {
     }}>
 
       {/* ── TOP NAVIGATION ── */}
-      <nav style={{
+      <nav className="proof-detail-nav" aria-label="Proof navigation" style={{
         display: 'flex', justifyContent: 'space-between', alignItems: 'center',
         padding: '0.7rem 2rem',
         background: 'rgba(8, 6, 15, 0.95)',
@@ -131,6 +168,9 @@ export default function BadgeDetailModal({ badge, onClose }: Props) {
       {/* ── BACK LINK ── */}
       <div style={{ padding: '1rem 2rem 0', flexShrink: 0 }}>
         <button
+          ref={backButtonRef}
+          type="button"
+          aria-label="Close proof details and return to dashboard"
           onClick={onClose}
           style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', background: 'none', border: 'none', cursor: 'pointer', color: 'rgba(255,255,255,0.45)', fontSize: '13px', fontWeight: 600, padding: 0, transition: 'color 0.15s' }}
           onMouseEnter={e => (e.currentTarget as HTMLElement).style.color = '#FFF'}
@@ -141,12 +181,12 @@ export default function BadgeDetailModal({ badge, onClose }: Props) {
       </div>
 
       {/* ── MAIN CONTENT ── */}
-      <div style={{ display: 'grid', gridTemplateColumns: '400px 1fr', flex: 1, minHeight: '600px' }}>
+      <div className="proof-detail-layout" style={{ display: 'grid', gridTemplateColumns: '400px 1fr', flex: 1, minHeight: '600px' }}>
 
         {/* ══════════════════════════════════════
             LEFT COLUMN — Holographic SBT Card
             ══════════════════════════════════════ */}
-        <div style={{
+        <div className="proof-detail-art" style={{
           background: 'linear-gradient(160deg, #1e1040 0%, #0e082a 45%, #130a30 100%)',
           position: 'relative', overflow: 'hidden',
           display: 'flex', flexDirection: 'column',
@@ -323,7 +363,7 @@ export default function BadgeDetailModal({ badge, onClose }: Props) {
         {/* ══════════════════════════════════════
             RIGHT COLUMN — Details
             ══════════════════════════════════════ */}
-        <div style={{ padding: '2.5rem 3rem', color: '#FFF', background: '#0A0814', overflowY: 'auto' }}>
+        <div className="proof-detail-info" style={{ padding: '2.5rem 3rem', color: '#FFF', background: '#0A0814', overflowY: 'auto' }}>
 
           {/* ACHIEVEMENT SBT + Valid SBT */}
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '10px' }}>
@@ -336,7 +376,7 @@ export default function BadgeDetailModal({ badge, onClose }: Props) {
           </div>
 
           {/* Title */}
-          <h1 style={{ fontSize: '30px', fontWeight: 900, color: '#FFF', margin: '0 0 12px', lineHeight: 1.15 }}>
+          <h1 id="proof-detail-title" style={{ fontSize: '30px', fontWeight: 900, color: '#FFF', margin: '0 0 12px', lineHeight: 1.15 }}>
             Open Source Contributor
           </h1>
 
