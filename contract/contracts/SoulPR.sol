@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: UNLICENSED
 pragma solidity ^0.8.24;
 
 import "@openzeppelin/contracts/token/ERC721/ERC721.sol";
@@ -54,6 +54,7 @@ contract SoulPR is ERC721, Ownable {
     );
 
     event BackendMinterUpdated(address indexed oldMinter, address indexed newMinter);
+    event Locked(uint256 tokenId);
 
     // -------------------------------------------------------------------------
     // State
@@ -112,6 +113,7 @@ contract SoulPR is ERC721, Ownable {
 
         uint256 tokenId = _tokenIdCounter++;
         _mint(contributor, tokenId);
+        emit Locked(tokenId);
 
         attestations[tokenId] = Attestation({
             contributor: contributor,
@@ -146,6 +148,7 @@ contract SoulPR is ERC721, Ownable {
         _requireOwned(tokenId);
 
         Attestation memory a = attestations[tokenId];
+        string memory escapedRepo = _escapeXml(a.repo);
 
         // Generate base64 SVG representation of the badge
         string memory svg = string(abi.encodePacked(
@@ -153,7 +156,7 @@ contract SoulPR is ERC721, Ownable {
             '<rect width="200" height="200" fill="#1b1815"/>',
             '<text x="20" y="80" font-family="sans-serif" font-size="16" fill="#ff6a1a" font-weight="bold">SoulPR Badge</text>',
             '<text x="20" y="110" font-family="sans-serif" font-size="12" fill="#f2ede6">#', prNumberToString(a.prNumber), '</text>',
-            '<text x="20" y="130" font-family="sans-serif" font-size="10" fill="#a69c8d">', a.repo, '</text>',
+            '<text x="20" y="130" font-family="sans-serif" font-size="10" fill="#a69c8d">', escapedRepo, '</text>',
             '</svg>'
         ));
 
@@ -164,14 +167,14 @@ contract SoulPR is ERC721, Ownable {
 
         string memory json = string(abi.encodePacked(
             '{"name":"SoulPR Contribution Badge #', tokenId.toString(), '",',
-            '"description":"', a.prTitle, '",',
+            '"description":"', _escapeJson(a.prTitle), '",',
             '"image":"', imageURI, '",',
             '"attributes":[',
-                '{"trait_type":"Repository","value":"',  a.repo, '"},',
+                '{"trait_type":"Repository","value":"',  _escapeJson(a.repo), '"},',
                 '{"trait_type":"Pull Request","value":"#', a.prNumber.toString(), '"},',
-                '{"trait_type":"PR Title","value":"',      a.prTitle, '"},',
-                '{"trait_type":"GitHub Username","value":"', a.githubUsername, '"},',
-                '{"trait_type":"Merge Commit SHA","value":"', a.mergeCommitSha, '"},',
+                '{"trait_type":"PR Title","value":"',      _escapeJson(a.prTitle), '"},',
+                '{"trait_type":"GitHub Username","value":"', _escapeJson(a.githubUsername), '"},',
+                '{"trait_type":"Merge Commit SHA","value":"', _escapeJson(a.mergeCommitSha), '"},',
                 '{"trait_type":"Contributor","value":"',  Strings.toHexString(a.contributor), '"},',
                 '{"trait_type":"Merged","value":',        a.mergeTimestamp.toString(), '},',
                 '{"trait_type":"Network","value":"Monad testnet"}',
@@ -186,6 +189,91 @@ contract SoulPR is ERC721, Ownable {
 
     function prNumberToString(uint256 value) internal pure returns (string memory) {
         return value.toString();
+    }
+
+    function locked(uint256 tokenId) external view returns (bool) {
+        _requireOwned(tokenId);
+        return true;
+    }
+
+    function supportsInterface(bytes4 interfaceId) public view override returns (bool) {
+        return interfaceId == 0xb45a3c0e || super.supportsInterface(interfaceId);
+    }
+
+    function _escapeJson(string memory value) private pure returns (string memory) {
+        bytes memory input = bytes(value);
+        bytes memory output = new bytes(input.length * 6);
+        uint256 outputLength;
+        for (uint256 i; i < input.length; i++) {
+            uint8 character = uint8(input[i]);
+            if (character < 0x20) {
+                output[outputLength++] = 0x5c;
+                output[outputLength++] = 0x75;
+                output[outputLength++] = 0x30;
+                output[outputLength++] = 0x30;
+                output[outputLength++] = _hexChar(character >> 4);
+                output[outputLength++] = _hexChar(character & 0x0f);
+            } else if (character == 0x22 || character == 0x5c) {
+                output[outputLength++] = 0x5c;
+                output[outputLength++] = input[i];
+            } else {
+                output[outputLength++] = input[i];
+            }
+        }
+        assembly {
+            mstore(output, outputLength)
+        }
+        return string(output);
+    }
+
+    function _escapeXml(string memory value) private pure returns (string memory) {
+        bytes memory input = bytes(value);
+        bytes memory output = new bytes(input.length * 6);
+        uint256 outputLength;
+        for (uint256 i; i < input.length; i++) {
+            uint8 character = uint8(input[i]);
+            if (character == 0x26) {
+                output[outputLength++] = 0x26;
+                output[outputLength++] = 0x61;
+                output[outputLength++] = 0x6d;
+                output[outputLength++] = 0x70;
+                output[outputLength++] = 0x3b;
+            } else if (character == 0x3c) {
+                output[outputLength++] = 0x26;
+                output[outputLength++] = 0x6c;
+                output[outputLength++] = 0x74;
+                output[outputLength++] = 0x3b;
+            } else if (character == 0x3e) {
+                output[outputLength++] = 0x26;
+                output[outputLength++] = 0x67;
+                output[outputLength++] = 0x74;
+                output[outputLength++] = 0x3b;
+            } else if (character == 0x22) {
+                output[outputLength++] = 0x26;
+                output[outputLength++] = 0x71;
+                output[outputLength++] = 0x75;
+                output[outputLength++] = 0x6f;
+                output[outputLength++] = 0x74;
+                output[outputLength++] = 0x3b;
+            } else if (character == 0x27) {
+                output[outputLength++] = 0x26;
+                output[outputLength++] = 0x61;
+                output[outputLength++] = 0x70;
+                output[outputLength++] = 0x6f;
+                output[outputLength++] = 0x73;
+                output[outputLength++] = 0x3b;
+            } else {
+                output[outputLength++] = input[i];
+            }
+        }
+        assembly {
+            mstore(output, outputLength)
+        }
+        return string(output);
+    }
+
+    function _hexChar(uint8 value) private pure returns (bytes1) {
+        return bytes1(value < 10 ? value + 0x30 : value + 0x57);
     }
 
     // -------------------------------------------------------------------------

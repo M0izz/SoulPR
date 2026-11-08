@@ -1,4 +1,4 @@
-const BACKEND_URL = import.meta.env.VITE_BACKEND_URL ?? 'http://localhost:3001';
+const BACKEND_URL = (import.meta.env.VITE_BACKEND_URL ?? 'http://localhost:3001').replace(/\/+$/, '');
 
 async function request(path: string, options: RequestInit = {}) {
   // Always include credentials (cookies) for session tracking
@@ -29,8 +29,7 @@ export interface RepoItem {
 }
 
 export interface ReposResponse {
-  githubAppInstalled: boolean;
-  installationId: string;
+  installationConfigured: boolean;
   repos: RepoItem[];
 }
 
@@ -40,6 +39,20 @@ export const api = {
    */
   async getWalletStatus(): Promise<WalletStatusResponse> {
     return request('/wallet/status');
+  },
+
+  /**
+   * Resolves a wallet address or GitHub username to a linked wallet.
+   */
+  async resolveWallet(query: string): Promise<unknown | null> {
+    const response = await fetch(`${BACKEND_URL}/wallet/resolve?query=${encodeURIComponent(query)}`, {
+      credentials: 'include',
+    });
+    if (response.status === 404) return null;
+    if (!response.ok) {
+      throw new Error(`Wallet lookup failed with status ${response.status}`);
+    }
+    return response.json();
   },
 
   /**

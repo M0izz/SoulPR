@@ -2,6 +2,25 @@ import dbService, { PendingMint } from "./DbService";
 import chainService from "./ChainService";
 
 class MintService {
+  private drainingUsers = new Set<string>();
+
+  async getTrackedRepos(installationId: string): Promise<string[]> {
+    return dbService.getTrackedRepos(installationId);
+  }
+
+  async retryPendingMints() {
+    for (const githubUsername of await dbService.listPendingUsernames()) {
+      try {
+        const walletLink = await dbService.getWalletLink(githubUsername);
+        if (walletLink) {
+          await this.drainPendingQueue(githubUsername, walletLink.walletAddress);
+        }
+      } catch (error) {
+        console.error(`[MintService] Retry failed for ${githubUsername}:`, error);
+      }
+    }
+  }
+
   /**
    * Processes a new merged PR webhook event
    */
@@ -55,6 +74,18 @@ class MintService {
    * Drains the pending mints queue for a user when they link their wallet
    */
   async drainPendingQueue(githubUsername: string, walletAddress: string) {
+    const usernameLower = githubUsername.toLowerCase();
+    if (this.drainingUsers.has(usernameLower)) return;
+    this.drainingUsers.add(usernameLower);
+
+    try {
+      await this.drainUserQueue(usernameLower, walletAddress);
+    } finally {
+      this.drainingUsers.delete(usernameLower);
+    }
+  }
+
+  private async drainUserQueue(githubUsername: string, walletAddress: string) {
     console.log(`[MintService] Draining pending queue for ${githubUsername} to wallet ${walletAddress}`);
     
     const pending = await dbService.getPendingMints(githubUsername);
@@ -92,7 +123,7 @@ class MintService {
     }
 
     // Clear the pending queue on success
-    await dbService.deletePendingMints(githubUsername);
+    await dbService.deletePendingMints(githubUsername, pending);
     console.log(`[MintService] Cleared pending queue for ${githubUsername}`);
   }
 }

@@ -44,11 +44,11 @@ class ChainService {
       // Hardcoded ABI array to prevent dependencies on Hardhat build artifact folders on hosting servers
       const SOULPR_ABI = [
         "function minted(bytes32 key) external view returns (bool)",
-        "function attest(address contributor, string repo, uint256 prNumber, string prTitle, string githubUsername, string mergeCommitSha, uint256 mergeTimestamp) external returns (uint256)",
+        "function attest(address contributor, string repo, uint256 prNumber, string prTitle, string githubUsername, string mergeCommitSha, uint256 mergeTimestamp) external",
         "function attestations(uint256 tokenId) external view returns (address contributor, string repo, uint256 prNumber, string prTitle, string githubUsername, string mergeCommitSha, uint256 mergeTimestamp)",
         "function tokensByOwner(address owner) external view returns (uint256[] memory)",
         "function tokenURI(uint256 tokenId) external view returns (string memory)",
-        "event Attested(address indexed contributor, string repo, uint256 prNumber, string prTitle, string githubUsername, string mergeCommitSha, uint256 mergeTimestamp, uint256 indexed tokenId)"
+        "event Attested(address indexed contributor, string repo, uint256 prNumber, string prTitle, string githubUsername, string mergeCommitSha, uint256 mergeTimestamp, uint256 tokenId)"
       ];
 
       this.contract = new ethers.Contract(contractAddress, SOULPR_ABI, this.wallet);
