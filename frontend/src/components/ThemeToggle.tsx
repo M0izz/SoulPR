@@ -35,6 +35,8 @@ export default function ThemeToggle() {
       id="theme-toggle"
       onClick={() => setTheme(t => (t === 'dark' ? 'light' : 'dark'))}
       title={isDark ? 'Switch to Orange (Light) theme' : 'Switch to Black (Dark) theme'}
+      aria-label={isDark ? 'Switch to light theme' : 'Switch to dark theme'}
+      aria-pressed={isDark}
       style={{
         display: 'flex',
         alignItems: 'center',

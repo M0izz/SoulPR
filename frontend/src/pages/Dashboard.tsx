@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { ethers } from 'ethers'
 import BadgeDetailModal, { type BadgeData } from '../components/BadgeDetailModal'
@@ -62,11 +62,20 @@ function SBTsPanel({ badges, onSelect }: { badges: BadgeData[]; onSelect: (b: Ba
           <div style={{ fontSize: '13px' }}>Merge pull requests on tracked repositories to automatically earn on-chain SBTs.</div>
         </div>
       ) : (
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '1.2rem' }}>
+        <div className="proof-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '1.2rem' }}>
           {badges.map(b => (
             <div
               key={b.tokenId}
+              role="button"
+              tabIndex={0}
+              aria-label={`View proof ${b.tokenId}: Open Source Contributor`}
               onClick={() => onSelect(b)}
+              onKeyDown={event => {
+                if (event.key === 'Enter' || event.key === ' ') {
+                  event.preventDefault()
+                  onSelect(b)
+                }
+              }}
               style={{
                 background: 'linear-gradient(160deg, rgba(168,85,247,0.08) 0%, rgba(255,123,0,0.04) 100%)',
                 border: '1px solid rgba(168,85,247,0.2)', borderRadius: '14px',
@@ -104,7 +113,7 @@ function ContributionsPanel({ badges, ghStats, loadingStats }: { badges: BadgeDa
     <div>
       <h2 style={{ fontSize: '20px', fontWeight: 900, color: 'var(--ink)', marginBottom: '1.5rem' }}>Contributions</h2>
       <div style={{ background: 'var(--paper-raised)', border: '1px solid var(--rule)', borderRadius: '16px', padding: '1.6rem' }}>
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '1rem', marginBottom: '1.5rem' }}>
+        <div className="contribution-metrics" style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '1rem', marginBottom: '1.5rem' }}>
           {[
             { label: 'GitHub Merged PRs', val: loadingStats ? '...' : mergedPRsCount.toLocaleString(), color: '#FF7B00' },
             { label: 'GitHub Repositories', val: loadingStats ? '...' : reposCount.toLocaleString(), color: '#16A34A' },
@@ -126,7 +135,7 @@ function ContributionsPanel({ badges, ghStats, loadingStats }: { badges: BadgeDa
         ) : (
           <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
             {badges.map(b => (
-              <div key={b.tokenId} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '10px 12px', borderRadius: '8px', background: 'var(--paper)', border: '1px solid var(--rule)' }}>
+              <div key={b.tokenId} className="proof-list-row" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '10px 12px', borderRadius: '8px', background: 'var(--paper)', border: '1px solid var(--rule)' }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
                   <RepoAvatar repo={b.repo} />
                   <div>
@@ -174,12 +183,14 @@ function SettingsPanel({
 
         {/* GitHub */}
         <div style={{ background: 'var(--paper-raised)', border: '1px solid var(--rule)', borderRadius: '14px', padding: '1.4rem' }}>
-          <div style={{ fontWeight: 800, fontSize: '13px', color: 'var(--ink)', marginBottom: '4px' }}>GitHub Username</div>
+          <label htmlFor="github-username-setting" style={{ display: 'block', fontWeight: 800, fontSize: '13px', color: 'var(--ink)', marginBottom: '4px' }}>GitHub Username</label>
           <div style={{ fontSize: '12px', color: 'var(--ink-muted)', marginBottom: '12px' }}>Linked GitHub handle for fetching real open-source activity</div>
           <input
             value={githubInput}
+            id="github-username-setting"
             onChange={e => setGithubInput(e.target.value)}
             placeholder="your-github-username"
+            autoComplete="username"
             style={{ width: '100%', padding: '10px 14px', border: '1px solid var(--rule)', borderRadius: '8px', fontSize: '13px', fontFamily: 'inherit', outline: 'none', color: 'var(--ink)', background: 'var(--paper)' }}
           />
         </div>
@@ -202,6 +213,10 @@ function SettingsPanel({
           </div>
           <button
             onClick={() => setNotifs(v => !v)}
+            type="button"
+            role="switch"
+            aria-checked={notifs}
+            aria-label="Proof Notifications"
             style={{
               width: '42px', height: '24px', borderRadius: '99px', border: 'none', cursor: 'pointer',
               background: notifs ? '#FF7B00' : 'var(--rule)',
@@ -241,7 +256,17 @@ function SettingsPanel({
 function ProofRow({ b, onSelect }: { b: BadgeData; onSelect: (b: BadgeData) => void }) {
   return (
     <div
+      role="button"
+      tabIndex={0}
+      className="proof-row-button"
+      aria-label={`View proof for ${b.prTitle} in ${b.repo}`}
       onClick={() => onSelect(b)}
+      onKeyDown={event => {
+        if (event.key === 'Enter' || event.key === ' ') {
+          event.preventDefault()
+          onSelect(b)
+        }
+      }}
       style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '10px 12px', borderRadius: '10px', border: '1px solid var(--rule)', background: 'var(--paper)', cursor: 'pointer', transition: 'background 0.15s, border-color 0.15s', textAlign: 'left' }}
       onMouseEnter={e => { (e.currentTarget as HTMLElement).style.background = 'rgba(255,123,0,0.05)'; (e.currentTarget as HTMLElement).style.borderColor = 'rgba(255,123,0,0.25)' }}
       onMouseLeave={e => { (e.currentTarget as HTMLElement).style.background = 'var(--paper)'; (e.currentTarget as HTMLElement).style.borderColor = 'var(--rule)' }}
@@ -316,8 +341,15 @@ function OverviewPanel({
           <p style={{ fontSize: '11px', color: 'rgba(255,255,255,0.45)', marginBottom: '1.4rem' }}>
             {loadingStats ? 'Fetching live GitHub and on-chain contributions...' : `Earned from ${mergedPRsCount.toLocaleString()} merged PRs across ${publicReposCount.toLocaleString()} GitHub repositories.`}
           </p>
-          <div style={{ width: '320px' }}>
-            <div style={{ width: '100%', height: '6px', background: 'rgba(255,255,255,0.08)', borderRadius: '99px', overflow: 'hidden', marginBottom: '6px' }}>
+          <div className="builder-progress" style={{ width: '320px' }}>
+            <div
+              role="progressbar"
+              aria-label="Progress to next builder level"
+              aria-valuenow={Math.round(progressPct)}
+              aria-valuemin={0}
+              aria-valuemax={100}
+              style={{ width: '100%', height: '6px', background: 'rgba(255,255,255,0.08)', borderRadius: '99px', overflow: 'hidden', marginBottom: '6px' }}
+            >
               <div style={{ width: `${progressPct}%`, height: '100%', background: 'linear-gradient(90deg,#FFA940,#FF7B00)', borderRadius: '99px', transition: 'width 0.4s ease' }} />
             </div>
             <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '9px', color: 'rgba(255,255,255,0.35)', fontFamily: 'var(--font-mono)' }}>
@@ -333,7 +365,7 @@ function OverviewPanel({
       </section>
 
       {/* 4 real stats */}
-      <section style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '1.2rem', marginBottom: '1.8rem' }}>
+      <section className="overview-stats" style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '1.2rem', marginBottom: '1.8rem' }}>
         {[
           {
             icon: <IconAward size={14} color="#FF7B00" />,
@@ -383,7 +415,7 @@ function OverviewPanel({
       </section>
 
       {/* 2-col bottom */}
-      <div style={{ display: 'grid', gridTemplateColumns: '1.3fr 0.7fr', gap: '1.8rem', alignItems: 'start' }}>
+      <div className="overview-bottom" style={{ display: 'grid', gridTemplateColumns: '1.3fr 0.7fr', gap: '1.8rem', alignItems: 'start' }}>
 
         {/* Recent Proofs */}
         <section style={{ background: 'var(--paper-raised)', border: '1px solid var(--rule)', borderRadius: '16px', padding: '1.6rem' }}>
@@ -451,7 +483,7 @@ function OverviewPanel({
           {/* Quick Actions */}
           <div style={{ background: 'var(--paper-raised)', border: '1px solid var(--rule)', borderRadius: '16px', padding: '1.2rem 1.4rem' }}>
             <h3 style={{ fontSize: '11px', color: 'var(--ink-muted)', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '14px' }}>Quick Actions</h3>
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '8px' }}>
+            <div className="quick-actions-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '8px' }}>
               {[
                 { icon: <IconShieldCheck size={18} color="#FF7B00" />, label: 'Verify Proof', action: () => navigate('/how-it-works') },
                 { icon: <IconPackage size={18} color="#FF7B00" />, label: 'Mint SBT', action: () => onNavTo('sbts') },
@@ -491,10 +523,12 @@ export default function Dashboard() {
   const [loading, setLoading] = useState(false)
   const [loadingStats, setLoadingStats] = useState(true)
   const [lookupError, setLookupError] = useState<string | null>(null)
+  const [lookupInputInvalid, setLookupInputInvalid] = useState(false)
   const [showSearchModal, setShowSearchModal] = useState(false)
   const [activeNav, setActiveNav] = useState<NavId>('overview')
   const [userGithub, setUserGithub] = useState<string>('moizz')
   const [userWallet, setUserWallet] = useState<string | null>(null)
+  const lookupDialogRef = useRef<HTMLDivElement>(null)
 
   // 1. Initial load real session & GitHub / Monad stats
   useEffect(() => {
@@ -539,7 +573,12 @@ export default function Dashboard() {
 
   // 2. Handle contributor search/lookup
   async function handleLookup(lookupQuery: string) {
-    if (!lookupQuery.trim()) return
+    if (!lookupQuery.trim()) {
+      setLookupInputInvalid(true)
+      setLookupError('Enter a GitHub username or wallet address to search.')
+      return
+    }
+    setLookupInputInvalid(false)
     setLoading(true)
     setLoadingStats(true)
     setLookupError(null)
@@ -607,10 +646,10 @@ export default function Dashboard() {
     : 'Not linked'
 
   return (
-    <div style={{ display: 'flex', minHeight: '100vh', background: 'var(--paper)', color: 'var(--ink)', fontFamily: 'var(--font-body)', overflowX: 'hidden', transition: 'background 0.3s, color 0.3s' }}>
+    <div className="dashboard-root" style={{ display: 'flex', minHeight: '100vh', background: 'var(--paper)', color: 'var(--ink)', fontFamily: 'var(--font-body)', overflowX: 'hidden', transition: 'background 0.3s, color 0.3s' }}>
 
       {/* ── SIDEBAR ── */}
-      <aside style={{ width: '260px', background: 'var(--paper-raised)', flexShrink: 0, borderRight: '1px solid var(--rule)', padding: '2rem 1.2rem', display: 'flex', flexDirection: 'column', justifyContent: 'space-between', position: 'sticky', top: 0, height: '100vh' }}>
+      <aside className="dashboard-sidebar" style={{ width: '260px', background: 'var(--paper-raised)', flexShrink: 0, borderRight: '1px solid var(--rule)', padding: '2rem 1.2rem', display: 'flex', flexDirection: 'column', justifyContent: 'space-between', position: 'sticky', top: 0, height: '100vh' }}>
         <div>
           <Link to="/" style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '2.5rem', textDecoration: 'none' }}>
             <IconSoulPRLogo size={32} />
@@ -628,6 +667,7 @@ export default function Dashboard() {
                   key={id}
                   id={`sidebar-${id}`}
                   onClick={() => setActiveNav(id)}
+                  aria-current={isActive ? 'page' : undefined}
                   style={{ display: 'flex', alignItems: 'center', gap: '12px', padding: '11px 14px', borderRadius: '10px', border: 'none', background: isActive ? 'rgba(255,123,0,0.12)' : 'transparent', color: isActive ? '#FF7B00' : 'var(--ink-muted)', fontWeight: isActive ? 800 : 600, fontSize: '14.5px', cursor: 'pointer', width: '100%', textAlign: 'left', transition: 'background 0.15s, color 0.15s' }}
                   onMouseEnter={e => { if (!isActive) (e.currentTarget as HTMLElement).style.background = 'rgba(255,123,0,0.05)' }}
                   onMouseLeave={e => { if (!isActive) (e.currentTarget as HTMLElement).style.background = 'transparent' }}
@@ -661,10 +701,10 @@ export default function Dashboard() {
       </aside>
 
       {/* ── MAIN CONTENT ── */}
-      <main style={{ flex: 1, padding: '2rem 2.5rem', overflowY: 'auto' }}>
+      <main className="dashboard-main" style={{ flex: 1, padding: '2rem 2.5rem', overflowY: 'auto' }}>
 
         {/* Header */}
-        <header style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem' }}>
+        <header className="dashboard-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem' }}>
           <div style={{ textAlign: 'left' }}>
             <h1 style={{ fontSize: '26px', fontWeight: 900, color: 'var(--ink)', margin: 0, fontFamily: 'var(--font-display)' }}>{pageTitle[activeNav]}</h1>
             {activeNav === 'overview' && (
@@ -673,7 +713,18 @@ export default function Dashboard() {
               </div>
             )}
           </div>
-          <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
+          <div className="dashboard-header-actions" style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
+            <button
+              type="button"
+              className="dashboard-mobile-lookup"
+              onClick={() => {
+                setLookupError(null)
+                setShowSearchModal(true)
+              }}
+              style={{ alignItems: 'center', gap: '6px', background: 'var(--paper-raised)', border: '1px solid var(--rule-strong)', borderRadius: '8px', padding: '6px 12px', fontSize: '11px', color: 'var(--ink)', fontWeight: 700 }}
+            >
+              Look up
+            </button>
             <div style={{ display: 'flex', alignItems: 'center', gap: '6px', background: 'var(--paper-raised)', border: '1px solid var(--rule)', borderRadius: '8px', padding: '6px 14px', fontSize: '11px', fontWeight: 600, color: 'var(--ink)' }}>
               <span style={{ width: '6px', height: '6px', borderRadius: '50%', background: '#FF7B00', display: 'inline-block' }} />
               MONAD TESTNET
@@ -725,27 +776,67 @@ export default function Dashboard() {
 
       {/* Search Modal */}
       {showSearchModal && (
-        <div className="modal-overlay" onClick={() => setShowSearchModal(false)} style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(0,0,0,0.5)' }}>
-          <div onClick={e => e.stopPropagation()} style={{ background: 'var(--paper-raised)', border: '1px solid var(--rule)', padding: '2rem', borderRadius: '16px', width: '100%', maxWidth: '420px', boxShadow: '0 20px 60px rgba(0,0,0,0.3)' }}>
-            <h3 style={{ fontSize: '16px', fontWeight: 900, marginBottom: '1rem', color: 'var(--ink)' }}>Look up a contributor</h3>
-            <div style={{ display: 'flex', gap: '8px' }}>
+        <div
+          className="modal-overlay lookup-overlay"
+          role="presentation"
+          onClick={() => setShowSearchModal(false)}
+          onKeyDown={e => {
+            if (e.key === 'Escape') setShowSearchModal(false)
+          }}
+          style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(0,0,0,0.5)' }}
+        >
+          <div
+            ref={lookupDialogRef}
+            className="lookup-dialog"
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="lookup-title"
+            onClick={e => e.stopPropagation()}
+            onKeyDown={e => {
+              if (e.key !== 'Tab') return
+              const focusable = lookupDialogRef.current?.querySelectorAll<HTMLElement>(
+                'button:not(:disabled), input:not(:disabled), [href], [tabindex]:not([tabindex="-1"])',
+              )
+              if (!focusable?.length) return
+              const first = focusable[0]
+              const last = focusable[focusable.length - 1]
+              if (e.shiftKey && document.activeElement === first) {
+                e.preventDefault()
+                last.focus()
+              } else if (!e.shiftKey && document.activeElement === last) {
+                e.preventDefault()
+                first.focus()
+              }
+            }}
+            style={{ background: 'var(--paper-raised)', border: '1px solid var(--rule)', padding: '2rem', borderRadius: '16px', width: '100%', maxWidth: '420px', boxShadow: '0 20px 60px rgba(0,0,0,0.3)' }}
+          >
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '1rem', marginBottom: '1rem' }}>
+              <h3 id="lookup-title" style={{ fontSize: '16px', fontWeight: 900, color: 'var(--ink)' }}>Look up a contributor</h3>
+              <button type="button" aria-label="Close contributor lookup" onClick={() => setShowSearchModal(false)} style={{ color: 'var(--ink-muted)', fontSize: '20px', padding: '0.2rem 0.5rem' }}>×</button>
+            </div>
+            <div className="lookup-form" style={{ display: 'flex', gap: '8px' }}>
               <input
                 id="lookup-input"
+                autoFocus
+                aria-label="GitHub username or wallet address"
+                aria-invalid={lookupInputInvalid}
+                aria-describedby={lookupError ? 'lookup-error' : undefined}
                 placeholder="GitHub username or wallet address"
                 value={query}
                 onChange={e => {
                   setQuery(e.target.value)
                   setLookupError(null)
+                  setLookupInputInvalid(false)
                 }}
                 onKeyDown={e => e.key === 'Enter' && handleLookup(query)}
                 style={{ flex: 1, padding: '10px 14px', border: '1px solid var(--rule)', borderRadius: '8px', fontSize: '13px', fontFamily: 'inherit', outline: 'none', color: 'var(--ink)', background: 'var(--paper)' }}
               />
-              <button id="lookup-submit" onClick={() => handleLookup(query)} disabled={loading} style={{ background: '#FF7B00', color: '#FFF', border: 'none', borderRadius: '8px', padding: '0 18px', fontWeight: 700, fontSize: '13px', cursor: 'pointer' }}>
-                {loading ? '...' : 'Search'}
+              <button id="lookup-submit" onClick={() => handleLookup(query)} disabled={loading} aria-busy={loading} style={{ background: '#FF7B00', color: '#FFF', border: 'none', borderRadius: '8px', padding: '0 18px', fontWeight: 700, fontSize: '13px', cursor: 'pointer' }}>
+                {loading ? 'Searching...' : 'Search'}
               </button>
             </div>
             {lookupError && (
-              <div role="alert" style={{ marginTop: '10px', color: '#DC2626', fontSize: '12px' }}>
+              <div id="lookup-error" className="status-message" role="alert" style={{ marginTop: '10px', color: '#DC2626', fontSize: '12px' }}>
                 {lookupError}
               </div>
             )}
