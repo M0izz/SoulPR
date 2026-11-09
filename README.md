@@ -1,6 +1,6 @@
 # SoulPR — Proof That Builds You
 
-> **Automated open-source contribution receipts rendered as Soulbound Tokens (SBTs) on the Monad Testnet.**
+> **Automated open-source contribution receipts rendered as Soulbound Tokens (SBTs).**
 
 [![Monad Testnet](https://img.shields.io/badge/Network-Monad%20Testnet-8B5CF6?style=flat-square)](https://testnet-rpc.monad.xyz)
 [![Solidity](https://img.shields.io/badge/Solidity-0.8.24-363636?style=flat-square&logo=solidity)](./contract)
@@ -14,7 +14,7 @@
 
 ## Overview
 
-**SoulPR** turns every merged GitHub Pull Request into a permanent, non-transferable **Soulbound Token (SBT)** minted directly to the contributor's wallet on the **Monad** network.
+**SoulPR** turns every merged GitHub Pull Request into a permanent, non-transferable **Soulbound Token (SBT)** minted directly to the contributor's wallet. The existing live minting path uses Monad Testnet.
 
 Open-source contributions represent a developer's true track record. SoulPR bridges GitHub activity with Web3 identity by producing tamper-proof, on-chain contribution receipts that are 100% gasless for contributors.
 
@@ -172,6 +172,12 @@ cd backend
 npm install
 npm run dev
 ```
+
+#### Isolated NEAR testnet adapter
+
+The backend also includes an opt-in NEAR testnet adapter for contract view and function calls. It is not connected to the GitHub webhook, mint queue, or existing Monad `ChainService`; the production path remains unchanged. The adapter refuses to initialize unless `NEAR_NETWORK=testnet` is explicit and the configured RPC endpoint is HTTPS on a testnet host.
+
+To enable the adapter in a local testnet environment, configure `NEAR_NETWORK=testnet`, `NEAR_ACCOUNT_ID`, `NEAR_CONTRACT_ID`, and `NEAR_PRIVATE_KEY`; `NEAR_RPC_URL` is optional and defaults to `https://rpc.testnet.near.org`. The private key must be an ed25519 key for the configured testnet account. Do not configure a mainnet key or endpoint. `near-api-js@7.4.0` requires Node.js `>=22.22.2`; the repository's existing Render configuration pins Node.js `22.16.0`, so that deployment must be upgraded before enabling this adapter there. Adapter tests inject a mock account client and do not load or require private keys, contact NEAR, or submit transactions. This adapter is infrastructure only; connecting it to receipt persistence requires the NEAR contract implementation and a separately reviewed migration of the queue/consumer.
 
 ---
 
