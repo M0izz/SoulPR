@@ -1,3 +1,5 @@
+process.env.CHAIN_PROVIDER = "monad";
+
 import request from "supertest";
 import express from "express";
 import cookieSession from "cookie-session";
@@ -23,6 +25,20 @@ jest.mock("../services/ChainService", () => {
     }
   };
 });
+
+// Keep the integration suite chain-independent; NEAR is the production default,
+// while these tests exercise queue behavior without contacting a live network.
+jest.mock("../services/NearChainService", () => ({
+  __esModule: true,
+  nearChainService: {
+    isMinted: jest.fn().mockResolvedValue(false),
+    attest: jest.fn().mockResolvedValue("near-test-hash"),
+  },
+  default: {
+    isMinted: jest.fn().mockResolvedValue(false),
+    attest: jest.fn().mockResolvedValue("near-test-hash"),
+  },
+}));
 
 const app = express();
 
