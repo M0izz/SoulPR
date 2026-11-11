@@ -1,4 +1,4 @@
-import type { KeyPairString } from "near-api-js";
+import type { Account, Connection } from "near-api-js";
 
 const TESTNET_RPC_URL = "https://rpc.testnet.near.org";
 const DEFAULT_GAS = "30000000000000";
@@ -142,23 +142,26 @@ export async function createNearAdapter(config: NearTestnetConfig): Promise<Near
     throw new Error("Invalid NEAR testnet configuration");
   }
   validateTestnetRpcUrl(config.rpcUrl);
-  const { Account, JsonRpcProvider, KeyPair } = await import("near-api-js");
-  KeyPair.fromString(config.privateKey as KeyPairString);
-  const provider = new JsonRpcProvider({ url: config.rpcUrl });
-  const account = new Account(config.accountId, provider, config.privateKey as KeyPairString);
+  const { Account, KeyPair, connect, keyStores } = await import("near-api-js");
+  const keyStore = new keyStores.InMemoryKeyStore();
+  keyStore.setKey(config.network, config.accountId, KeyPair.fromString(config.privateKey));
+  const near = await connect({ networkId: config.network, nodeUrl: config.rpcUrl, keyStore, headers: {} });
+  const account = await near.account(config.accountId);
   return new NearAdapter(
     { network: config.network, contractId: config.contractId },
     {
       viewFunction: ({ contractId, methodName, args }) =>
-        provider.callFunction({ contractId, method: methodName, args }),
-      functionCall: ({ contractId, methodName, args, gas, attachedDeposit }) =>
-        account.callFunctionRaw({
+        account.viewFunction(contractId, methodName, args),
+      functionCall: async ({ contractId, methodName, args, gas, attachedDeposit }) => {
+        const result = await account.functionCall({
           contractId,
-          methodName,
           args,
-          gas,
-          deposit: attachedDeposit,
-        }),
+          methodName,
+          gas: new (require("bn.js"))(gas),
+          attachedDeposit: new (require("bn.js"))(attachedDeposit),
+        });
+        return { transaction: { hash: result.transaction.hash } };
+      },
     }
   );
 }
