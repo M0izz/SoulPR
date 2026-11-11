@@ -1,0 +1,17 @@
+[package]
+name = "soulpr_near"
+version = "0.1.0"
+edition = "2021"
+
+[lib]
+crate-type = ["cdylib", "rlib"]
+
+[dependencies]
+near-sdk = "5"
+serde = { version = "1", features = ["derive"] }
+
+[profile.release]
+opt-level = 3
+
+# Build target (run once): rustup target add wasm32-unknown-unknown
+# Build:    cargo build --target wasm32-unknown-unknown --release

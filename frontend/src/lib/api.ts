@@ -23,6 +23,11 @@ export interface WalletStatusResponse {
   walletAddress?: string | null;
 }
 
+export interface WalletChallengeResponse {
+  nonce: string;
+  expiresAt: number;
+}
+
 export interface RepoItem {
   fullName: string;
   tracked: boolean;
@@ -42,13 +47,17 @@ export const api = {
     return request('/wallet/status');
   },
 
+  async getWalletChallenge(): Promise<WalletChallengeResponse> {
+    return request('/wallet/challenge');
+  },
+
   /**
    * Links a GitHub username to a wallet address using personal signature
    */
-  async linkWallet(walletAddress: string, signature: string) {
+  async linkWallet(walletAddress: string, signature: string, publicKey?: string) {
     return request('/wallet/link', {
       method: 'POST',
-      body: JSON.stringify({ walletAddress, signature }),
+      body: JSON.stringify({ walletAddress, signature, publicKey }),
     });
   },
 

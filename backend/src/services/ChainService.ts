@@ -3,9 +3,9 @@ import * as fs from "fs";
 import * as path from "path";
 
 class ChainService {
-  private provider: ethers.JsonRpcProvider | null = null;
-  private wallet: ethers.Wallet | null = null;
-  private contract: ethers.Contract | null = null;
+  private provider: any = null;
+  private wallet: any = null;
+  private contract: any = null;
   private initialized = false;
 
   constructor() {

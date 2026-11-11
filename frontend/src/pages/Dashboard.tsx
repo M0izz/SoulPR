@@ -266,6 +266,7 @@ function ProofRow({ b, onSelect }: { b: BadgeData; onSelect: (b: BadgeData) => v
 function OverviewPanel({
   badges,
   ghStats,
+  navigate,
   loadingStats,
   onSelect,
   onViewAll,
@@ -274,6 +275,7 @@ function OverviewPanel({
 }: {
   badges: BadgeData[]
   ghStats: GitHubStats | null
+  navigate: ReturnType<typeof useNavigate>
   loadingStats: boolean
   onSelect: (b: BadgeData) => void
   onViewAll: () => void
@@ -679,6 +681,7 @@ export default function Dashboard() {
           <OverviewPanel
             badges={badges}
             ghStats={ghStats}
+            navigate={navigate}
             loadingStats={loadingStats}
             onSelect={setSelected}
             onViewAll={() => setActiveNav('contributions')}
