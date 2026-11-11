@@ -85,7 +85,7 @@ export default function Nav() {
       {/* Right: Network + Theme Toggle + Link Wallet */}
       <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
 
-        {/* Monad Testnet badge */}
+        {/* Active network badge */}
         <div style={{
           display: 'flex', alignItems: 'center', gap: '6px',
           background: 'rgba(168, 85, 247, 0.08)',
@@ -94,7 +94,7 @@ export default function Nav() {
           color: '#C084FC', fontSize: '11px', fontWeight: 600,
         }}>
           <span style={{ width: '6px', height: '6px', borderRadius: '50%', background: '#A855F7', display: 'inline-block', flexShrink: 0 }} />
-          MONAD TESTNET
+          {(import.meta.env.VITE_NEAR_ENABLED ?? 'false') === 'true' ? 'NEAR TESTNET' : 'MONAD TESTNET'}
           <span style={{ fontSize: '7px', opacity: 0.6 }}>▼</span>
         </div>
 

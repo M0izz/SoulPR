@@ -56,6 +56,10 @@ const STARS = [
 
 export default function BadgeDetailModal({ badge, onClose }: Props) {
   const [copied, setCopied] = useState(false)
+  const isNear = badge.network.toLowerCase().includes('near')
+  const explorerUrl = isNear
+    ? (badge.txHash ? `https://testnet.nearblocks.io/txns/${badge.txHash}` : undefined)
+    : (badge.txHash ? `https://testnet.monadexplorer.com/tx/${badge.txHash}` : undefined)
 
   function copyAddr() {
     navigator.clipboard.writeText(badge.contributor).then(() => {
@@ -117,7 +121,7 @@ export default function BadgeDetailModal({ badge, onClose }: Props) {
         <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '6px', background: 'rgba(168,85,247,0.08)', border: '1px solid rgba(168,85,247,0.28)', borderRadius: '8px', padding: '5px 12px', color: '#C084FC', fontSize: '11px', fontWeight: 600 }}>
             <span style={{ width: '6px', height: '6px', borderRadius: '50%', background: '#A855F7', display: 'inline-block' }} />
-            MONAD TESTNET
+            {badge.network.toUpperCase()}
             <span style={{ fontSize: '7px', opacity: 0.6 }}>▼</span>
           </div>
           <div style={{ display: 'flex', alignItems: 'center', gap: '6px', background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,123,0,0.38)', borderRadius: '8px', padding: '5px 12px', color: '#FF7B00', fontSize: '11px', fontWeight: 700 }}>
@@ -311,7 +315,7 @@ export default function BadgeDetailModal({ badge, onClose }: Props) {
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
               <span style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '9px', color: 'rgba(255,255,255,0.3)', textTransform: 'uppercase', letterSpacing: '0.06em' }}>
                 <IconShieldCheck size={11} color="rgba(255,255,255,0.3)" />
-                VERIFIABLE ON <span style={{ color: '#FF7B00', fontWeight: 800 }}>MONAD TESTNET</span>
+                VERIFIABLE ON <span style={{ color: '#FF7B00', fontWeight: 800 }}>{badge.network.toUpperCase()}</span>
               </span>
               <div style={{ width: '22px', height: '22px', borderRadius: '50%', background: 'rgba(168,85,247,0.18)', border: '1px solid rgba(168,85,247,0.4)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '12px', color: '#A855F7', fontWeight: 900 }}>
                 ◆
@@ -405,7 +409,7 @@ export default function BadgeDetailModal({ badge, onClose }: Props) {
                   label: 'Network',
                   val: (
                     <span style={{ display: 'flex', alignItems: 'center', gap: '6px', color: '#FFF' }}>
-                      Monad Testnet
+                      {badge.network}
                       <span style={{ width: '7px', height: '7px', borderRadius: '50%', background: '#A855F7', display: 'inline-block' }} />
                     </span>
                   ),
@@ -455,14 +459,15 @@ export default function BadgeDetailModal({ badge, onClose }: Props) {
               </p>
               <a
                 id="verify-on-explorer"
-                href={`https://testnet.monadexplorer.com/tx/${badge.txHash}`}
+                href={explorerUrl}
+                aria-disabled={!explorerUrl}
                 target="_blank"
                 rel="noopener noreferrer"
                 style={{ display: 'inline-flex', alignItems: 'center', gap: '5px', fontSize: '12px', color: '#FF7B00', fontWeight: 800, textDecoration: 'none', transition: 'opacity 0.15s' }}
                 onMouseEnter={e => (e.currentTarget as HTMLElement).style.opacity = '0.7'}
                 onMouseLeave={e => (e.currentTarget as HTMLElement).style.opacity = '1'}
               >
-                Verify on Monad Explorer <IconExternalLink size={12} color="#FF7B00" />
+                {explorerUrl ? `Verify on ${badge.network} Explorer` : 'Transaction pending'} <IconExternalLink size={12} color="#FF7B00" />
               </a>
             </div>
           </div>

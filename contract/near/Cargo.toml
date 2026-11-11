@@ -13,5 +13,8 @@ serde = { version = "1", features = ["derive"] }
 [profile.release]
 opt-level = 3
 
+[dev-dependencies]
+near-sdk = { version = "5", features = ["unit-testing"] }
+
 # Build target (run once): rustup target add wasm32-unknown-unknown
 # Build:    cargo build --target wasm32-unknown-unknown --release
