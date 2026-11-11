@@ -1,9 +1,82 @@
 import { Router, Request, Response } from "express";
+import crypto from "crypto";
 import { ethers } from "ethers";
+import { PublicKey } from "near-api-js/lib/utils";
 import dbService from "../services/DbService";
 import mintService from "../services/MintService";
 
 const router = Router();
+
+// ---------------------------------------------------------------------------
+// Helpers
+// ---------------------------------------------------------------------------
+
+/** NEAR account ids contain a dot and are not hex (e.g. alice.testnet). */
+function isNearAccountId(value: string): boolean {
+  return /^[a-z0-9._-]{2,64}$/.test(value) && value.includes(".");
+}
+
+/**
+ * Verify a NEAR message signature.
+ * The frontend signs `message` with the connected NEAR account's key and
+ * sends { signature, publicKey }. We verify the signature is valid under
+ * that public key, proving possession of the linked account's key.
+ */
+function verifyNearSignature(
+  message: string,
+  signature: string,
+  publicKey: string,
+): boolean {
+  try {
+    const pk = PublicKey.fromString(publicKey);
+    // NEAR signatures arrive base64-encoded; decode to bytes for verification
+    const sigBytes = Buffer.from(signature, "base64");
+    return pk.verify(sigBytes, Buffer.from(message, "utf8"));
+  } catch {
+    return false;
+  }
+}
+
+/**
+ * Verify a link signature for either an Ethereum address or a NEAR account id.
+ */
+function verifyLinkSignature(
+  message: string,
+  signature: string,
+  walletAddress: string,
+  publicKey?: string,
+): boolean {
+  if (isNearAccountId(walletAddress)) {
+    if (!publicKey) return false;
+    return verifyNearSignature(message, signature, publicKey);
+  }
+  const recovered = ethers.verifyMessage(message, signature);
+  return recovered.toLowerCase() === walletAddress.toLowerCase();
+}
+
+async function nearKeyBelongsToAccount(accountId: string, publicKey: string): Promise<boolean> {
+  try {
+    const response = await fetch(process.env.NEAR_NODE_URL ?? "https://rpc.testnet.near.org", {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({ jsonrpc: "2.0", id: "soulpr", method: "query", params: {
+        request_type: "view_access_key", finality: "final", account_id: accountId, public_key: publicKey,
+      }}),
+    });
+    return response.ok && !(await response.json()).error;
+  } catch {
+    return false;
+  }
+}
+
+router.get("/challenge", (req: Request, res: Response) => {
+  const githubUsername = req.session?.githubUsername;
+  if (!githubUsername) return res.status(401).json({ error: "GitHub authentication required." });
+  const nonce = crypto.randomBytes(24).toString("hex");
+  const expiresAt = Date.now() + 5 * 60 * 1000;
+  req.session!.walletChallenge = { nonce, expiresAt, githubUsername };
+  return res.json({ nonce, expiresAt });
+});
 
 /**
  * POST /wallet/link
@@ -16,19 +89,23 @@ router.post("/link", async (req: Request, res: Response) => {
     return res.status(401).json({ error: "GitHub authentication required. Please sign in first." });
   }
 
-  const { walletAddress, signature } = req.body;
+    const { walletAddress, signature, publicKey } = req.body;
   if (!walletAddress || !signature) {
     return res.status(400).json({ error: "Missing walletAddress or signature" });
   }
 
   try {
-    // 1. Verify signature
-    const message = `Linking GitHub ${githubUsername} to ${walletAddress} for SoulPR`;
-    const recovered = ethers.verifyMessage(message, signature);
-
-    if (recovered.toLowerCase() !== walletAddress.toLowerCase()) {
+    // 1. Verify signature (Ethereum personal_sign or NEAR message signature)
+    const challenge = req.session?.walletChallenge;
+    if (!challenge || challenge.githubUsername !== githubUsername || challenge.expiresAt < Date.now()) {
+      return res.status(400).json({ error: "Wallet-link challenge is missing or expired. Request a new challenge." });
+    }
+    const message = `SoulPR wallet link\nGitHub: ${githubUsername}\nWallet: ${walletAddress}\nNonce: ${challenge.nonce}`;
+    if (!verifyLinkSignature(message, signature, walletAddress, publicKey) ||
+        (isNearAccountId(walletAddress) && (!publicKey || !(await nearKeyBelongsToAccount(walletAddress, publicKey))))) {
       return res.status(400).json({ error: "Signature verification failed. Invalid signer." });
     }
+    req.session!.walletChallenge = undefined;
 
     // 2. Save mapping to database
     const link = await dbService.saveWalletLink(githubUsername, walletAddress);
@@ -98,8 +175,8 @@ router.get("/resolve", async (req: Request, res: Response) => {
 
   const cleanQuery = query.trim().toLowerCase();
 
-  // 1. Check if it's already a valid Ethereum wallet address
-  if (ethers.isAddress(cleanQuery)) {
+  // 1. Check if it's already a valid wallet address (Ethereum or NEAR account id)
+  if (ethers.isAddress(cleanQuery) || isNearAccountId(cleanQuery)) {
     return res.json({ walletAddress: cleanQuery });
   }
 

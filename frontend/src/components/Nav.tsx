@@ -18,7 +18,7 @@ export default function Nav() {
   })
 
   return (
-    <nav className="site-nav" aria-label="Main navigation" style={{
+    <nav style={{
       display: 'flex',
       justifyContent: 'space-between',
       alignItems: 'center',
@@ -33,7 +33,7 @@ export default function Nav() {
     }}>
 
       {/* Brand */}
-      <Link to="/" className="site-nav-brand" aria-label="SoulPR home" style={{ display: 'flex', alignItems: 'center', gap: '10px', textDecoration: 'none' }}>
+      <Link to="/" style={{ display: 'flex', alignItems: 'center', gap: '10px', textDecoration: 'none' }}>
         <IconSoulPRLogo size={32} />
         <div style={{ display: 'flex', flexDirection: 'column', lineHeight: 1.1 }}>
           <span style={{ fontFamily: 'var(--font-display)', fontWeight: 900, fontSize: '17px', color: 'var(--ink)' }}>SoulPR</span>
@@ -42,8 +42,8 @@ export default function Nav() {
       </Link>
 
       {/* Nav Links */}
-      <div className="site-nav-links" style={{ display: 'flex', gap: '1.6rem', alignItems: 'center' }}>
-        <Link to="/" aria-current={pathname === '/' ? 'page' : undefined} style={linkStyle(pathname === '/')}>Home</Link>
+      <div style={{ display: 'flex', gap: '1.6rem', alignItems: 'center' }}>
+        <Link to="/" style={linkStyle(pathname === '/')}>Home</Link>
         <a
           href="/#features"
           onClick={(e) => {
@@ -83,10 +83,10 @@ export default function Nav() {
       </div>
 
       {/* Right: Network + Theme Toggle + Link Wallet */}
-      <div className="site-nav-actions" style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
+      <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
 
-        {/* Monad Testnet badge */}
-        <div aria-label="Network: Monad Testnet" style={{
+        {/* Active network badge */}
+        <div style={{
           display: 'flex', alignItems: 'center', gap: '6px',
           background: 'rgba(168, 85, 247, 0.08)',
           border: '1px solid rgba(168, 85, 247, 0.25)',
@@ -94,7 +94,7 @@ export default function Nav() {
           color: '#C084FC', fontSize: '11px', fontWeight: 600,
         }}>
           <span style={{ width: '6px', height: '6px', borderRadius: '50%', background: '#A855F7', display: 'inline-block', flexShrink: 0 }} />
-          MONAD TESTNET
+          {(import.meta.env.VITE_NEAR_ENABLED ?? 'false') === 'true' ? 'NEAR TESTNET' : 'MONAD TESTNET'}
           <span style={{ fontSize: '7px', opacity: 0.6 }}>▼</span>
         </div>
 

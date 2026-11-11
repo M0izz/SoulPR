@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react'
+import { useState } from 'react'
 import { Link } from 'react-router-dom'
 import {
   IconArrowLeft, IconCheck, IconCopy, IconCalendar,
@@ -15,7 +15,7 @@ export interface BadgeData {
   mergeCommitSha?: string
   contributor: string
   mergeTimestamp: number
-  txHash?: string
+  txHash: string
   network: string
 }
 
@@ -56,43 +56,10 @@ const STARS = [
 
 export default function BadgeDetailModal({ badge, onClose }: Props) {
   const [copied, setCopied] = useState(false)
-  const rootRef = useRef<HTMLDivElement>(null)
-  const backButtonRef = useRef<HTMLButtonElement>(null)
-
-  useEffect(() => {
-    const previousFocus = document.activeElement instanceof HTMLElement ? document.activeElement : null
-    const handleKeyDown = (event: KeyboardEvent) => {
-      if (event.key === 'Escape') {
-        onClose()
-        return
-      }
-
-      if (event.key === 'Tab') {
-        const focusable = rootRef.current?.querySelectorAll<HTMLElement>(
-          'a[href], button:not(:disabled), input:not(:disabled), [tabindex]:not([tabindex="-1"])',
-        )
-        if (!focusable?.length) return
-
-        const first = focusable[0]
-        const last = focusable[focusable.length - 1]
-        if (event.shiftKey && document.activeElement === first) {
-          event.preventDefault()
-          last.focus()
-        } else if (!event.shiftKey && document.activeElement === last) {
-          event.preventDefault()
-          first.focus()
-        }
-      }
-    }
-
-    window.addEventListener('keydown', handleKeyDown)
-    backButtonRef.current?.focus()
-
-    return () => {
-      window.removeEventListener('keydown', handleKeyDown)
-      previousFocus?.focus()
-    }
-  }, [onClose])
+  const isNear = badge.network.toLowerCase().includes('near')
+  const explorerUrl = isNear
+    ? (badge.txHash ? `https://testnet.nearblocks.io/txns/${badge.txHash}` : undefined)
+    : (badge.txHash ? `https://testnet.monadexplorer.com/tx/${badge.txHash}` : undefined)
 
   function copyAddr() {
     navigator.clipboard.writeText(badge.contributor).then(() => {
@@ -102,7 +69,7 @@ export default function BadgeDetailModal({ badge, onClose }: Props) {
   }
 
   return (
-    <div ref={rootRef} className="proof-detail-root" role="dialog" aria-modal="true" aria-labelledby="proof-detail-title" style={{
+    <div style={{
       position: 'fixed', inset: 0, zIndex: 1000,
       background: '#08060F',
       display: 'flex', flexDirection: 'column',
@@ -111,7 +78,7 @@ export default function BadgeDetailModal({ badge, onClose }: Props) {
     }}>
 
       {/* ── TOP NAVIGATION ── */}
-      <nav className="proof-detail-nav" aria-label="Proof navigation" style={{
+      <nav style={{
         display: 'flex', justifyContent: 'space-between', alignItems: 'center',
         padding: '0.7rem 2rem',
         background: 'rgba(8, 6, 15, 0.95)',
@@ -154,12 +121,12 @@ export default function BadgeDetailModal({ badge, onClose }: Props) {
         <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '6px', background: 'rgba(168,85,247,0.08)', border: '1px solid rgba(168,85,247,0.28)', borderRadius: '8px', padding: '5px 12px', color: '#C084FC', fontSize: '11px', fontWeight: 600 }}>
             <span style={{ width: '6px', height: '6px', borderRadius: '50%', background: '#A855F7', display: 'inline-block' }} />
-            MONAD TESTNET
+            {badge.network.toUpperCase()}
             <span style={{ fontSize: '7px', opacity: 0.6 }}>▼</span>
           </div>
           <div style={{ display: 'flex', alignItems: 'center', gap: '6px', background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,123,0,0.38)', borderRadius: '8px', padding: '5px 12px', color: '#FF7B00', fontSize: '11px', fontWeight: 700 }}>
             <IconWallet size={13} color="#FF7B00" />
-            {short(badge.contributor)}
+            0xA7f2...9c4E
             <span style={{ fontSize: '7px', opacity: 0.5 }}>▼</span>
           </div>
         </div>
@@ -168,9 +135,6 @@ export default function BadgeDetailModal({ badge, onClose }: Props) {
       {/* ── BACK LINK ── */}
       <div style={{ padding: '1rem 2rem 0', flexShrink: 0 }}>
         <button
-          ref={backButtonRef}
-          type="button"
-          aria-label="Close proof details and return to dashboard"
           onClick={onClose}
           style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', background: 'none', border: 'none', cursor: 'pointer', color: 'rgba(255,255,255,0.45)', fontSize: '13px', fontWeight: 600, padding: 0, transition: 'color 0.15s' }}
           onMouseEnter={e => (e.currentTarget as HTMLElement).style.color = '#FFF'}
@@ -181,12 +145,12 @@ export default function BadgeDetailModal({ badge, onClose }: Props) {
       </div>
 
       {/* ── MAIN CONTENT ── */}
-      <div className="proof-detail-layout" style={{ display: 'grid', gridTemplateColumns: '400px 1fr', flex: 1, minHeight: '600px' }}>
+      <div style={{ display: 'grid', gridTemplateColumns: '400px 1fr', flex: 1, minHeight: '600px' }}>
 
         {/* ══════════════════════════════════════
             LEFT COLUMN — Holographic SBT Card
             ══════════════════════════════════════ */}
-        <div className="proof-detail-art" style={{
+        <div style={{
           background: 'linear-gradient(160deg, #1e1040 0%, #0e082a 45%, #130a30 100%)',
           position: 'relative', overflow: 'hidden',
           display: 'flex', flexDirection: 'column',
@@ -351,7 +315,7 @@ export default function BadgeDetailModal({ badge, onClose }: Props) {
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
               <span style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '9px', color: 'rgba(255,255,255,0.3)', textTransform: 'uppercase', letterSpacing: '0.06em' }}>
                 <IconShieldCheck size={11} color="rgba(255,255,255,0.3)" />
-                VERIFIABLE ON <span style={{ color: '#FF7B00', fontWeight: 800 }}>MONAD TESTNET</span>
+                VERIFIABLE ON <span style={{ color: '#FF7B00', fontWeight: 800 }}>{badge.network.toUpperCase()}</span>
               </span>
               <div style={{ width: '22px', height: '22px', borderRadius: '50%', background: 'rgba(168,85,247,0.18)', border: '1px solid rgba(168,85,247,0.4)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '12px', color: '#A855F7', fontWeight: 900 }}>
                 ◆
@@ -363,7 +327,7 @@ export default function BadgeDetailModal({ badge, onClose }: Props) {
         {/* ══════════════════════════════════════
             RIGHT COLUMN — Details
             ══════════════════════════════════════ */}
-        <div className="proof-detail-info" style={{ padding: '2.5rem 3rem', color: '#FFF', background: '#0A0814', overflowY: 'auto' }}>
+        <div style={{ padding: '2.5rem 3rem', color: '#FFF', background: '#0A0814', overflowY: 'auto' }}>
 
           {/* ACHIEVEMENT SBT + Valid SBT */}
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '10px' }}>
@@ -376,7 +340,7 @@ export default function BadgeDetailModal({ badge, onClose }: Props) {
           </div>
 
           {/* Title */}
-          <h1 id="proof-detail-title" style={{ fontSize: '30px', fontWeight: 900, color: '#FFF', margin: '0 0 12px', lineHeight: 1.15 }}>
+          <h1 style={{ fontSize: '30px', fontWeight: 900, color: '#FFF', margin: '0 0 12px', lineHeight: 1.15 }}>
             Open Source Contributor
           </h1>
 
@@ -445,7 +409,7 @@ export default function BadgeDetailModal({ badge, onClose }: Props) {
                   label: 'Network',
                   val: (
                     <span style={{ display: 'flex', alignItems: 'center', gap: '6px', color: '#FFF' }}>
-                      Monad Testnet
+                      {badge.network}
                       <span style={{ width: '7px', height: '7px', borderRadius: '50%', background: '#A855F7', display: 'inline-block' }} />
                     </span>
                   ),
@@ -453,7 +417,7 @@ export default function BadgeDetailModal({ badge, onClose }: Props) {
                 {
                   icon: <IconCode size={13} color="rgba(255,255,255,0.32)" />,
                   label: 'Standard',
-                  val: <span style={{ color: '#FFF' }}>ERC-5192 (locked)</span>,
+                  val: <span style={{ color: '#FFF' }}>ERC-5192 (SBT)</span>,
                 },
               ].map(({ icon, label, val }, i, arr) => (
                 <div key={label} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: '12.5px', padding: '10px 0', borderBottom: i < arr.length - 1 ? '1px solid rgba(255,255,255,0.04)' : 'none' }}>
@@ -493,23 +457,18 @@ export default function BadgeDetailModal({ badge, onClose }: Props) {
               <p style={{ fontSize: '12px', color: 'rgba(255,255,255,0.42)', margin: '0 0 7px', lineHeight: 1.55 }}>
                 This Soulbound Token is non-transferable and permanently bound to your wallet.
               </p>
-              {badge.txHash ? (
-                <a
-                  id="verify-on-explorer"
-                  href={`https://testnet.monadexplorer.com/tx/${badge.txHash}`}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  style={{ display: 'inline-flex', alignItems: 'center', gap: '5px', fontSize: '12px', color: '#FF7B00', fontWeight: 800, textDecoration: 'none', transition: 'opacity 0.15s' }}
-                  onMouseEnter={e => (e.currentTarget as HTMLElement).style.opacity = '0.7'}
-                  onMouseLeave={e => (e.currentTarget as HTMLElement).style.opacity = '1'}
-                >
-                  Verify on Monad Explorer <IconExternalLink size={12} color="#FF7B00" />
-                </a>
-              ) : (
-                <span style={{ fontSize: '12px', color: 'rgba(255,255,255,0.42)' }}>
-                  Transaction hash unavailable from the current on-chain lookup.
-                </span>
-              )}
+              <a
+                id="verify-on-explorer"
+                href={explorerUrl}
+                aria-disabled={!explorerUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                style={{ display: 'inline-flex', alignItems: 'center', gap: '5px', fontSize: '12px', color: '#FF7B00', fontWeight: 800, textDecoration: 'none', transition: 'opacity 0.15s' }}
+                onMouseEnter={e => (e.currentTarget as HTMLElement).style.opacity = '0.7'}
+                onMouseLeave={e => (e.currentTarget as HTMLElement).style.opacity = '1'}
+              >
+                {explorerUrl ? `Verify on ${badge.network} Explorer` : 'Transaction pending'} <IconExternalLink size={12} color="#FF7B00" />
+              </a>
             </div>
           </div>
 

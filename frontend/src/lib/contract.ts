@@ -18,7 +18,7 @@ export interface BadgeData {
   mergeCommitSha?: string;
   contributor: string;
   mergeTimestamp: number;
-  txHash?: string;
+  txHash: string;
   network: string;
 }
 
@@ -27,14 +27,12 @@ export interface BadgeData {
  * Checks for monadTestnet first, then falls back to hardhat, then returns null.
  */
 export async function getContractConfig() {
-  const configuredAddress = import.meta.env.VITE_CONTRACT_ADDRESS?.trim();
-  if (configuredAddress) {
-    if (!ethers.isAddress(configuredAddress)) {
-      throw new Error('VITE_CONTRACT_ADDRESS is not a valid Ethereum address');
-    }
-    return { address: configuredAddress, network: 'Monad testnet' };
+  if ((import.meta.env.VITE_NEAR_ENABLED ?? 'false') === 'true') {
+    return {
+      address: import.meta.env.VITE_NEAR_CONTRACT_ID ?? '',
+      network: 'NEAR testnet',
+    };
   }
-
   try {
     // Vite supports import.meta.glob or dynamic import
     // Let's try importing monadTestnet first, then hardhat
@@ -54,6 +52,9 @@ export async function getContractConfig() {
  * Queries the contract state on-chain to fetch all attestations owned by an address.
  */
 export async function getAttestations(walletAddress: string): Promise<BadgeData[]> {
+  if ((import.meta.env.VITE_NEAR_ENABLED ?? 'false') === 'true') {
+    return getNearAttestations(walletAddress);
+  }
   if (!ethers.isAddress(walletAddress)) {
     return [];
   }
@@ -93,6 +94,8 @@ export async function getAttestations(walletAddress: string): Promise<BadgeData[
         mergeCommitSha: att.mergeCommitSha,
         contributor: att.contributor,
         mergeTimestamp: Number(att.mergeTimestamp),
+        // Since we are reading state, we use dummy tx hash or query logs for it if needed
+        txHash: '0x' + '0'.repeat(64), 
         network: config.network,
       });
     }
@@ -102,4 +105,34 @@ export async function getAttestations(walletAddress: string): Promise<BadgeData[
     console.error('[Contract] Failed to fetch attestations on-chain:', e.message);
     throw e;
   }
+}
+
+async function getNearAttestations(accountId: string): Promise<BadgeData[]> {
+  if (!accountId || !accountId.includes('.')) return [];
+  const nodeUrl = import.meta.env.VITE_NEAR_NODE_URL ?? 'https://rpc.testnet.near.org';
+  const contractId = import.meta.env.VITE_NEAR_CONTRACT_ID ?? '';
+  if (!contractId) return [];
+  const call = async (methodName: string, args: object) => {
+    const response = await fetch(nodeUrl, {
+      method: 'POST', headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({ jsonrpc: '2.0', id: 'soulpr', method: 'query', params: {
+        request_type: 'call_function', finality: 'final', account_id: contractId,
+        method_name: methodName, args_base64: btoa(JSON.stringify(args)),
+      }}),
+    });
+    const json = await response.json();
+    if (json.error) throw new Error(json.error.message ?? 'NEAR RPC error');
+    return JSON.parse(new TextDecoder().decode(new Uint8Array(json.result.result)));
+  };
+  const ids: number[] = await call('nft_tokens_by_owner', { owner: accountId });
+  const badges: BadgeData[] = [];
+  for (const id of ids) {
+    const att = await call('nft_token', { token_id: id });
+    if (!att) continue;
+    badges.push({ tokenId: Number(id), repo: att.repo, prNumber: Number(att.pr_number),
+      prTitle: att.pr_title || 'OSS Contribution', githubUsername: att.github_username,
+      mergeCommitSha: att.merge_commit_sha, contributor: att.contributor,
+      mergeTimestamp: Number(att.merge_timestamp), txHash: '', network: 'NEAR testnet' });
+  }
+  return badges;
 }

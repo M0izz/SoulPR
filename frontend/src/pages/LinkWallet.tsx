@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import { useSearchParams, useNavigate } from 'react-router-dom'
 import api from '../lib/api'
+import nearConnector from '../lib/near'
 import {
   IconGitHub, IconWallet, IconCheck, IconShieldCheck,
   IconArrowRight, IconZap, IconLock,
@@ -13,10 +14,14 @@ export default function LinkWallet() {
   const navigate = useNavigate()
   const [githubUser, setGithubUser] = useState<string | null>(null)
   const [wallet, setWallet] = useState<string | null>(null)
+  const [nearPubKey, setNearPubKey] = useState<string | null>(null)
   const [linking, setLinking] = useState(false)
   const [checkingStatus, setCheckingStatus] = useState(true)
   const [linked, setLinked] = useState(false)
   const [error, setError] = useState<string | null>(null)
+
+  // NEAR mode is opt-in via VITE_NEAR_ENABLED=true
+  const useNear = (import.meta.env.VITE_NEAR_ENABLED ?? 'false') === 'true'
 
   useEffect(() => {
     const checkStatus = async () => {
@@ -53,6 +58,11 @@ export default function LinkWallet() {
   async function connectWallet() {
     setError(null)
     try {
+      if (useNear) {
+        await connectNearWallet()
+        return
+      }
+
       const eth = (window as any).ethereum
       const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent)
 
@@ -87,28 +97,48 @@ export default function LinkWallet() {
     }
   }
 
+  async function connectNearWallet() {
+    setError(null)
+    try {
+      const account = await nearConnector.connect()
+      setWallet(account.accountId)
+      setNearPubKey(account.publicKey)
+    } catch (e: any) {
+      setError(`NEAR connection failed: ${e.message ?? 'Check browser console.'}`)
+    }
+  }
+
   async function signAndLink() {
     if (!wallet || !githubUser) return
     setLinking(true)
     setError(null)
 
     try {
-      const eth = (window as any).ethereum
-      if (!eth) {
-        setError('Web3 provider disconnected. Please reconnect your wallet.')
-        return
+      if (useNear) {
+        const challenge = await api.getWalletChallenge()
+        const message = `SoulPR wallet link\nGitHub: ${githubUser}\nWallet: ${wallet}\nNonce: ${challenge.nonce}`
+        const signature = await nearConnector.signMessage(message)
+        await api.linkWallet(wallet, signature, nearPubKey ?? undefined)
+      } else {
+        const challenge = await api.getWalletChallenge()
+        const message = `SoulPR wallet link\nGitHub: ${githubUser}\nWallet: ${wallet}\nNonce: ${challenge.nonce}`
+        const eth = (window as any).ethereum
+        if (!eth) {
+          setError('Web3 provider disconnected. Please reconnect your wallet.')
+          return
+        }
+        const signature: string = await eth.request({
+          method: 'personal_sign',
+          params: [message, wallet],
+        })
+        await api.linkWallet(wallet, signature)
       }
-      const message = `Linking GitHub ${githubUser} to ${wallet} for SoulPR`
-      const signature: string = await eth.request({
-        method: 'personal_sign',
-        params: [message, wallet],
-      })
-
-      await api.linkWallet(wallet, signature)
       setLinked(true)
     } catch (e: any) {
       if (e.code === 4001) {
-        setError('Signature request was declined in MetaMask.')
+        setError('Signature request was declined in your wallet.')
+      } else if (useNear) {
+        setError(`NEAR signing failed: ${e.message ?? 'Check browser console.'}`)
       } else {
         setError(e.message ?? 'Signing failed')
       }
@@ -245,10 +275,10 @@ export default function LinkWallet() {
               <StepBadge step={2} state={step2} />
               <div style={{ flex: 1 }}>
                 <div style={{ fontWeight: 800, fontSize: '14px', color: 'var(--ink)', marginBottom: '4px' }}>
-                  Connect Web3 Wallet
+                  {useNear ? 'Connect NEAR Account' : 'Connect Web3 Wallet'}
                 </div>
                 <div style={{ fontSize: '12px', color: 'var(--ink-muted)', lineHeight: '1.5', marginBottom: step2 === 'active' ? '12px' : '0' }}>
-                  {wallet ? `Connected: ${wallet.slice(0, 6)}...${wallet.slice(-4)}` : 'Select your EVM wallet for receiving SBTs.'}
+                  {wallet ? `Connected: ${wallet.slice(0, 6)}...${wallet.slice(-4)}` : useNear ? 'Connect your NEAR account id (e.g. alice.testnet).' : 'Select your EVM wallet for receiving SBTs.'}
                 </div>
                 {step2 === 'active' && (
                   <button
@@ -263,7 +293,7 @@ export default function LinkWallet() {
                     onMouseLeave={e => (e.currentTarget.style.opacity = '1')}
                   >
                     <IconWallet size={15} color="#FFF" />
-                    Connect Wallet
+                    {useNear ? 'Connect NEAR' : 'Connect Wallet'}
                   </button>
                 )}
               </div>
