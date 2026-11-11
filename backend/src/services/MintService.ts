@@ -28,6 +28,17 @@ export interface IChainService {
 class MintService {
   private chain: IChainService;
 
+  async getTrackedRepos(installationId: string): Promise<string[]> {
+    return dbService.getTrackedRepos(installationId);
+  }
+
+  async retryPendingMints(): Promise<void> {
+    for (const githubUsername of await dbService.listPendingUsernames()) {
+      const walletLink = await dbService.getWalletLink(githubUsername);
+      if (walletLink) await this.drainPendingQueue(githubUsername, walletLink.walletAddress);
+    }
+  }
+
   constructor(chain: IChainService = activeChainService) {
     this.chain = chain;
   }

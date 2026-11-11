@@ -58,6 +58,32 @@ describe("SoulPR", function () {
     expect(parsed.image).to.match(/^data:image\/svg\+xml;base64,/);
   });
 
+  it("escapes JSON and SVG metadata supplied by contributors", async function () {
+    const { contract, backend, contributor } = await deploy();
+    const repo = 'owner/<script>alert("x")</script>&';
+    const title = 'Fix "metadata"\\path\nnext line';
+    await contract.connect(backend).attest(contributor.address, repo, 8, title, 'user"\\name', "sha\nvalue", 1000);
+
+    const uri = await contract.tokenURI(1);
+    const parsed = JSON.parse(Buffer.from(uri.split(",")[1], "base64").toString("utf-8"));
+    expect(parsed.description).to.equal(title);
+    expect(parsed.attributes[0].value).to.equal(repo);
+    expect(parsed.attributes[3].value).to.equal('user"\\name');
+
+    const svg = Buffer.from(parsed.image.split(",")[1], "base64").toString("utf-8");
+    expect(svg).to.include("owner/&lt;script&gt;alert(&quot;x&quot;)&lt;/script&gt;&amp;");
+    expect(svg).not.to.include("<script>");
+  });
+
+  it("implements the ERC-5192 locked interface", async function () {
+    const { contract, backend, contributor } = await deploy();
+    await contract.connect(backend).attest(contributor.address, "moizz/CNTRL", 38, "Title", "moizz", "sha123", 1000);
+
+    expect(await contract.locked(1)).to.equal(true);
+    expect(await contract.supportsInterface("0xb45a3c0e")).to.equal(true);
+    await expect(contract.locked(999)).to.be.reverted;
+  });
+
   it("populates tokensByOwner correctly across multiple mints", async function () {
     const { contract, backend, contributor } = await deploy();
     await contract.connect(backend).attest(contributor.address, "moizz/CNTRL", 38, "Title", "moizz", "sha123", 1000);

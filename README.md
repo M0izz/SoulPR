@@ -1,9 +1,9 @@
 # SoulPR — Proof That Builds You
 
-> **Automated open-source contribution receipts rendered as Soulbound Tokens (SBTs) on the Monad Testnet.**
+> **Automated open-source contribution receipts rendered as Soulbound Tokens (SBTs).**
 
 [![Monad Testnet](https://img.shields.io/badge/Network-Monad%20Testnet-8B5CF6?style=flat-square)](https://testnet-rpc.monad.xyz)
-[![Solidity](https://img.shields.io/badge/Solidity-0.8.20-363636?style=flat-square&logo=solidity)](./contract)
+[![Solidity](https://img.shields.io/badge/Solidity-0.8.24-363636?style=flat-square&logo=solidity)](./contract)
 [![Express Backend](https://img.shields.io/badge/Backend-Node.js%20%2F%20Express-000000?style=flat-square&logo=express)](./backend)
 [![Vite Frontend](https://img.shields.io/badge/Frontend-React%20%2F%20TypeScript-61DAFB?style=flat-square&logo=react)](./frontend)
 [![License: Proprietary](https://img.shields.io/badge/License-All%20Rights%20Reserved-red.svg?style=flat-square)](LICENSE)
@@ -14,7 +14,7 @@
 
 ## Overview
 
-**SoulPR** turns every merged GitHub Pull Request into a permanent, non-transferable **Soulbound Token (SBT)** minted directly to the contributor's wallet on the **Monad** network.
+**SoulPR** turns every merged GitHub Pull Request into a permanent, non-transferable **Soulbound Token (SBT)** minted directly to the contributor's wallet. The existing live minting path uses Monad Testnet.
 
 Open-source contributions represent a developer's true track record. SoulPR bridges GitHub activity with Web3 identity by producing tamper-proof, on-chain contribution receipts that are 100% gasless for contributors.
 
@@ -108,18 +108,19 @@ OSS Contributer Recpiet/
 ## Smart Contract Specifications (`SoulPR.sol`)
 
 - **Standard**: Non-Transferable ERC-721
-- **Solidity Version**: `0.8.20`
+- **Solidity Version**: `0.8.24`
 - **Network**: Monad Testnet (Chain ID: `10143`)
 - **Key Functions**:
-  - `attest(address to, string memory repo, uint256 prNumber, string memory prTitle)`: Restricted to contract owner / backend minter wallet.
+  - `attest(address contributor, string repo, uint256 prNumber, string prTitle, string githubUsername, string mergeCommitSha, uint256 mergeTimestamp)`: Restricted to the configured backend minter.
   - `_update(address to, uint256 tokenId, address auth)`: Overridden to revert on transfers, preserving soulbound properties.
+  - `locked(uint256 tokenId)`: ERC-5192 interface reporting every minted badge as permanently locked.
 
 ---
 
 ## Local Development Setup
 
 ### Prerequisites
-- **Node.js**: `v18+` or `v20+`
+- **Node.js**: `v22+`
 - **npm**: `v9+`
 - **MetaMask** browser extension (connected to Monad Testnet)
 
@@ -154,8 +155,16 @@ CONTRACT_ADDRESS=0xYourDeployedContractAddress
 BACKEND_WALLET_PRIVATE_KEY=0xYourBackendPrivateKey
 GITHUB_CLIENT_ID=your_github_client_id
 GITHUB_CLIENT_SECRET=your_github_client_secret
+GITHUB_REDIRECT_URI=http://localhost:3001/auth/github/callback
+FRONTEND_URL=http://localhost:5173
 SESSION_SECRET=your_random_session_secret
+GITHUB_WEBHOOK_SECRET=your_github_webhook_secret
+GITHUB_APP_INSTALLATION_ID=your_github_app_installation_id
+GITHUB_APP_REPOSITORIES=owner/repo,owner/another-repo
+GITHUB_APP_ADMIN_USERNAME=your_github_username
 ```
+
+For production, set `FRONTEND_URL` to the exact deployed frontend origin, `GITHUB_REDIRECT_URI` to the backend OAuth callback URL registered with GitHub, and use a strong `SESSION_SECRET`. Cross-origin cookie sessions require HTTPS. Set `CORS_ALLOWED_ORIGINS` to any additional exact frontend origins (never `*`). The configured app installation ID must match GitHub's webhook payload; the comma-separated repository catalog limits which repositories can be tracked, and only the configured admin username can change that list after GitHub sign-in. Configure the same webhook secret in GitHub and the backend.
 
 Start backend server:
 ```bash
@@ -163,6 +172,12 @@ cd backend
 npm install
 npm run dev
 ```
+
+#### Isolated NEAR testnet adapter
+
+The backend also includes an opt-in NEAR testnet adapter for contract view and function calls. It is not connected to the GitHub webhook, mint queue, or existing Monad `ChainService`; the production path remains unchanged. The adapter refuses to initialize unless `NEAR_NETWORK=testnet` is explicit and the configured RPC endpoint is HTTPS on a testnet host.
+
+To enable the adapter in a local testnet environment, configure `NEAR_NETWORK=testnet`, `NEAR_ACCOUNT_ID`, `NEAR_CONTRACT_ID`, and `NEAR_PRIVATE_KEY`; `NEAR_RPC_URL` is optional and defaults to `https://rpc.testnet.near.org`. The private key must be an ed25519 key for the configured testnet account. Do not configure a mainnet key or endpoint. `near-api-js@7.4.0` requires Node.js `>=22.22.2`; the repository's existing Render configuration pins Node.js `22.16.0`, so that deployment must be upgraded before enabling this adapter there. Adapter tests inject a mock account client and do not load or require private keys, contact NEAR, or submit transactions. This adapter is infrastructure only; connecting it to receipt persistence requires the NEAR contract implementation and a separately reviewed migration of the queue/consumer.
 
 ---
 
@@ -191,4 +206,4 @@ Open **[http://localhost:5173](http://localhost:5173)** in your browser.
 
 Copyright (c) 2026 SoulPR. **All Rights Reserved.**
 
-This repository and its source code are proprietary and confidential. Unauthorized copying, modification, distribution, sublicensing, or commercial deployment of this software is strictly prohibited. See [LICENSE](LICENSE) for full legal terms.
+This repository and its source code are proprietary and confidential. Unauthorized copying, modification, distribution, sublicensing, or commercial deployment of this software is strictly prohibited. Solidity sources use `UNLICENSED` SPDX metadata to match the proprietary repository license. See [LICENSE](LICENSE) for full legal terms.

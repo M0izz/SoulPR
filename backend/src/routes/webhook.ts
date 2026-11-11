@@ -47,6 +47,10 @@ router.post("/github", async (req: Request, res: Response) => {
   const signatureHeader = req.headers["x-hub-signature-256"] as string | undefined;
   const payload = req.body as Buffer; // raw bytes, set by express.raw() in index.ts
 
+  if (!Buffer.isBuffer(payload)) {
+    return res.status(400).json({ error: "Expected a raw webhook request body" });
+  }
+
   // 1. Verify signature — reject spoofed events immediately
   if (!verifyGitHubSignature(payload, signatureHeader)) {
     console.warn("[webhook] Signature verification failed — rejecting request");
@@ -73,35 +77,71 @@ router.post("/github", async (req: Request, res: Response) => {
   }
 
   // 4. Extract fields we need
-  const pr = body["pull_request"] as Record<string, any>;
+  const pr = body["pull_request"] as Record<string, any> | undefined;
+  const repository = body["repository"] as Record<string, any> | undefined;
+  if (!pr) {
+    return res.status(400).json({ error: "Pull request payload is missing" });
+  }
   const prData = {
-    repo:           (body["repository"] as Record<string, any>)["full_name"] as string,
+    repo:           repository?.["full_name"] as string | undefined,
     prNumber:       pr["number"] as number,
     prTitle:        pr["title"] as string,
-    githubUsername: (pr["merged_by"] as Record<string, any> | null)?.["login"] as string | undefined,
+    githubUsername: (pr["user"] as Record<string, any> | null)?.["login"] as string | undefined,
     mergeTimestamp: Math.floor(new Date(pr["merged_at"] as string).getTime() / 1000),
     commitSha:      pr["merge_commit_sha"] as string,
   };
 
-  if (!prData.githubUsername) {
-    console.warn("[webhook] merged_by.login is missing — cannot identify contributor");
-    return res.status(200).json({ ignored: true, reason: "No merged_by login" });
+  if (
+    typeof prData.repo !== "string" ||
+    typeof prData.prNumber !== "number" ||
+    !Number.isInteger(prData.prNumber) ||
+    prData.prNumber <= 0 ||
+    typeof prData.prTitle !== "string" ||
+    typeof prData.githubUsername !== "string" ||
+    !Number.isFinite(prData.mergeTimestamp) ||
+    typeof prData.commitSha !== "string"
+  ) {
+    return res.status(400).json({ error: "Pull request payload is missing required fields" });
+  }
+
+  const installationId = process.env.GITHUB_APP_INSTALLATION_ID;
+  if (!installationId) {
+    console.error("[webhook] GITHUB_APP_INSTALLATION_ID is not configured");
+    return res.status(503).json({ error: "GitHub App installation is not configured" });
+  }
+  const eventInstallationId = body["installation"]?.["id"];
+  if (String(eventInstallationId ?? "") !== installationId) {
+    return res.status(200).json({ ignored: true, reason: "Unconfigured GitHub App installation" });
+  }
+
+  const configuredRepos = (process.env.GITHUB_APP_REPOSITORIES ?? "")
+    .split(",")
+    .map((repo) => repo.trim())
+    .filter(Boolean);
+  if (!configuredRepos.includes(prData.repo)) {
+    return res.status(200).json({ ignored: true, reason: "Repository is not in the configured catalog" });
   }
 
   console.log("[webhook] PR merged event received:", JSON.stringify(prData, null, 2));
 
   try {
+    const trackedRepos = await mintService.getTrackedRepos(installationId);
+    if (!trackedRepos.includes(prData.repo)) {
+      return res.status(200).json({ ignored: true, reason: "Repository is not tracked" });
+    }
+
     // Process merge event (handles wallet check, queuing, or minting)
     await mintService.handleMerge({
       repo: prData.repo,
       prNumber: prData.prNumber,
       prTitle: prData.prTitle,
-      githubUsername: prData.githubUsername as string,
+      githubUsername: prData.githubUsername,
       mergeTimestamp: prData.mergeTimestamp,
       commitSha: prData.commitSha,
     });
   } catch (e: any) {
     console.error("[webhook] Error processing merge event:", e.message);
+    return res.status(500).json({ error: "Failed to process merged pull request" });
   }
 
   return res.status(200).json({ received: true, repo: prData.repo, pr: prData.prNumber });
