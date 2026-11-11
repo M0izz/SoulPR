@@ -7,7 +7,7 @@
     "deploy:testnet": "hardhat run scripts/deploy.ts --network monadTestnet",
     "near:build": "cargo build --manifest-path near/Cargo.toml --target wasm32-unknown-unknown --release",
     "near:test": "cargo test --manifest-path near/Cargo.toml",
-    "near:deploy:testnet": "near deploy --accountId $NEAR_CONTRACT_ID --wasmFile near/target/wasm32-unknown-unknown/release/soulpr_near.wasm"
+    "near:deploy:testnet": "bash near/scripts/deploy-testnet.sh"
   },
   "devDependencies": {
     "@nomicfoundation/hardhat-toolbox": "^4.0.0",

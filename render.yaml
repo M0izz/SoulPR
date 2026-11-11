@@ -41,3 +41,17 @@ services:
         value: https://testnet-rpc.monad.xyz
       - key: FIREBASE_SERVICE_ACCOUNT_JSON
         sync: false
+      - key: CHAIN_PROVIDER
+        value: near
+      - key: NEAR_NODE_URL
+        value: https://rpc.testnet.near.org
+      - key: NEAR_NETWORK_ID
+        value: testnet
+      - key: NEAR_CONTRACT_ID
+        sync: false
+      - key: NEAR_BACKEND_ACCOUNT_ID
+        sync: false
+      - key: NEAR_BACKEND_PRIVATE_KEY
+        sync: false
+      - key: NEAR_MINT_STORAGE_DEPOSIT
+        value: "1250000000000000000000"
