@@ -2,7 +2,7 @@
 
 > **Automated open-source contribution receipts rendered as Soulbound Tokens (SBTs).**
 
-[![NEAR Protocol](https://img.shields.io/badge/Network-Monad%20Testnet-8B5CF6?style=flat-square)](https://testnet-rpc.monad.xyz)
+[![NEAR Protocol](https://img.shields.io/badge/NEAR-Protocol%20Testnet-8B5CF6?style=flat-square)](https://testnet-rpc.monad.xyz)
 [![Solidity](https://img.shields.io/badge/Solidity-0.8.24-363636?style=flat-square&logo=solidity)](./contract)
 [![Express Backend](https://img.shields.io/badge/Backend-Node.js%20%2F%20Express-000000?style=flat-square&logo=express)](./backend)
 [![Vite Frontend](https://img.shields.io/badge/Frontend-React%20%2F%20TypeScript-61DAFB?style=flat-square&logo=react)](./frontend)
