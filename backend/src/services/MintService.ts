@@ -82,11 +82,21 @@ class MintService {
           pr.commitSha,
           pr.mergeTimestamp,
         );
+        await dbService.saveIssuance(pr, {
+          status: "confirmed",
+          txHash,
+          issuerAccount: process.env.NEAR_BACKEND_ACCOUNT_ID,
+          contractId: process.env.NEAR_CONTRACT_ID,
+          retryCount: 0,
+          updatedAt: new Date().toISOString(),
+        });
         console.log(`[MintService] Successfully minted! Tx: ${txHash}`);
       } catch (e: any) {
         console.error(`[MintService] Failed to mint for ${githubUsername}:`, e.message);
         // Fall back to queueing if on-chain write fails (e.g. out of gas or network error)
-        await dbService.addPendingMint(pr);
+        await dbService.addPendingMint({ ...pr, issuance: {
+          status: "failed", retryCount: 1, error: e.message, updatedAt: new Date().toISOString(),
+        }});
       }
     } else {
       // No linked wallet. Add to pending queue.
@@ -121,7 +131,7 @@ class MintService {
       }
 
       try {
-        await this.chain.attest(
+        const txHash = await this.chain.attest(
           walletAddress,
           mint.repo,
           mint.prNumber,
@@ -130,6 +140,14 @@ class MintService {
           mint.commitSha,
           mint.mergeTimestamp,
         );
+        await dbService.saveIssuance(mint, {
+          status: "confirmed",
+          txHash,
+          issuerAccount: process.env.NEAR_BACKEND_ACCOUNT_ID,
+          contractId: process.env.NEAR_CONTRACT_ID,
+          retryCount: mint.issuance?.retryCount ?? 0,
+          updatedAt: new Date().toISOString(),
+        });
         console.log(`[MintService] Retroactively minted pending PR ${mint.repo} #${mint.prNumber}`);
       } catch (e: any) {
         console.error(`[MintService] Failed to mint pending item ${mint.repo} #${mint.prNumber}:`, e.message);

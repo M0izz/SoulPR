@@ -14,6 +14,19 @@ export interface PendingMint {
   githubUsername: string;
   mergeTimestamp: number;
   commitSha: string;
+  issuance?: IssuanceRecord;
+}
+
+export interface IssuanceRecord {
+  status: "submitted" | "confirmed" | "failed";
+  txHash?: string;
+  issuerAccount?: string;
+  contractId?: string;
+  tokenId?: string;
+  blockHeight?: number;
+  retryCount: number;
+  error?: string;
+  updatedAt: string;
 }
 
 export interface TrackedRepos {
@@ -29,6 +42,7 @@ class DbService {
   private memoryWalletLinks: Map<string, WalletLink> = new Map();
   private memoryPendingMints: Map<string, PendingMint[]> = new Map();
   private memoryTrackedRepos: Map<string, string[]> = new Map();
+  private memoryIssuances: Map<string, IssuanceRecord> = new Map();
 
   constructor() {
     this.init();
@@ -115,6 +129,26 @@ class DbService {
 
   private pendingMintDocId(mint: PendingMint) {
     return `${encodeURIComponent(mint.repo)}-${mint.prNumber}`;
+  }
+
+  private issuanceDocId(mint: Pick<PendingMint, "repo" | "prNumber" | "commitSha">) {
+    return `${encodeURIComponent(mint.repo)}-${mint.prNumber}-${encodeURIComponent(mint.commitSha)}`;
+  }
+
+  async saveIssuance(mint: PendingMint, issuance: IssuanceRecord): Promise<void> {
+    const id = this.issuanceDocId(mint);
+    if (this.isFallback) {
+      this.memoryIssuances.set(id, issuance);
+      return;
+    }
+    await this.db.collection("issuances").doc(id).set({ ...issuance, ...mint }, { merge: true });
+  }
+
+  async getIssuance(mint: PendingMint): Promise<IssuanceRecord | null> {
+    const id = this.issuanceDocId(mint);
+    if (this.isFallback) return this.memoryIssuances.get(id) ?? null;
+    const doc = await this.db.collection("issuances").doc(id).get();
+    return doc.exists ? (doc.data() as IssuanceRecord) : null;
   }
 
   async deletePendingMints(githubUsername: string, processedMints?: PendingMint[]): Promise<void> {
