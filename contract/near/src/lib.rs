@@ -21,7 +21,7 @@ use near_sdk::{
  *    cannot be transferred.
  */
 
-#[near_bindgen]
+#[near_bindgen(contract_state)]
 #[derive(BorshDeserialize, BorshSerialize, PanicOnDefault)]
 pub struct SoulPR {
     /// Contract deployer — authorized to rotate the backend minter.
