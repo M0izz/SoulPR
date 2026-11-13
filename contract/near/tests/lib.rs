@@ -1,5 +1,5 @@
-use near_sdk::{testing_env, test_utils::VMContextBuilder, AccountId, NearToken};
 use near_sdk::test_utils::accounts;
+use near_sdk::{test_utils::VMContextBuilder, testing_env, AccountId, NearToken};
 use soulpr_near::SoulPR;
 
 fn context(predecessor: AccountId) -> near_sdk::VMContext {
@@ -18,7 +18,18 @@ fn backend_can_mint_and_duplicate_is_rejected() {
     let mut contract = SoulPR::init(owner, backend.clone());
 
     testing_env!(context(backend));
-    assert_eq!(contract.mint(contributor.clone(), "org/repo".into(), 1, "Fix".into(), "alice".into(), "abc".into(), 1), 1);
+    assert_eq!(
+        contract.mint(
+            contributor.clone(),
+            "org/repo".into(),
+            1,
+            "Fix".into(),
+            "alice".into(),
+            "abc".into(),
+            1
+        ),
+        1
+    );
     assert!(contract.is_minted("org/repo".into(), 1, contributor.clone(), "abc".into()));
     assert_eq!(contract.nft_tokens_by_owner(contributor), vec![1]);
 }
@@ -31,5 +42,13 @@ fn non_backend_cannot_mint() {
     testing_env!(context(owner.clone()));
     let mut contract = SoulPR::init(owner, backend);
     testing_env!(context(accounts(2)));
-    contract.mint(accounts(3), "org/repo".into(), 1, "Fix".into(), "alice".into(), "abc".into(), 1);
+    contract.mint(
+        accounts(3),
+        "org/repo".into(),
+        1,
+        "Fix".into(),
+        "alice".into(),
+        "abc".into(),
+        1,
+    );
 }
