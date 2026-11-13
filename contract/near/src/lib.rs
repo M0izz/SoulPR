@@ -50,7 +50,7 @@ pub struct Attestation {
     pub merge_timestamp: u64, // Unix seconds
 }
 
-#[derive(BorshStorageKey)]
+#[derive(BorshSerialize, BorshStorageKey)]
 enum StorageKey {
     Minted,
     Attestations,
