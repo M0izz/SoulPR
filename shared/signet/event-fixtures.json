@@ -1,0 +1,14 @@
+{
+  "mint": {
+    "standard": "signet",
+    "version": "1.0.0",
+    "event": "credential_mint",
+    "data": [{ "credential_id": "42", "owner_id": "alice.near", "identity_hash": "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=", "category": "merged_pull_request", "issuer_id": "issuer.near", "metadata_version": "signet-credential-1.0.0" }]
+  },
+  "revocation": {
+    "standard": "signet",
+    "version": "1.0.0",
+    "event": "credential_revoke",
+    "data": [{ "credential_id": "42", "reason_code": "issued_in_error", "reference_hash": "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=", "actor_id": "owner.near", "status_version": 2 }]
+  }
+}
