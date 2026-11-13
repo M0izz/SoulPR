@@ -159,7 +159,7 @@ mod tests {
 
     fn setup() {
         testing_env!(VMContextBuilder::new()
-            .current_account_id(AccountId::new_unchecked("signet.testnet".into()))
+            .current_account_id(AccountId::new_unvalidated("signet.testnet".into()))
             .build());
     }
 
