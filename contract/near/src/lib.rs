@@ -177,7 +177,4 @@ impl SoulPR {
         self.backend_minter = new_minter;
     }
 
-    /// Soulbound enforcement: NEAR exposes no nft_transfer method, so tokens
-    /// are non-transferable by design. Minting is the only state-changing
-    /// public operation (restricted to backend_minter).
 }
