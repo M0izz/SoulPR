@@ -1,0 +1,25 @@
+{
+  "collection": {
+    "spec": "signet-metadata-1.0.0",
+    "name": "SIGNET Contribution Credentials",
+    "symbol": "SIGNET",
+    "icon": "ipfs://collection/icon.svg",
+    "base_uri": "ipfs://collection/",
+    "reference": "ipfs://collection/collection.json",
+    "reference_hash": "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA="
+  },
+  "token": {
+    "title": "Merged Pull Request — org/repo #42",
+    "description": "SIGNET contribution credential for an independently verified merged GitHub pull request.",
+    "media": "ipfs://artwork/credential-42.svg",
+    "media_hash": "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=",
+    "copies": 1,
+    "issued_at": "2026-11-11T00:00:00Z",
+    "expires_at": null,
+    "starts_at": null,
+    "updated_at": null,
+    "extra": "{\"brand\":\"SIGNET\",\"schema\":\"signet-credential-1.0.0\",\"category\":\"merged_pull_request\",\"status\":\"valid\"}",
+    "reference": "ipfs://evidence/credential-42.json",
+    "reference_hash": "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA="
+  }
+}

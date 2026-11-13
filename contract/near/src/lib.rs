@@ -6,6 +6,8 @@ use near_sdk::{
     AccountId, BorshStorageKey, PanicOnDefault,
 };
 
+pub mod signet_schema;
+
 /**
  * SoulPR — NEAR Protocol migration
  *
