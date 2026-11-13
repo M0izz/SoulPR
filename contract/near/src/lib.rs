@@ -1,9 +1,10 @@
-use near_sdk::{
-    env, near_bindgen, AccountId, PanicOnDefault, BorshStorageKey,
-    serde::{Serialize, Deserialize},
-};
-use near_sdk::collections::{LookupMap, UnorderedMap, Vector};
 use near_sdk::borsh::{self, BorshDeserialize, BorshSerialize};
+use near_sdk::collections::{LookupMap, UnorderedMap, Vector};
+use near_sdk::{
+    env, near_bindgen,
+    serde::{Deserialize, Serialize},
+    AccountId, BorshStorageKey, PanicOnDefault,
+};
 
 /**
  * SoulPR — NEAR Protocol migration
@@ -41,12 +42,12 @@ pub struct SoulPR {
 #[serde(crate = "near_sdk::serde")]
 pub struct Attestation {
     pub contributor: AccountId,
-    pub repo: String,            // "owner/name"
+    pub repo: String, // "owner/name"
     pub pr_number: u64,
     pub pr_title: String,
     pub github_username: String,
     pub merge_commit_sha: String,
-    pub merge_timestamp: u64,    // Unix seconds
+    pub merge_timestamp: u64, // Unix seconds
 }
 
 #[derive(BorshStorageKey)]
@@ -125,14 +126,11 @@ impl SoulPR {
         self.minted.insert(&key, &token_id);
         self.attestations.insert(&token_id, &attestation);
 
-        let mut tokens = self
-            .tokens_by_owner
-            .get(&contributor)
-            .unwrap_or_else(|| {
-                Vector::new(StorageKey::TokensByOwnerInner {
-                    account_id_hash: env::sha256(contributor.as_bytes()),
-                })
-            });
+        let mut tokens = self.tokens_by_owner.get(&contributor).unwrap_or_else(|| {
+            Vector::new(StorageKey::TokensByOwnerInner {
+                account_id_hash: env::sha256(contributor.as_bytes()),
+            })
+        });
         tokens.push(&token_id);
         self.tokens_by_owner.insert(&contributor, &tokens);
 
@@ -176,5 +174,4 @@ impl SoulPR {
         assert!(!new_minter.as_str().is_empty(), "ERR_ZERO_MINTER");
         self.backend_minter = new_minter;
     }
-
 }
