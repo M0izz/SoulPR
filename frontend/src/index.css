@@ -2309,6 +2309,209 @@ button:disabled {
   }
 }
 
+/* ============================================================
+   SIGNET — Soothing Animations & Luxury Micro-Interactions
+   ============================================================ */
+
+@keyframes signetAmbientPulse {
+  0%, 100% {
+    opacity: 0.45;
+    transform: scale(1) translate3d(0, 0, 0);
+  }
+  50% {
+    opacity: 0.8;
+    transform: scale(1.05) translate3d(0, -6px, 0);
+  }
+}
+
+@keyframes signetSubtleFloat {
+  0%, 100% {
+    transform: translateY(0px);
+  }
+  50% {
+    transform: translateY(-5px);
+  }
+}
+
+@keyframes signetGlowBreath {
+  0%, 100% {
+    box-shadow: 0 0 15px rgba(185, 87, 43, 0.15), inset 0 0 10px rgba(185, 87, 43, 0.05);
+    border-color: rgba(185, 87, 43, 0.3);
+  }
+  50% {
+    box-shadow: 0 0 30px rgba(185, 87, 43, 0.35), inset 0 0 18px rgba(185, 87, 43, 0.12);
+    border-color: rgba(185, 87, 43, 0.65);
+  }
+}
+
+@keyframes signetShimmerSlide {
+  0% {
+    transform: translateX(-150%) skewX(-20deg);
+  }
+  100% {
+    transform: translateX(250%) skewX(-20deg);
+  }
+}
+
+@keyframes signetScanline {
+  0% {
+    top: 0%;
+    opacity: 0.8;
+  }
+  50% {
+    opacity: 1;
+  }
+  100% {
+    top: 100%;
+    opacity: 0.2;
+  }
+}
+
+/* Utility Classes */
+.signet-ambient-pulse {
+  animation: signetAmbientPulse 8s ease-in-out infinite;
+}
+
+.signet-subtle-float {
+  animation: signetSubtleFloat 5s ease-in-out infinite;
+}
+
+.signet-glow-breath {
+  animation: signetGlowBreath 3.5s ease-in-out infinite;
+}
+
+/* Glassmorphism Luxury Cards */
+.signet-glass-card {
+  background: var(--paper-raised);
+  backdrop-filter: blur(16px);
+  border: 1px solid var(--rule);
+  border-radius: 16px;
+  box-shadow: 0 10px 30px -10px rgba(0, 0, 0, 0.15);
+  transition: transform 0.28s cubic-bezier(0.16, 1, 0.3, 1),
+              box-shadow 0.28s cubic-bezier(0.16, 1, 0.3, 1),
+              border-color 0.28s ease;
+}
+
+.signet-glass-card:hover {
+  transform: translateY(-3px);
+  border-color: var(--signet-orange-border);
+  box-shadow: 0 20px 40px -15px rgba(185, 87, 43, 0.12), 0 0 0 1px rgba(185, 87, 43, 0.18);
+}
+
+/* Tactile Shimmer Buttons */
+.btn-signet-primary {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  background: linear-gradient(135deg, #B9572B 0%, #9C451E 100%);
+  color: #EDE2D0 !important;
+  font-family: var(--font-sans);
+  font-weight: 600;
+  font-size: 14px;
+  letter-spacing: 0.02em;
+  padding: 10px 22px;
+  border-radius: 10px;
+  border: 1px solid rgba(237, 226, 208, 0.2);
+  box-shadow: 0 4px 14px rgba(185, 87, 43, 0.25);
+  cursor: pointer;
+  overflow: hidden;
+  transition: all 0.22s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.btn-signet-primary::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 45%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.22), transparent);
+  transform: translateX(-150%) skewX(-20deg);
+  pointer-events: none;
+}
+
+.btn-signet-primary:hover {
+  transform: translateY(-1.5px);
+  box-shadow: 0 8px 24px rgba(185, 87, 43, 0.4), 0 0 0 1px rgba(237, 226, 208, 0.35);
+}
+
+.btn-signet-primary:hover::after {
+  animation: signetShimmerSlide 1.2s ease-in-out;
+}
+
+.btn-signet-primary:active {
+  transform: scale(0.975);
+}
+
+.btn-signet-secondary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  background: var(--paper-raised);
+  color: var(--ink) !important;
+  font-family: var(--font-sans);
+  font-weight: 600;
+  font-size: 14px;
+  padding: 10px 20px;
+  border-radius: 10px;
+  border: 1px solid var(--rule);
+  cursor: pointer;
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.btn-signet-secondary:hover {
+  border-color: var(--signet-orange);
+  color: var(--signet-orange) !important;
+  background: var(--stamp-bg);
+  transform: translateY(-1.5px);
+}
+
+.btn-signet-secondary:active {
+  transform: scale(0.975);
+}
+
+/* Pulsing Status Dot */
+.signet-pulse-dot {
+  position: relative;
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background-color: var(--signet-orange);
+}
+
+.signet-pulse-dot::before {
+  content: '';
+  position: absolute;
+  top: -3px;
+  left: -3px;
+  right: -3px;
+  bottom: -3px;
+  border-radius: 50%;
+  background-color: var(--signet-orange);
+  opacity: 0.45;
+  animation: signetAmbientPulse 2.4s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+/* Fade In Animation for View Transitions */
+.signet-enter-fade {
+  animation: signetEnterFade 0.35s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+@keyframes signetEnterFade {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   *,
   *::before,

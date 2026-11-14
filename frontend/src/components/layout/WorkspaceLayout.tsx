@@ -352,7 +352,7 @@ export default function WorkspaceLayout() {
         </header>
 
         {/* Nested Active View Page */}
-        <main style={{ flex: 1, padding: '2rem 2.5rem', overflowY: 'auto', boxSizing: 'border-box' }}>
+        <main className="signet-enter-fade" style={{ flex: 1, padding: '2rem 2.5rem', overflowY: 'auto', boxSizing: 'border-box' }}>
           <Outlet />
         </main>
       </div>

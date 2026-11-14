@@ -86,18 +86,9 @@ export default function ContributionsPage() {
 
         <button
           onClick={() => setShowImportModal(true)}
+          className="btn-signet-primary"
           style={{
-            display: 'inline-flex',
-            alignItems: 'center',
-            gap: '8px',
-            backgroundColor: '#B9572B',
-            color: '#EDE2D0',
-            border: 'none',
-            borderRadius: '8px',
-            padding: '9px 16px',
             fontSize: '13px',
-            fontWeight: 700,
-            cursor: 'pointer',
           }}
         >
           <IconCode size={15} /> Import PR URL

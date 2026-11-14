@@ -178,13 +178,10 @@ export default function OverviewPage() {
             key={label}
             onClick={() => navigate(to)}
             title={tooltip}
+            className="signet-glass-card"
             style={{
-              backgroundColor: 'var(--paper-raised)',
-              border: '1px solid var(--rule)',
-              borderRadius: '12px',
               padding: '1.4rem',
               cursor: 'pointer',
-              transition: 'border-color 0.15s ease, transform 0.15s ease',
             }}
           >
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '10px' }}>
@@ -248,16 +245,12 @@ export default function OverviewPage() {
                 </p>
                 <Link
                   to="/link-wallet"
+                  className="btn-signet-primary"
                   style={{
                     display: 'inline-flex',
                     alignItems: 'center',
                     gap: '8px',
-                    backgroundColor: '#B9572B',
-                    color: '#EDE2D0',
-                    padding: '8px 16px',
-                    borderRadius: '8px',
                     fontSize: '13px',
-                    fontWeight: 700,
                     textDecoration: 'none',
                   }}
                 >
@@ -276,18 +269,12 @@ export default function OverviewPage() {
                 <button
                   onClick={triggerSync}
                   disabled={syncState.isSyncing}
+                  className="btn-signet-primary"
                   style={{
                     display: 'inline-flex',
                     alignItems: 'center',
                     gap: '8px',
-                    backgroundColor: '#B9572B',
-                    color: '#EDE2D0',
-                    border: 'none',
-                    padding: '8px 16px',
-                    borderRadius: '8px',
                     fontSize: '13px',
-                    fontWeight: 700,
-                    cursor: syncState.isSyncing ? 'not-allowed' : 'pointer',
                   }}
                 >
                   {syncState.isSyncing ? 'Syncing...' : 'Sync Contributions Now'} <IconArrowRight size={14} />
@@ -349,19 +336,12 @@ export default function OverviewPage() {
             <button
               type="submit"
               disabled={isImporting || !prUrlInput.trim()}
+              className="btn-signet-primary"
               style={{
                 alignSelf: 'flex-start',
-                display: 'inline-flex',
-                alignItems: 'center',
-                gap: '8px',
-                backgroundColor: 'var(--paper)',
-                border: '1px solid var(--rule)',
-                color: 'var(--ink)',
-                padding: '8px 16px',
-                borderRadius: '8px',
                 fontSize: '13px',
-                fontWeight: 600,
                 cursor: isImporting || !prUrlInput.trim() ? 'not-allowed' : 'pointer',
+                opacity: !prUrlInput.trim() ? 0.6 : 1,
               }}
             >
               {isImporting ? 'Validating PR...' : 'Import PR & Generate Dossier'}
