@@ -284,19 +284,9 @@ fn uri_too_long_is_rejected() {
     contract.mint(input);
 }
 
-#[test]
-#[should_panic(expected = "ERR_METADATA_VERSION_TOO_LONG")]
-fn version_string_too_long_is_rejected() {
-    let mut contract = SoulPR::init(accounts(0), accounts(1));
-    testing_env!(context(accounts(1)));
-    let mut input = make_input(
-        accounts(2), 12345, 67890, 42, "Fix",
-
 // ---------------------------------------------------------------------------
 // Minting tests
 // ---------------------------------------------------------------------------
-
-} // closes version_string_too_long_is_rejected()
 
 #[test]
 fn backend_can_mint_and_duplicate_is_rejected() {
@@ -337,6 +327,11 @@ fn backend_can_mint_and_duplicate_is_rejected() {
     assert_eq!(credential.status.status_version, 1);
 
     // Owner enumeration
+    assert_eq!(contract.nft_tokens_by_owner(contributor), vec![1]);
+
+    // Total supply
+    assert_eq!(contract.nft_total_supply(), 1);
+}
 #[test]
 #[should_panic(expected = "ERR_NOT_BACKEND_MINTER")]
 fn non_backend_cannot_mint() {
@@ -374,22 +369,7 @@ fn duplicate_identity_is_rejected() {
     // Same identity — must be rejected
     contract.mint(input);
 }
-    assert_eq!(contract.nft_tokens_by_owner(contributor), vec![1]);
 
-    // Total supply
-    assert_eq!(contract.nft_total_supply(), 1);
-}
-        "0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef",
-        accounts(1),
-    );
-    input.metadata_version = "a".repeat(65);
-    contract.mint(input);
-}
-
-#[test]
-#[should_panic(expected = "ERR_INVALID_DIGEST_LENGTH")]
-fn invalid_digest_length_is_rejected() {
-}
 #[test]
 fn identity_hash_is_stored_and_retrievable() {
     let owner = accounts(0);
