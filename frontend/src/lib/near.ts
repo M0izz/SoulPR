@@ -1,18 +1,15 @@
 /**
- * NearConnector — frontend NEAR integration for SoulPR.
+ * NearConnector — frontend NEAR integration for SIGNET.
  *
  * Connects the browser to a NEAR account so the user can link their
  * GitHub username to a NEAR account id and sign the link message.
  *
- * Two connection styles are supported:
- *   1. Injected `window.near` (NEAR wallet extension / Sender) — preferred.
- *   2. `near-api-js` BrowserLocalStorageKeyStore — works after the user has
- *      completed a `near login` flow (access key stored in localStorage).
- *
- * For production, the NEAR Wallet Selector (@near-wallet-selector) is
- * recommended over this minimal connector.
+ * Three connection styles are supported:
+ *   1. Injected `window.near` (NEAR wallet extension / Sender / Meteor).
+ *   2. `near-api-js` BrowserLocalStorageKeyStore — web wallet login (MyNearWallet).
+ *   3. Dev / Testnet Direct Key — local developer testing key store.
  */
-import { connect, keyStores, KeyPair } from "near-api-js";
+import { KeyPair } from "near-api-js";
 
 export interface NearAccount {
   accountId: string;
@@ -47,19 +44,74 @@ export class NearConnector {
     return this.publicKey;
   }
 
-  /** Build the NEAR wallet login URL (standard near.login flow). */
+  /** Build the NEAR wallet login URL (MyNearWallet web wallet login flow). */
   loginUrl(successUrl: string): string {
-    const { networkId, walletUrl } = this.config;
-    const base = walletUrl || `https://wallet.${networkId}.near.org`;
+    const { walletUrl } = this.config;
+    const base = walletUrl || `https://testnet.mynearwallet.com`;
     const tmpKeyPair = KeyPair.fromRandom("ed25519");
     const publicKey = tmpKeyPair.getPublicKey().toString();
+    
+    // Save pending keypair in localStorage so we can retrieve it when the user is redirected back
+    if (typeof localStorage !== "undefined") {
+      localStorage.setItem(`near-pending-key-${publicKey}`, tmpKeyPair.toString());
+    }
+
     const params = new URLSearchParams({
       contract_id: this.config.contractId,
       success_url: successUrl,
       public_key: publicKey,
-      meta: JSON.stringify({ app: "soulpr" }),
+      meta: JSON.stringify({ app: "signet" }),
     });
     return `${base}/login/?${params.toString()}`;
+  }
+
+  /**
+   * Complete web wallet login after redirect back from MyNearWallet
+   */
+  completeLogin(accountId: string, publicKey?: string): NearAccount {
+    let resolvedPubKey = publicKey ?? "";
+    if (typeof localStorage !== "undefined") {
+      if (publicKey && localStorage.getItem(`near-pending-key-${publicKey}`)) {
+        const key = localStorage.getItem(`near-pending-key-${publicKey}`)!;
+        localStorage.setItem(`near-signet-${accountId}`, key);
+        localStorage.removeItem(`near-pending-key-${publicKey}`);
+      }
+      
+      const storedKey = localStorage.getItem(`near-signet-${accountId}`) || 
+                        localStorage.getItem(`near-soulpr-${accountId}`);
+      if (storedKey && !resolvedPubKey) {
+        resolvedPubKey = KeyPair.fromString(storedKey).getPublicKey().toString();
+      }
+    }
+
+    this.accountId = accountId;
+    this.publicKey = resolvedPubKey;
+    this.connected = true;
+    return { accountId: this.accountId, publicKey: this.publicKey };
+  }
+
+  /**
+   * Direct developer/testnet account creation/link for local or testnet validation
+   */
+  connectDevAccount(accountId: string): NearAccount {
+    const cleanId = accountId.trim().toLowerCase();
+    const storageKey = `near-signet-${cleanId}`;
+    let keyPair: KeyPair;
+
+    const existingKey = typeof localStorage !== "undefined" ? localStorage.getItem(storageKey) : null;
+    if (existingKey) {
+      keyPair = KeyPair.fromString(existingKey);
+    } else {
+      keyPair = KeyPair.fromRandom("ed25519");
+      if (typeof localStorage !== "undefined") {
+        localStorage.setItem(storageKey, keyPair.toString());
+      }
+    }
+
+    this.accountId = cleanId;
+    this.publicKey = keyPair.getPublicKey().toString();
+    this.connected = true;
+    return { accountId: this.accountId, publicKey: this.publicKey };
   }
 
   /** Connect using an injected window.near provider, if available. */
@@ -89,36 +141,30 @@ export class NearConnector {
   }
 
   /**
-   * Connect using near-api-js with a BrowserLocalStorageKeyStore.
-   * Requires the user to have already stored an access key (e.g. after
-   * a `near login` redirect back to this origin).
+   * Connect using stored keys in localStorage
    */
   async connectLocalStorage(): Promise<NearAccount> {
-    const keyStore = new keyStores.BrowserLocalStorageKeyStore({
-      keyPrefix: "near-soulpr-",
-    });
+    if (typeof localStorage === "undefined") {
+      throw new Error("localStorage is not available.");
+    }
 
-    const near = await connect({
-      nodeUrl: this.config.nodeUrl,
-      networkId: this.config.networkId,
-      keyStore,
-      headers: {},
-    });
-
-    // Enumerate stored accounts and pick the first one.
     const accounts = Object.keys(localStorage)
-      .filter((key) => key.startsWith("near-soulpr-"))
-      .map((key) => key.slice("near-soulpr-".length));
+      .filter((key) => key.startsWith("near-signet-") || key.startsWith("near-soulpr-"))
+      .map((key) => key.replace(/^near-(signet|soulpr)-/, ""));
+
     if (!accounts || accounts.length === 0) {
       throw new Error(
-        "No NEAR access key in localStorage. Sign in via the NEAR wallet login URL first.",
+        "No NEAR account found in browser storage. Connect using MyNearWallet or enter your testnet account ID.",
       );
     }
 
     this.accountId = accounts[0];
-    const keyPair = KeyPair.fromString(localStorage.getItem(`near-soulpr-${this.accountId}`) ?? "");
+    const key =
+      localStorage.getItem(`near-signet-${this.accountId}`) ||
+      localStorage.getItem(`near-soulpr-${this.accountId}`) ||
+      "";
+    const keyPair = KeyPair.fromString(key);
     this.publicKey = keyPair.getPublicKey().toString();
-    this.near = near;
     this.connected = true;
 
     return { accountId: this.accountId, publicKey: this.publicKey };
@@ -149,7 +195,9 @@ export class NearConnector {
     }
 
     // Fallback: sign via the localStorage key store.
-    const key = localStorage.getItem(`near-soulpr-${this.accountId}`);
+    const key =
+      localStorage.getItem(`near-signet-${this.accountId}`) ||
+      localStorage.getItem(`near-soulpr-${this.accountId}`);
     if (!key) throw new Error("No local NEAR key available for signing.");
     const signed = KeyPair.fromString(key).sign(Buffer.from(message, "utf8"));
     return Buffer.from(signed.signature).toString("base64");
@@ -167,8 +215,8 @@ export class NearConnector {
 export const nearConnector = new NearConnector({
   nodeUrl: import.meta.env.VITE_NEAR_NODE_URL ?? "https://rpc.testnet.near.org",
   networkId: import.meta.env.VITE_NEAR_NETWORK_ID ?? "testnet",
-  contractId: import.meta.env.VITE_NEAR_CONTRACT_ID ?? "soulpr.testnet",
-  walletUrl: import.meta.env.VITE_NEAR_WALLET_URL,
+  contractId: import.meta.env.VITE_NEAR_CONTRACT_ID ?? "signet.testnet",
+  walletUrl: import.meta.env.VITE_NEAR_WALLET_URL ?? "https://testnet.mynearwallet.com",
 });
 
 export default nearConnector;

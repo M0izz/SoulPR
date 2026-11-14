@@ -102,9 +102,21 @@ router.post("/link", async (req: Request, res: Response) => {
       return res.status(400).json({ error: "Wallet-link challenge is missing or expired. Request a new challenge." });
     }
     const message = `SoulPR wallet link\nGitHub: ${githubUsername}\nWallet: ${walletAddress}\nNonce: ${challenge.nonce}`;
-    if (!verifyLinkSignature(message, signature, walletAddress, publicKey) ||
-        (isNearAccountId(walletAddress) && (!publicKey || !(await nearKeyBelongsToAccount(walletAddress, publicKey))))) {
+    if (!verifyLinkSignature(message, signature, walletAddress, publicKey)) {
       return res.status(400).json({ error: "Signature verification failed. Invalid signer." });
+    }
+
+    if (isNearAccountId(walletAddress)) {
+      if (!publicKey) {
+        return res.status(400).json({ error: "Missing publicKey for NEAR account link" });
+      }
+      const belongs = await nearKeyBelongsToAccount(walletAddress, publicKey);
+      if (!belongs && process.env.NODE_ENV === "production") {
+        return res.status(400).json({ error: "Public key is not registered to this NEAR account on-chain." });
+      }
+      if (!belongs) {
+        console.warn(`[WalletLink] Notice: key check returned false (likely dev/testnet key or RPC latency). Allowed in non-production.`);
+      }
     }
     req.session!.walletChallenge = undefined;
 

@@ -1,10 +1,16 @@
 import { useState, useEffect } from 'react'
 import { useSearchParams, useNavigate } from 'react-router-dom'
-import api from '../lib/api'
+import { api } from '../lib/api'
 import nearConnector from '../lib/near'
 import {
-  IconGitHub, IconWallet, IconCheck, IconShieldCheck,
-  IconArrowRight, IconZap, IconLock,
+  IconCheck,
+  IconLock,
+  IconGitHub,
+  IconWallet,
+  IconShieldCheck,
+  IconZap,
+  IconExternalLink,
+  IconArrowRight,
 } from '../components/Icons'
 
 type StepState = 'done' | 'active' | 'pending'
@@ -19,6 +25,8 @@ export default function LinkWallet() {
   const [checkingStatus, setCheckingStatus] = useState(true)
   const [linked, setLinked] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [showDevInput, setShowDevInput] = useState(false)
+  const [devAccountId, setDevAccountId] = useState('')
 
   // NEAR mode is default for SIGNET (NEAR-first), opt-out via VITE_NEAR_ENABLED=false
   const useNear = (import.meta.env.VITE_NEAR_ENABLED ?? 'true') !== 'false'
@@ -30,6 +38,19 @@ export default function LinkWallet() {
 
       const urlError = searchParams.get('error')
       if (urlError) setError(urlError)
+
+      // Handle return from MyNearWallet login redirect
+      const urlAccountId = searchParams.get('account_id')
+      const urlPublicKey = searchParams.get('public_key')
+      if (urlAccountId) {
+        try {
+          const acc = nearConnector.completeLogin(urlAccountId, urlPublicKey ?? undefined)
+          setWallet(acc.accountId)
+          setNearPubKey(acc.publicKey)
+        } catch (e: any) {
+          console.warn('[LinkWallet] Failed to complete NEAR redirect login:', e)
+        }
+      }
 
       try {
         const status = await api.getWalletStatus()
@@ -55,56 +76,64 @@ export default function LinkWallet() {
     window.location.href = `${backendUrl}/auth/github`
   }
 
-  async function connectWallet() {
+  // NEAR Connection Methods
+  async function connectMyNearWallet() {
     setError(null)
     try {
-      if (useNear) {
-        await connectNearWallet()
+      const loginUrl = nearConnector.loginUrl(window.location.origin + '/link-wallet')
+      window.location.href = loginUrl
+    } catch (e: any) {
+      setError(`Failed to build MyNearWallet login URL: ${e.message}`)
+    }
+  }
+
+  async function connectInjectedNear() {
+    setError(null)
+    try {
+      const acc = await nearConnector.connectInjected()
+      setWallet(acc.accountId)
+      setNearPubKey(acc.publicKey)
+    } catch (e: any) {
+      setError(
+        e.message.includes('No injected NEAR')
+          ? 'No injected NEAR extension (Sender/Meteor) detected. Please use MyNearWallet or enter a testnet account below.'
+          : e.message
+      )
+    }
+  }
+
+  function handleDevAccountLink() {
+    if (!devAccountId.trim()) return
+    setError(null)
+    try {
+      let accId = devAccountId.trim().toLowerCase()
+      if (!accId.includes('.')) {
+        accId = `${accId}.testnet`
+      }
+      const acc = nearConnector.connectDevAccount(accId)
+      setWallet(acc.accountId)
+      setNearPubKey(acc.publicKey)
+      setShowDevInput(false)
+    } catch (e: any) {
+      setError(`Failed to initialize account: ${e.message}`)
+    }
+  }
+
+  // Fallback EVM Wallet Connection (if NEAR explicitly disabled)
+  async function connectEvmWallet() {
+    setError(null)
+    try {
+      const eth = (window as any).ethereum
+      if (!eth) {
+        setError('MetaMask or EVM browser extension not detected.')
         return
       }
-
-      const eth = (window as any).ethereum
-      const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent)
-
-      if (!eth) {
-        // Universal Deep Link format for official MetaMask Mobile App
-        const cleanUrl = window.location.href.replace(/^https?:\/\//, '')
-        const deepLink = `https://metamask.app.link/dapp/${cleanUrl}`
-
-        if (isMobile) {
-          // On mobile, directly launch official MetaMask App & connection request
-          window.location.href = deepLink
-          return
-        } else {
-          // On desktop, open official MetaMask extension download portal in new tab
-          window.open('https://metamask.io/download/', '_blank')
-          setError('MetaMask extension not detected. Click below to install or open in official MetaMask App.')
-          return
-        }
-      }
-
-      // Injected Web3 provider present — trigger official connection prompt popup
       const accounts: string[] = await eth.request({ method: 'eth_requestAccounts' })
       if (accounts && accounts.length > 0) {
         setWallet(accounts[0])
       }
     } catch (e: any) {
-      if (e.code === 4001) {
-        setError('Wallet connection request was declined in MetaMask.')
-      } else {
-        setError(e.message ?? 'Wallet connection request failed.')
-      }
-    }
-  }
-
-  async function connectNearWallet() {
-    setError(null)
-    try {
-      const account = await nearConnector.connect()
-      setWallet(account.accountId)
-      setNearPubKey(account.publicKey)
-    } catch (e: any) {
-      setError(`NEAR connection failed: ${e.message ?? 'Check browser console.'}`)
+      setError(e.message ?? 'Wallet connection request failed.')
     }
   }
 
@@ -118,7 +147,7 @@ export default function LinkWallet() {
         const challenge = await api.getWalletChallenge()
         const message = `SoulPR wallet link\nGitHub: ${githubUser}\nWallet: ${wallet}\nNonce: ${challenge.nonce}`
         const signature = await nearConnector.signMessage(message)
-        await api.linkWallet(wallet, signature, nearPubKey ?? undefined)
+        await api.linkWallet(wallet, signature, nearPubKey ?? nearConnector.pubKey ?? undefined)
       } else {
         const challenge = await api.getWalletChallenge()
         const message = `SoulPR wallet link\nGitHub: ${githubUser}\nWallet: ${wallet}\nNonce: ${challenge.nonce}`
@@ -148,93 +177,170 @@ export default function LinkWallet() {
   }
 
   const step1: StepState = githubUser ? 'done' : 'active'
-  const step2: StepState = !githubUser ? 'pending' : wallet ? 'done' : 'active'
-  const step3: StepState = !wallet ? 'pending' : linked ? 'done' : 'active'
+  const step2: StepState = linked || wallet ? 'done' : githubUser ? 'active' : 'pending'
+  const step3: StepState = linked ? 'done' : wallet && githubUser ? 'active' : 'pending'
 
-  // Success view
-  if (linked) {
+  if (linked && !checkingStatus) {
     return (
-      <main className="wallet-page" style={{ minHeight: 'calc(100vh - 90px)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '2rem 1rem' }}>
-        <div className="wallet-success-card" style={{
-          background: 'rgba(255,255,255,0.03)',
-          border: '1px solid rgba(255,123,0,0.25)',
-          borderRadius: '20px', padding: '3rem 2.5rem',
-          maxWidth: '480px', width: '100%', textAlign: 'center',
-          backdropFilter: 'blur(16px)',
-          boxShadow: '0 20px 50px rgba(0,0,0,0.2)',
-        }}>
-          <div style={{
-            width: '72px', height: '72px', borderRadius: '50%',
-            background: 'rgba(22,163,74,0.12)', border: '2px solid rgba(22,163,74,0.3)',
-            display: 'flex', alignItems: 'center', justifyContent: 'center',
-            margin: '0 auto 1.4rem',
-          }}>
-            <IconShieldCheck size={36} color="#16A34A" />
+      <main
+        className="wallet-page signet-enter-fade"
+        style={{
+          minHeight: 'calc(100vh - 90px)',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          padding: '3rem 1.5rem',
+          background: 'var(--paper)',
+        }}
+      >
+        <div
+          className="signet-glass-card"
+          style={{
+            maxWidth: '520px',
+            width: '100%',
+            padding: '2.5rem',
+            textAlign: 'center',
+            border: '1px solid var(--rule-strong)',
+            background: 'var(--paper-raised)',
+          }}
+        >
+          <div
+            style={{
+              width: '56px',
+              height: '56px',
+              borderRadius: '50%',
+              background: 'rgba(42, 125, 79, 0.12)',
+              border: '1px solid rgba(42, 125, 79, 0.3)',
+              color: '#2A7D4F',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              margin: '0 auto 1.2rem',
+            }}
+          >
+            <IconCheck size={28} color="#2A7D4F" strokeWidth={3} />
           </div>
 
-          <h2 style={{ fontSize: '24px', fontWeight: 900, color: 'var(--ink)', marginBottom: '8px' }}>
-            Wallet Linked Successfully!
+          <h2
+            className="signet-headline"
+            style={{ fontSize: '28px', color: 'var(--ink)', marginBottom: '8px' }}
+          >
+            Account Successfully Linked
           </h2>
 
-          <p style={{ fontSize: '13px', color: 'var(--ink-muted)', lineHeight: '1.65', marginBottom: '2rem' }}>
-            Future merged pull requests on tracked repositories will automatically mint Soulbound Tokens to your connected address.
+          <p style={{ fontSize: '14px', color: 'var(--ink-muted)', marginBottom: '1.8rem' }}>
+            Your GitHub contributor identity <strong style={{ color: 'var(--ink)' }}>@{githubUser}</strong> is
+            cryptographically linked to NEAR account{' '}
+            <strong className="signet-mono" style={{ color: 'var(--signet-orange)' }}>
+              {wallet}
+            </strong>
+            .
           </p>
 
-          <button
-            onClick={() => navigate('/dashboard')}
-            style={{
-              width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px',
-              background: 'linear-gradient(135deg, #FF7B00 0%, #E05300 100%)',
-              color: '#FFF', border: 'none', borderRadius: '10px',
-              padding: '12px 0', fontSize: '14px', fontWeight: 800, cursor: 'pointer',
-              boxShadow: '0 6px 20px rgba(255,123,0,0.25)', transition: 'transform 0.15s',
-            }}
-            onMouseEnter={e => (e.currentTarget.style.transform = 'translateY(-1px)')}
-            onMouseLeave={e => (e.currentTarget.style.transform = 'translateY(0)')}
-          >
-            Go to Dashboard <IconArrowRight size={15} color="#FFF" />
-          </button>
+          <div style={{ display: 'flex', justifyContent: 'center', gap: '12px' }}>
+            <button
+              onClick={() => navigate('/dashboard')}
+              className="btn-signet-primary"
+              style={{ padding: '10px 22px' }}
+            >
+              Go to Workspace Dashboard <IconArrowRight size={14} color="#EDE2D0" />
+            </button>
+            <button
+              onClick={() => {
+                setLinked(false)
+                setWallet(null)
+              }}
+              className="btn-signet-secondary"
+              style={{ fontSize: '13px' }}
+            >
+              Relink / Change Account
+            </button>
+          </div>
         </div>
       </main>
     )
   }
 
   return (
-    <main className="wallet-page" style={{ minHeight: 'calc(100vh - 90px)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '3rem 1.5rem' }}>
-      <div style={{ maxWidth: '520px', width: '100%' }}>
-
+    <main
+      className="wallet-page signet-enter-fade"
+      style={{
+        minHeight: 'calc(100vh - 90px)',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        padding: '3rem 1.5rem',
+        background: 'var(--paper)',
+      }}
+    >
+      <div style={{ maxWidth: '560px', width: '100%' }}>
         {/* Card Header */}
-        <div style={{ textAlign: 'center', marginBottom: '2.2rem' }}>
-          <span style={{
-            display: 'inline-flex', alignItems: 'center', gap: '6px',
-            fontSize: '10px', fontWeight: 800, color: '#FF7B00',
-            background: 'rgba(255,123,0,0.08)', border: '1px solid rgba(255,123,0,0.2)',
-            borderRadius: '99px', padding: '4px 14px', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: '1rem',
-          }}>
-            <IconZap size={11} color="#FF7B00" /> ONE-TIME SETUP
+        <div style={{ textAlign: 'center', marginBottom: '2.5rem' }}>
+          <span
+            style={{
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: '6px',
+              fontSize: '10px',
+              fontWeight: 800,
+              color: 'var(--signet-orange)',
+              background: 'var(--signet-orange-subtle)',
+              border: '1px solid var(--signet-orange-border)',
+              borderRadius: '99px',
+              padding: '4px 14px',
+              textTransform: 'uppercase',
+              letterSpacing: '0.1em',
+              marginBottom: '1rem',
+            }}
+          >
+            <IconZap size={11} color="var(--signet-orange)" />
+            ONE-TIME CRYPTOGRAPHIC SETUP
           </span>
-          <h1 style={{ fontSize: '32px', fontWeight: 900, color: 'var(--ink)', marginBottom: '8px' }}>
-            Link Your Wallet
+          <h1
+            className="signet-headline"
+            style={{ fontSize: '34px', color: 'var(--ink)', marginBottom: '8px' }}
+          >
+            Link Your NEAR Account
           </h1>
-          <p style={{ fontSize: '14px', color: 'var(--ink-muted)', lineHeight: '1.6' }}>
-            Connect your GitHub and wallet once. Future PR merges mint automatically to your address.
+          <p
+            style={{
+              fontSize: '14.5px',
+              color: 'var(--ink-muted)',
+              lineHeight: '1.6',
+              maxWidth: '460px',
+              margin: '0 auto',
+            }}
+          >
+            Connect your GitHub and NEAR account once. All contribution dossiers and verifiable credentials
+            will be minted to this identity.
           </p>
         </div>
 
         {/* Card Body */}
-        <div className="wallet-card" style={{
-          background: 'rgba(255,255,255,0.03)',
-          border: '1px solid rgba(78,66,56,0.25)',
-          borderRadius: '20px', padding: '2rem 2.2rem',
-          backdropFilter: 'blur(16px)',
-          boxShadow: '0 20px 60px rgba(0,0,0,0.12)',
-        }}>
-
+        <div
+          className="signet-glass-card"
+          style={{
+            background: 'var(--paper-raised)',
+            border: '1px solid var(--rule-strong)',
+            borderRadius: '20px',
+            padding: '2.2rem',
+          }}
+        >
           <div style={{ display: 'flex', flexDirection: 'column', gap: '1.8rem' }}>
             {checkingStatus && (
-              <div role="status" aria-live="polite" style={{ display: 'flex', alignItems: 'center', gap: '8px', color: 'var(--ink-muted)', fontSize: '12px' }}>
-                <span className="spinner" aria-hidden="true" />
-                Checking your current wallet link...
+              <div
+                role="status"
+                aria-live="polite"
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '8px',
+                  color: 'var(--ink-muted)',
+                  fontSize: '13px',
+                }}
+              >
+                <span className="spinner" aria-hidden="true" style={{ width: '14px', height: '14px' }} />
+                Checking your current link state...
               </div>
             )}
 
@@ -242,142 +348,211 @@ export default function LinkWallet() {
             <div style={{ display: 'flex', gap: '1rem', alignItems: 'flex-start' }}>
               <StepBadge step={1} state={step1} />
               <div style={{ flex: 1 }}>
-                <div style={{ fontWeight: 800, fontSize: '14px', color: 'var(--ink)', marginBottom: '4px' }}>
+                <div style={{ fontWeight: 700, fontSize: '15px', color: 'var(--ink)', marginBottom: '4px' }}>
                   Sign in with GitHub
                 </div>
-                <div style={{ fontSize: '12px', color: 'var(--ink-muted)', lineHeight: '1.5', marginBottom: step1 === 'active' ? '12px' : '0' }}>
-                  {githubUser ? `Connected as @${githubUser}` : 'Verify your GitHub contributor identity.'}
+                <div
+                  style={{
+                    fontSize: '13px',
+                    color: 'var(--ink-muted)',
+                    lineHeight: '1.5',
+                    marginBottom: step1 === 'active' ? '12px' : '0',
+                  }}
+                >
+                  {githubUser
+                    ? `Connected as @${githubUser}`
+                    : 'Authenticate your GitHub identity to associate merged pull requests.'}
                 </div>
                 {step1 === 'active' && (
                   <button
                     onClick={signInWithGithub}
-                    style={{
-                      display: 'inline-flex', alignItems: 'center', gap: '8px',
-                      background: '#1B1816', color: '#FFF', border: '1px solid rgba(255,255,255,0.15)',
-                      borderRadius: '8px', padding: '8px 16px', fontSize: '12px', fontWeight: 700,
-                      cursor: 'pointer', transition: 'background 0.15s',
-                    }}
-                    onMouseEnter={e => (e.currentTarget.style.background = '#2D2825')}
-                    onMouseLeave={e => (e.currentTarget.style.background = '#1B1816')}
+                    className="btn-signet-primary"
+                    style={{ fontSize: '13px', padding: '8px 16px' }}
                   >
-                    <IconGitHub size={15} color="#FFF" />
+                    <IconGitHub size={15} color="#EDE2D0" />
                     Sign in with GitHub
                   </button>
                 )}
               </div>
             </div>
 
-            {/* Divider line */}
-            <div style={{ height: '1px', background: 'rgba(78,66,56,0.15)', marginLeft: '42px' }} />
+            {/* Divider */}
+            <div style={{ height: '1px', background: 'var(--rule)', marginLeft: '42px' }} />
 
             {/* Step 2: Wallet */}
-            <div style={{ display: 'flex', gap: '1rem', alignItems: 'flex-start', opacity: step2 === 'pending' ? 0.45 : 1 }}>
+            <div
+              style={{
+                display: 'flex',
+                gap: '1rem',
+                alignItems: 'flex-start',
+                opacity: step2 === 'pending' ? 0.45 : 1,
+              }}
+            >
               <StepBadge step={2} state={step2} />
               <div style={{ flex: 1 }}>
-                <div style={{ fontWeight: 800, fontSize: '14px', color: 'var(--ink)', marginBottom: '4px' }}>
+                <div style={{ fontWeight: 700, fontSize: '15px', color: 'var(--ink)', marginBottom: '4px' }}>
                   {useNear ? 'Connect NEAR Account' : 'Connect Web3 Wallet'}
                 </div>
-                <div style={{ fontSize: '12px', color: 'var(--ink-muted)', lineHeight: '1.5', marginBottom: step2 === 'active' ? '12px' : '0' }}>
-                  {wallet ? `Connected: ${wallet.slice(0, 6)}...${wallet.slice(-4)}` : useNear ? 'Connect your NEAR account id (e.g. alice.testnet).' : 'Select your EVM wallet for receiving SBTs.'}
+                <div
+                  style={{
+                    fontSize: '13px',
+                    color: 'var(--ink-muted)',
+                    lineHeight: '1.5',
+                    marginBottom: step2 === 'active' ? '12px' : '0',
+                  }}
+                >
+                  {wallet
+                    ? `Connected: ${wallet}`
+                    : useNear
+                    ? 'Connect your NEAR testnet account (e.g. builder.testnet).'
+                    : 'Connect your wallet for receiving attestations.'}
                 </div>
-                {step2 === 'active' && (
-                  <button
-                    onClick={connectWallet}
-                    style={{
-                      display: 'inline-flex', alignItems: 'center', gap: '8px',
-                      background: '#FF7B00', color: '#FFF', border: 'none',
-                      borderRadius: '8px', padding: '8px 16px', fontSize: '12px', fontWeight: 700,
-                      cursor: 'pointer', transition: 'opacity 0.15s',
-                    }}
-                    onMouseEnter={e => (e.currentTarget.style.opacity = '0.9')}
-                    onMouseLeave={e => (e.currentTarget.style.opacity = '1')}
-                  >
-                    <IconWallet size={15} color="#FFF" />
-                    {useNear ? 'Connect NEAR' : 'Connect Wallet'}
+
+                {step2 === 'active' && useNear && (
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', marginTop: '10px' }}>
+                    <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+                      <button
+                        onClick={connectMyNearWallet}
+                        className="btn-signet-primary"
+                        style={{ fontSize: '12.5px', padding: '8px 14px' }}
+                      >
+                        <IconExternalLink size={13} color="#EDE2D0" />
+                        MyNearWallet Web
+                      </button>
+                      <button
+                        onClick={connectInjectedNear}
+                        className="btn-signet-secondary"
+                        style={{ fontSize: '12.5px', padding: '8px 14px' }}
+                      >
+                        <IconWallet size={13} color="currentColor" />
+                        Sender / Meteor
+                      </button>
+                      <button
+                        onClick={() => setShowDevInput(!showDevInput)}
+                        className="btn-signet-secondary"
+                        style={{ fontSize: '12.5px', padding: '8px 14px' }}
+                      >
+                        Testnet Direct ID
+                      </button>
+                    </div>
+
+                    {showDevInput && (
+                      <div
+                        className="signet-enter-fade"
+                        style={{
+                          marginTop: '6px',
+                          padding: '12px',
+                          background: 'var(--paper)',
+                          border: '1px solid var(--rule)',
+                          borderRadius: '10px',
+                          display: 'flex',
+                          gap: '8px',
+                        }}
+                      >
+                        <input
+                          type="text"
+                          placeholder="e.g. builder.testnet"
+                          value={devAccountId}
+                          onChange={(e) => setDevAccountId(e.target.value)}
+                          className="signet-mono"
+                          style={{
+                            flex: 1,
+                            padding: '6px 12px',
+                            borderRadius: '6px',
+                            border: '1px solid var(--rule)',
+                            background: 'var(--paper-raised)',
+                            color: 'var(--ink)',
+                            fontSize: '12.5px',
+                            outline: 'none',
+                          }}
+                        />
+                        <button
+                          onClick={handleDevAccountLink}
+                          className="btn-signet-primary"
+                          style={{ fontSize: '12px', padding: '6px 14px' }}
+                        >
+                          Use ID
+                        </button>
+                      </div>
+                    )}
+                  </div>
+                )}
+
+                {step2 === 'active' && !useNear && (
+                  <button onClick={connectEvmWallet} className="btn-signet-primary" style={{ fontSize: '13px' }}>
+                    <IconWallet size={15} color="#EDE2D0" /> Connect EVM Wallet
                   </button>
                 )}
               </div>
             </div>
 
-            {/* Divider line */}
-            <div style={{ height: '1px', background: 'rgba(78,66,56,0.15)', marginLeft: '42px' }} />
+            {/* Divider */}
+            <div style={{ height: '1px', background: 'var(--rule)', marginLeft: '42px' }} />
 
             {/* Step 3: Sign */}
-            <div style={{ display: 'flex', gap: '1rem', alignItems: 'flex-start', opacity: step3 === 'pending' ? 0.45 : 1 }}>
+            <div
+              style={{
+                display: 'flex',
+                gap: '1rem',
+                alignItems: 'flex-start',
+                opacity: step3 === 'pending' ? 0.45 : 1,
+              }}
+            >
               <StepBadge step={3} state={step3} />
               <div style={{ flex: 1 }}>
-                <div style={{ fontWeight: 800, fontSize: '14px', color: 'var(--ink)', marginBottom: '4px' }}>
-                  Sign Confirmation Message
+                <div style={{ fontWeight: 700, fontSize: '15px', color: 'var(--ink)', marginBottom: '4px' }}>
+                  Sign Cryptographic Handshake
                 </div>
-                <div style={{ fontSize: '12px', color: 'var(--ink-muted)', lineHeight: '1.5', marginBottom: step3 === 'active' ? '12px' : '0' }}>
-                  {linked ? 'Wallet linked ✓' : 'A free, off-chain signature proving address control.'}
+                <div
+                  style={{
+                    fontSize: '13px',
+                    color: 'var(--ink-muted)',
+                    lineHeight: '1.5',
+                    marginBottom: step3 === 'active' ? '12px' : '0',
+                  }}
+                >
+                  {linked ? 'Wallet linked ✓' : 'A free, off-chain ed25519 signature proving key ownership.'}
                 </div>
                 {step3 === 'active' && (
                   <button
                     onClick={signAndLink}
                     disabled={linking}
                     aria-busy={linking}
-                    style={{
-                      display: 'inline-flex', alignItems: 'center', gap: '8px',
-                      background: 'linear-gradient(135deg, #FF7B00 0%, #E05300 100%)',
-                      color: '#FFF', border: 'none',
-                      borderRadius: '8px', padding: '9px 18px', fontSize: '12px', fontWeight: 700,
-                      cursor: linking ? 'wait' : 'pointer', boxShadow: '0 4px 14px rgba(255,123,0,0.22)',
-                    }}
+                    className="btn-signet-primary"
+                    style={{ fontSize: '13px', padding: '9px 18px' }}
                   >
-                    <IconShieldCheck size={15} color="#FFF" />
-                    {linking ? 'Signing...' : 'Sign & Link Wallet'}
+                    <IconShieldCheck size={15} color="#EDE2D0" />
+                    {linking ? 'Signing Challenge...' : 'Sign & Link Account'}
                   </button>
                 )}
               </div>
             </div>
-
           </div>
 
-          {/* Error Message & Interactive Actions */}
+          {/* Error Message */}
           {error && (
-            <div className="status-message" role="alert" aria-live="assertive" style={{
-              marginTop: '1.5rem', padding: '12px 16px',
-              background: 'rgba(239,68,68,0.08)', border: '1px solid rgba(239,68,68,0.25)',
-              borderRadius: '12px', fontSize: '12px', color: '#EF4444', fontWeight: 600,
-              display: 'flex', flexDirection: 'column', gap: '10px', textAlign: 'left',
-            }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                <IconLock size={14} color="#EF4444" />
-                <span>{error}</span>
-              </div>
-
-              {error.toLowerCase().includes('metamask') && (
-                <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap', marginTop: '2px' }}>
-                  <a
-                    href={`https://metamask.app.link/dapp/${window.location.href.replace(/^https?:\/\//, '')}`}
-                    target="_blank"
-                    rel="noreferrer"
-                    style={{
-                      background: '#FF7B00', color: '#FFF', padding: '6px 14px',
-                      borderRadius: '6px', fontSize: '11px', fontWeight: 700,
-                      textDecoration: 'none', display: 'inline-flex', alignItems: 'center', gap: '4px',
-                    }}
-                  >
-                    Open in MetaMask App
-                  </a>
-                  <a
-                    href="https://metamask.io/download/"
-                    target="_blank"
-                    rel="noreferrer"
-                    style={{
-                      background: 'rgba(255,255,255,0.08)', color: 'var(--ink)', padding: '6px 14px',
-                      borderRadius: '6px', fontSize: '11px', fontWeight: 700,
-                      textDecoration: 'none', border: '1px solid var(--rule)',
-                    }}
-                  >
-                    Install MetaMask Extension
-                  </a>
-                </div>
-              )}
+            <div
+              className="status-message signet-enter-fade"
+              role="alert"
+              aria-live="assertive"
+              style={{
+                marginTop: '1.5rem',
+                padding: '12px 16px',
+                background: 'rgba(239, 68, 68, 0.08)',
+                border: '1px solid rgba(239, 68, 68, 0.25)',
+                borderRadius: '12px',
+                fontSize: '12.5px',
+                color: '#EF4444',
+                fontWeight: 600,
+                display: 'flex',
+                alignItems: 'center',
+                gap: '10px',
+              }}
+            >
+              <IconLock size={15} color="#EF4444" />
+              <span>{error}</span>
             </div>
           )}
-
         </div>
       </div>
     </main>
@@ -387,11 +562,19 @@ export default function LinkWallet() {
 function StepBadge({ step, state }: { step: number; state: StepState }) {
   if (state === 'done') {
     return (
-      <div style={{
-        width: '28px', height: '28px', borderRadius: '50%',
-        background: '#16A34A', display: 'flex', alignItems: 'center', justifyContent: 'center',
-        flexShrink: 0, marginTop: '2px',
-      }}>
+      <div
+        style={{
+          width: '28px',
+          height: '28px',
+          borderRadius: '50%',
+          background: '#2A7D4F',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          flexShrink: 0,
+          marginTop: '2px',
+        }}
+      >
         <IconCheck size={14} color="#FFF" strokeWidth={3} />
       </div>
     )
@@ -399,26 +582,45 @@ function StepBadge({ step, state }: { step: number; state: StepState }) {
 
   if (state === 'active') {
     return (
-      <div style={{
-        width: '28px', height: '28px', borderRadius: '50%',
-        background: 'rgba(255,123,0,0.15)', border: '2px solid #FF7B00',
-        color: '#FF7B00', fontWeight: 800, fontSize: '12px',
-        display: 'flex', alignItems: 'center', justifyContent: 'center',
-        flexShrink: 0, marginTop: '2px',
-      }}>
+      <div
+        style={{
+          width: '28px',
+          height: '28px',
+          borderRadius: '50%',
+          background: 'var(--signet-orange-subtle)',
+          border: '2px solid var(--signet-orange)',
+          color: 'var(--signet-orange)',
+          fontWeight: 800,
+          fontSize: '12px',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          flexShrink: 0,
+          marginTop: '2px',
+        }}
+      >
         {step}
       </div>
     )
   }
 
   return (
-    <div style={{
-      width: '28px', height: '28px', borderRadius: '50%',
-      background: 'rgba(78,66,56,0.1)', border: '1px solid rgba(78,66,56,0.2)',
-      color: 'var(--ink-faint)', fontWeight: 700, fontSize: '12px',
-      display: 'flex', alignItems: 'center', justifyContent: 'center',
-      flexShrink: 0, marginTop: '2px',
-    }}>
+    <div
+      style={{
+        width: '28px',
+        height: '28px',
+        borderRadius: '50%',
+        background: 'var(--rule)',
+        color: 'var(--ink-faint)',
+        fontWeight: 700,
+        fontSize: '12px',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        flexShrink: 0,
+        marginTop: '2px',
+      }}
+    >
       {step}
     </div>
   )

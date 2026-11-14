@@ -11,7 +11,7 @@ import mintService from "./services/MintService";
 const app = express();
 const PORT = process.env.PORT ?? 3001;
 const isProduction = process.env.NODE_ENV === "production";
-const isDevelopment = process.env.NODE_ENV === "development";
+const isDevelopment = !isProduction;
 
 if (isProduction && !process.env.SESSION_SECRET) {
   throw new Error("SESSION_SECRET must be configured in production");
@@ -31,7 +31,16 @@ app.use((req, res, next) => {
   const allowedOrigins = [
     process.env.FRONTEND_URL,
     ...(process.env.CORS_ALLOWED_ORIGINS ?? "").split(",").map((value) => value.trim()),
-    ...(isDevelopment ? ["http://localhost:5173", "http://127.0.0.1:5173"] : []),
+    ...(isDevelopment
+      ? [
+          "http://localhost:5173",
+          "http://127.0.0.1:5173",
+          "http://localhost:4173",
+          "http://127.0.0.1:4173",
+          "http://localhost:3000",
+          "http://127.0.0.1:3000",
+        ]
+      : []),
   ].filter((value): value is string => Boolean(value)).map((value) => value.replace(/\/+$/, ""));
   res.setHeader("Vary", "Origin");
   if (origin && allowedOrigins.includes(origin)) {
