@@ -3,8 +3,7 @@ import { connect, KeyPair, transactions, utils, keyStores } from "near-api-js";
 /**
  * NearChainService — NEAR Protocol chain integration for SoulPR.
  *
- * Replaces the Monad/ethers ChainService. It signs and submits `mint`
- * (attest) transactions to a NEAR soulbound contract using the backend's
+ * Signs and submits `mint` (attest) transactions to a NEAR soulbound contract using the backend's
  * NEAR account (full-access key), and reads attestation state via view calls.
  *
  * Required env vars:

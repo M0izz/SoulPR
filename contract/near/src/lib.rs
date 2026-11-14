@@ -15,10 +15,10 @@ pub mod signet_schema;
  * Each merged GitHub PR becomes one non-transferable token minted to a
  * contributor's NEAR account id by the authorized backend minter.
  *
- * Design notes vs. the Monad Solidity version:
+ * Architecture & Protocol Design:
  *  - Identifiers are NEAR account ids (e.g. soulpr.testnet), not hex addresses.
- *  - There is no EVM / no ethers.js. Clients use near-api-js.
- *  - Idempotency uses sha256 (env::sha256) instead of keccak256.
+ *  - Native NEAR Protocol implementation using near-api-js and near-sdk.
+ *  - Idempotency uses sha256 (env::sha256).
  *  - Soulbound by construction: no nft_transfer method is exposed, so tokens
  *    cannot be transferred.
  */

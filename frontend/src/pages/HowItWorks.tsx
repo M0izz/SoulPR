@@ -5,17 +5,17 @@ import {
 } from '../components/Icons'
 
 const FAQs = [
-  { q: 'What is SoulPR?', a: 'SoulPR turns your real contributions (like merged pull requests) into soulbound attestations on Monad. These proofs are non-transferable, verifiable by anyone, and permanently tied to your identity.' },
-  { q: 'How does SoulPR work?', a: 'We monitor GitHub pull requests. The moment a PR is merged in a tracked repository, a webhook triggers. If your GitHub identity is linked to a wallet, a Soulbound Token is automatically minted to your address, completely covering gas fees on the backend.' },
-  { q: 'What is a Soulbound Token (SBT)?', a: 'Soulbound Tokens (SBTs) are non-fungible tokens that represent traits, features, or achievements on-chain. Once minted to a wallet, they cannot be transferred or sold, ensuring the credentials stay with the builder.' },
-  { q: 'Is my data and reputation safe?', a: 'Yes, only your contribution parameters (repository name, PR number, title, and timestamp) are stored. We do not store repository code or private GitHub configurations, and you only ever sign free messages to confirm wallet ownership.' },
-  { q: 'Where are the attestations stored?', a: 'Attestations are stored as smart contract state variables in the SoulPR contract on the Monad testnet, with full base64 SVG rendering generated natively on-chain.' },
-  { q: 'Do I need to pay any fees?', a: 'No. The gas fees for minting the on-chain SBT are covered entirely by our backend minter wallet, making the entire experience 100% free for open-source contributors.' },
-  { q: "Can I verify someone else's proof?", a: 'Yes. Every badge includes its Monad Explorer transaction link, allowing anyone to verify ownership and PR validity on the blockchain ledger instantly.' },
-  { q: 'Which networks does SoulPR support?', a: 'SoulPR currently operates natively on the Monad testnet to guarantee scale, high speeds, and low transaction operations.' },
+  { q: 'What is SoulPR?', a: 'SoulPR turns your real contributions (like merged pull requests) into soulbound credentials on NEAR Protocol. These proofs are non-transferable, verifiable by anyone, and permanently tied to your identity.' },
+  { q: 'How does SoulPR work?', a: 'We monitor GitHub pull requests. When an eligible PR is merged, an immutable evidence snapshot and deterministic assessment are generated. You review the evidence dossier and authorize issuance directly to your NEAR account.' },
+  { q: 'What is a Soulbound Token (SBT)?', a: 'Soulbound Tokens (SBTs) are non-transferable on-chain credentials. Once minted to a NEAR account, they cannot be transferred or sold, ensuring the credentials stay with the authentic contributor.' },
+  { q: 'Is my data and reputation safe?', a: 'Yes, only your contribution parameters (repository name, PR number, title, commit SHA, and timestamp) are stored. We do not store repository code or private GitHub configurations, and you only ever sign free messages to confirm account ownership.' },
+  { q: 'Where are the attestations stored?', a: 'Attestations are stored in the SoulPR contract state on the NEAR Protocol testnet, anchored cryptographically to an immutable SHA-256 evidence snapshot.' },
+  { q: 'Do I need to pay any fees?', a: 'Storage and minting transactions on NEAR testnet are lightweight and gas-efficient, making the verification experience accessible for open-source contributors.' },
+  { q: "Can I verify someone else's proof?", a: 'Yes. Every credential includes its NEAR Explorer and public verification link, allowing anyone to inspect ownership, evidence integrity, and PR validity on the blockchain ledger instantly.' },
+  { q: 'Which networks does SoulPR support?', a: 'SoulPR currently operates natively on the NEAR Protocol testnet to guarantee scale, high speeds, and low transaction operations.' },
 ]
 
-const LOGOS = ['GitHub', 'MONAD', 'Thirdweb', 'Alchemy', 'Viem', 'wagmi', 'RainbowKit']
+const LOGOS = ['GitHub', 'NEAR Protocol', 'Rust', 'TypeScript', 'DevRelay']
 
 export default function HowItWorks() {
   const navigate = useNavigate()
@@ -93,9 +93,9 @@ export default function HowItWorks() {
               <IconHelpCircle size={16} color="#C0824E" />
             </div>
             <span>
-              Still have questions?{' '}
-              <a href="https://discord.gg/monad" target="_blank" rel="noopener noreferrer" style={{ color: '#FF7B00', fontWeight: 700 }}>Join our Discord</a>
-              {' '}or check out the{' '}
+              Check out the{' '}
+              <button onClick={() => navigate('/verification')} style={{ color: '#FF7B00', fontWeight: 700, background: 'none', border: 'none', cursor: 'pointer', padding: 0, fontSize: 'inherit' }}>Verification Protocol</button>
+              {' '}or inspect the{' '}
               <button onClick={() => navigate('/install')} style={{ color: '#FF7B00', fontWeight: 700, background: 'none', border: 'none', cursor: 'pointer', padding: 0, fontSize: 'inherit' }}>Docs</button>.
             </span>
           </div>

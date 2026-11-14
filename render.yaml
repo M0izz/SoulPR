@@ -35,10 +35,6 @@ services:
         sync: false
       - key: BACKEND_WALLET_PRIVATE_KEY
         sync: false
-      - key: CONTRACT_ADDRESS
-        sync: false
-      - key: MONAD_RPC_URL
-        value: https://testnet-rpc.monad.xyz
       - key: FIREBASE_SERVICE_ACCOUNT_JSON
         sync: false
       - key: CHAIN_PROVIDER

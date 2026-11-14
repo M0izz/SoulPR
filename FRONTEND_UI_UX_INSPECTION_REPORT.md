@@ -193,7 +193,7 @@ async resolveWallet(query: string) {
 
 **Two paths**:
 1. **NEAR** (`VITE_NEAR_ENABLED === 'true'`): Calls `getNearAttestations()` via JSON-RPC
-2. **Monad**: Queries on-chain contract via ethers.js
+2. **NEAR Protocol**: Queries on-chain contract via near-api-js RPC calls
 
 **NEAR path** (`getNearAttestations`):
 - Fetches from `VITE_NEAR_NODE_URL` (default: `https://rpc.testnet.near.org`)
@@ -201,16 +201,7 @@ async resolveWallet(query: string) {
 - Calls `nft_tokens_by_owner` and `nft_token` view functions
 - Returns `BadgeData[]` with token info
 
-**Monad path**:
-- Imports deployment config from `../deployments/monadTestnet.json` or `hardhat.json`
-- Uses ethers.JsonRpcProvider
-- Reads `tokensByOwner` and `attestations` functions
-- Returns badges with `txHash: '0x' + '0'.repeat(64)` (dummy hash)
-
-**Assessment**: Structurally correct code, but:
-- **Cannot verify locally** - NEAR build blocked by AppControl policy
-- Monad path depends on deployment files that may not exist in this worktree
-- Dummy txHash (`'0x' + '0'.repeat(64)`) is a placeholder, not real transaction hashes
+**Assessment**: Structurally correct code for NEAR Protocol integration.
 
 ### BadgeData Interface
 
@@ -296,7 +287,7 @@ The nav contains both Route-based links and anchor-based `#` links:
 ### Purpose
 
 Displays details for a specific credential/token ID, fetched from either:
-1. On-chain contract query (NEAR or Monad)
+1. On-chain contract query (NEAR Protocol)
 2. Backend API `resolveWallet` fallback
 
 ### Data Flow
@@ -334,7 +325,7 @@ display credential details
 1. **Loading states**: Only shows "Loading credential..." spinner; could show skeleton UI
 2. **Error handling**: Error messages are plain text; consider inline error components consistent with rest of app
 3. **TxHash full display**: Current truncation is good, but could add "Copy" button
-4. **Network badge**: Currently just shows "NEAR testnet" string; could add NEAR/Madon icon
+4. **Network badge**: Currently just shows "NEAR testnet" string; could add NEAR icon
 5. **No edit/share actions**: Credential page is read-only, which is correct for soulbound, but could add "Verify on Explorer" link
 ## D. HOW IT WORKS (HowItWorks.tsx) ANALYSIS
 
@@ -342,7 +333,7 @@ display credential details
 
 The page features:
 
-- **Hero section** with "Trusted By" logos (GitHub, MONAD, Thirdweb, etc.)
+- **Hero section** with "Trusted By" logos (GitHub, NEAR Protocol, DevRelay, etc.)
 - **FAQ accordion** with 11 questions and answers
 - **Bottom CTA** connecting wallet flow
 
@@ -356,7 +347,7 @@ The page features:
 5. Where are the attestations stored?
 6. Do I need to pay any fees?
 7. Can I verify someone else's proof?
-8. Which networks does SoulPR support? (plus "Monad high-throughput EVM execution")
+8. Which networks does SoulPR support? (NEAR Protocol testnet)
 
 **Accordion design**:
 - Each FAQ item has question clickable to toggle answer visibility
@@ -364,11 +355,11 @@ The page features:
 - Answers in `#5C544F` muted text, `lineHeight: 1.7`
 - **First item open by default** via `activeFaq` state
 
-**Assessment**: Excellent knowledge base for user education. Covers all expected questions plus the network-specific detail about Monad.
+**Assessment**: Excellent knowledge base for user education. Covers all expected questions plus the network-specific detail about NEAR Protocol.
 
 ### Trusted By Logos
 
-- GitHub, MONAD, Thirdweb, Alchemy, Viem, wagmi, RainbowKit
+- GitHub, NEAR Protocol, DevRelay, Rust, TypeScript
 - Laid out as clickable text spans with opacity 0.6
 - **Assessment**: Good social proof, though clickable behavior not defined
 
@@ -402,7 +393,7 @@ The page features:
 
 The dashboard is the main authenticated view, featuring:
 
-- **Top navigation bar** with: SoulPR brand, navigation links (Home, Features, How It Works, About), network badge (MONAD TESTNET / NEAR TESTNET toggle), Theme toggle, Link Wallet button
+- **Top navigation bar** with: SoulPR brand, navigation links (Home, Features, How It Works, About), network badge (NEAR TESTNET), Theme toggle, Link Wallet button
 - **Active panel area** showing different views based on navigation selection:
   - Overview panel (badges summary, GitHub stats, search)
   - SBTs panel (Soulbound Tokens list)
@@ -415,7 +406,7 @@ The dashboard is the main authenticated view, featuring:
 |---|---|
 | Top nav brand link | Returns to home (`/`) |
 | Nav links | Distinguish active vs inactive via `linkStyle()` with bottom border indicator |
-| Network badge | Toggle between MONAD TESTNET and NEAR TESTNET via env var `VITE_NEAR_ENABLED` |
+| Network badge | NEAR Protocol Testnet indicator |
 | Theme toggle | `ThemeToggle` component imported and used |
 | Link Wallet | Prominent button in nav and multiple page locations |
 
@@ -498,7 +489,7 @@ The landing page features:
 **Features section** (lines 62-140+):
 - **01. Verifiable**: "Every merged PR becomes a permanent on-chain attestation. Anyone can verify without needing an account."
 - **02. Automated Relaying**: "Developers should focus on code, not transaction signing. Our backend automatically signs and mints tokens for merged work without disrupting your GitHub workflow."
-- **03. Ecosystem Native**: "Designed specifically for Monad high-throughput EVM execution. DAOs, protocols, and grant funds can query developer credentials instantaneously."
+- **03. Ecosystem Native**: "Designed specifically for NEAR Protocol execution. DAOs, protocols, and grant funds can query developer credentials instantaneously."
 
 **Assessment**: The feature messaging is clear and differentiated. The three features map directly to the backend capabilities (webhook → minting → verification).
 

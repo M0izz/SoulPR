@@ -1,4 +1,4 @@
-process.env.CHAIN_PROVIDER = "monad";
+process.env.CHAIN_PROVIDER = "near";
 
 import request from "supertest";
 import express from "express";
@@ -8,26 +8,9 @@ import walletRouter from "../routes/wallet";
 import reposRouter from "../routes/repos";
 import dbService from "../services/DbService";
 import mintService from "../services/MintService";
-import chainService from "../services/ChainService";
+import nearChainService from "../services/NearChainService";
 
-// Mock ChainService to prevent actual network RPC calls during integration tests
-jest.mock("../services/ChainService", () => {
-  return {
-    __esModule: true,
-    chainService: {
-      isMinted: jest.fn().mockResolvedValue(false),
-      attest: jest.fn().mockResolvedValue("0xmocktxhash"),
-    },
-    // Mock the default export
-    default: {
-      isMinted: jest.fn().mockResolvedValue(false),
-      attest: jest.fn().mockResolvedValue("0xmocktxhash"),
-    }
-  };
-});
-
-// Keep the integration suite chain-independent; NEAR is the production default,
-// while these tests exercise queue behavior without contacting a live network.
+// Mock NearChainService to prevent actual network RPC calls during integration tests
 jest.mock("../services/NearChainService", () => ({
   __esModule: true,
   nearChainService: {
@@ -80,8 +63,8 @@ describe("OSS Contribution Receipt integration flow", () => {
     process.env.GITHUB_APP_ADMIN_USERNAME = GITHUB_USER;
     process.env.GITHUB_WEBHOOK_SECRET = "testsecret";
     await dbService.saveTrackedRepos("12345", ["moizz/CNTRL"]);
-    jest.mocked(chainService.isMinted).mockResolvedValue(false);
-    jest.mocked(chainService.attest).mockResolvedValue("0xmocktxhash");
+    jest.mocked(nearChainService.isMinted).mockResolvedValue(false);
+    jest.mocked(nearChainService.attest).mockResolvedValue("near-test-hash");
   });
 
   it("should queue a PR if contributor has no linked wallet yet", async () => {
@@ -195,7 +178,7 @@ describe("OSS Contribution Receipt integration flow", () => {
     };
     await dbService.addPendingMint(pendingMint);
     await dbService.saveWalletLink(githubUsername, "0x0000000000000000000000000000000000000001");
-    jest.mocked(chainService.attest).mockRejectedValueOnce(new Error("RPC unavailable"));
+    jest.mocked(nearChainService.attest).mockRejectedValueOnce(new Error("RPC unavailable"));
 
     await mintService.retryPendingMints();
     expect(await dbService.getPendingMints(githubUsername)).toHaveLength(1);

@@ -1,13 +1,9 @@
-import chainService from "./ChainService";
 import nearChainService from "./NearChainService";
 import type { IChainService } from "./MintService";
 
-/** Select exactly one minting backend at startup. */
+/** Select active NEAR minting backend. */
 export function getActiveChainService(): IChainService {
-  const provider = (process.env.CHAIN_PROVIDER ?? "near").toLowerCase();
-  if (provider === "near") return nearChainService;
-  if (provider === "monad") return chainService;
-  throw new Error(`Unsupported CHAIN_PROVIDER '${provider}'. Use 'near' or 'monad'.`);
+  return nearChainService;
 }
 
 export const activeChainService = getActiveChainService();

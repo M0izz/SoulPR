@@ -56,10 +56,7 @@ const STARS = [
 
 export default function BadgeDetailModal({ badge, onClose }: Props) {
   const [copied, setCopied] = useState(false)
-  const isNear = badge.network.toLowerCase().includes('near')
-  const explorerUrl = isNear
-    ? (badge.txHash ? `https://testnet.nearblocks.io/txns/${badge.txHash}` : undefined)
-    : (badge.txHash ? `https://testnet.monadexplorer.com/tx/${badge.txHash}` : undefined)
+  const explorerUrl = badge.txHash ? `https://testnet.nearblocks.io/txns/${badge.txHash}` : undefined
 
   function copyAddr() {
     navigator.clipboard.writeText(badge.contributor).then(() => {
@@ -351,9 +348,9 @@ export default function BadgeDetailModal({ badge, onClose }: Props) {
 
           {/* Tag badges */}
           <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap', marginBottom: '2rem' }}>
-            <span style={{ display: 'flex', alignItems: 'center', gap: '6px', background: 'rgba(168,85,247,0.12)', border: '1px solid rgba(168,85,247,0.3)', borderRadius: '8px', padding: '6px 14px', fontSize: '12px', color: '#D8B4FE', fontWeight: 700 }}>
-              <span style={{ width: '7px', height: '7px', borderRadius: '50%', background: '#A855F7', display: 'inline-block' }} />
-              Monad Testnet
+            <span style={{ display: 'flex', alignItems: 'center', gap: '6px', background: 'rgba(185,87,43,0.12)', border: '1px solid rgba(185,87,43,0.3)', borderRadius: '8px', padding: '6px 14px', fontSize: '12px', color: '#B9572B', fontWeight: 700 }}>
+              <span style={{ width: '7px', height: '7px', borderRadius: '50%', background: '#B9572B', display: 'inline-block' }} />
+              NEAR Protocol (Testnet)
             </span>
             <span style={{ display: 'flex', alignItems: 'center', gap: '6px', background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '8px', padding: '6px 14px', fontSize: '12px', color: 'rgba(255,255,255,0.65)', fontWeight: 700 }}>
               <IconShieldCheck size={13} color="rgba(255,255,255,0.45)" />

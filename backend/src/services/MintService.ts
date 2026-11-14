@@ -2,9 +2,8 @@ import dbService, { PendingMint } from "./DbService";
 import activeChainService from "./ActiveChainService";
 
 /**
- * Chain-service interface shared by Monad (ethers) and NEAR (near-api-js)
- * implementations. MintService depends on this abstraction so it can work
- * with either chain without modification.
+ * Chain-service interface for NEAR (near-api-js) implementations.
+ * MintService depends on this abstraction.
  */
 export interface IChainService {
   attest(

@@ -4,13 +4,6 @@ dist/
 # Never commit actual secrets
 .env
 
-# Contract deployment output (contains address — commit this intentionally after deploy)
-# contract/deployments/monad-testnet.json
-
-# Hardhat artifacts and cache
-contract/artifacts/
-contract/cache/
-contract/typechain-types/
 
 # Frontend build
 frontend/dist/
