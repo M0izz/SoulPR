@@ -1,7 +1,8 @@
 import { Router, Request, Response } from "express";
 import crypto from "crypto";
 import { ethers } from "ethers";
-import { PublicKey } from "near-api-js/lib/utils";
+import { utils } from "near-api-js";
+const { PublicKey } = utils;
 import dbService from "../services/DbService";
 import mintService from "../services/MintService";
 

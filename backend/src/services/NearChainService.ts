@@ -1,5 +1,4 @@
 import { connect, KeyPair, transactions, utils, keyStores } from "near-api-js";
-import { PublicKey } from "near-api-js/lib/utils";
 
 /**
  * NearChainService — NEAR Protocol chain integration for SoulPR.
@@ -111,7 +110,7 @@ class NearChainService {
       `[NearChainService] Submitting mint for ${contributor} - ${repo} #${prNumber}`,
     );
 
-    const outcome = await this.account.signAndSendTransactions({
+    const outcome = await (this.account as any).signAndSendTransaction({
       receiverId: this.contractId,
       actions: [
         transactions.functionCall(

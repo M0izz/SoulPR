@@ -30,7 +30,7 @@ describe("NearChainService extractTxHash / attest transaction hash handling", ()
     service = nearChainService as any;
     // After the singleton's async init, mark it initialized and inject a mock account.
     ;(service as any).initialized = true;
-    ;(service as any).account = { viewFunction: async () => ({}) };
+    ;(service as any).account = { viewFunction: async () => ({}), signAndSendTransaction: async () => ({}) };
   });
 
   afterEach(() => {
