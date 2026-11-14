@@ -20,8 +20,8 @@ export default function LinkWallet() {
   const [linked, setLinked] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
-  // NEAR mode is opt-in via VITE_NEAR_ENABLED=true
-  const useNear = (import.meta.env.VITE_NEAR_ENABLED ?? 'false') === 'true'
+  // NEAR mode is default for SIGNET (NEAR-first), opt-out via VITE_NEAR_ENABLED=false
+  const useNear = (import.meta.env.VITE_NEAR_ENABLED ?? 'true') !== 'false'
 
   useEffect(() => {
     const checkStatus = async () => {

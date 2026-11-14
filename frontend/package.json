@@ -10,6 +10,7 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "buffer": "^6.0.3",
     "ethers": "^6.17.0",
     "near-api-js": "^0.45.0",
     "react": "^19.2.7",
