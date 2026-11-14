@@ -1,123 +1,111 @@
 import { Link, useLocation, useNavigate } from 'react-router-dom'
 import ThemeToggle from './ThemeToggle'
-import { IconWallet, IconSoulPRLogo } from './Icons'
+import SignetBrandLockup from './brand/SignetBrandLockup'
 
 export default function Nav() {
   const { pathname } = useLocation()
   const navigate = useNavigate()
 
   const linkStyle = (active: boolean): React.CSSProperties => ({
-    fontSize: '15px',
+    fontSize: '14px',
     fontWeight: active ? 700 : 500,
-    color: active ? '#FF7B00' : 'var(--ink-muted)',
+    color: active ? '#B9572B' : 'var(--ink-muted)',
     transition: 'color 0.2s',
     textDecoration: 'none',
     position: 'relative',
     paddingBottom: '2px',
-    borderBottom: active ? '2px solid #FF7B00' : '2px solid transparent',
+    borderBottom: active ? '2px solid #B9572B' : '2px solid transparent',
   })
 
   return (
-    <nav style={{
-      display: 'flex',
-      justifyContent: 'space-between',
-      alignItems: 'center',
-      background: 'var(--paper-overlay)',
-      backdropFilter: 'blur(12px)',
-      border: '1px solid var(--rule)',
-      borderRadius: '99px',
-      padding: '0.8rem 2rem',
-      maxWidth: '1240px',
-      margin: '1.2rem auto 0',
-      transition: 'background 0.3s, border-color 0.3s',
-    }}>
-
-      {/* Brand */}
-      <Link to="/" style={{ display: 'flex', alignItems: 'center', gap: '10px', textDecoration: 'none' }}>
-        <IconSoulPRLogo size={32} />
-        <div style={{ display: 'flex', flexDirection: 'column', lineHeight: 1.1 }}>
-          <span style={{ fontFamily: 'var(--font-display)', fontWeight: 900, fontSize: '17px', color: 'var(--ink)' }}>SoulPR</span>
-          <span style={{ fontSize: '8px', textTransform: 'uppercase', color: '#E05300', letterSpacing: '0.06em', fontWeight: 700 }}>proof that builds you</span>
-        </div>
-      </Link>
+    <nav
+      style={{
+        display: 'flex',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+        background: 'var(--paper-overlay)',
+        backdropFilter: 'blur(16px)',
+        border: '1px solid var(--rule)',
+        borderRadius: '99px',
+        padding: '0.75rem 2rem',
+        maxWidth: '1240px',
+        margin: '1.2rem auto 0',
+        transition: 'background 0.3s, border-color 0.3s',
+      }}
+    >
+      {/* Brand Lockup */}
+      <SignetBrandLockup
+        color="var(--ink)"
+        markColor="#B9572B"
+        markSize={26}
+        wordmarkSize={17}
+      />
 
       {/* Nav Links */}
-      <div style={{ display: 'flex', gap: '1.6rem', alignItems: 'center' }}>
+      <div style={{ display: 'flex', gap: '1.8rem', alignItems: 'center' }}>
         <Link to="/" style={linkStyle(pathname === '/')}>Home</Link>
-        <a
-          href="/#features"
-          onClick={(e) => {
-            if (pathname === '/') {
-              e.preventDefault()
-              document.getElementById('features')?.scrollIntoView({ behavior: 'smooth' })
-            }
-          }}
-          style={linkStyle(false)}
-        >
-          Features
-        </a>
-        <a
-          href="/#how-it-works"
-          onClick={(e) => {
-            if (pathname === '/') {
-              e.preventDefault()
-              document.getElementById('how-it-works')?.scrollIntoView({ behavior: 'smooth' })
-            }
-          }}
-          style={linkStyle(false)}
-        >
-          How It Works
-        </a>
-        <a
-          href="/#about"
-          onClick={(e) => {
-            if (pathname === '/') {
-              e.preventDefault()
-              document.getElementById('about')?.scrollIntoView({ behavior: 'smooth' })
-            }
-          }}
-          style={linkStyle(false)}
-        >
-          About
-        </a>
+        <Link to="/dashboard" style={linkStyle(pathname === '/dashboard')}>Dashboard</Link>
+        <Link to="/install" style={linkStyle(pathname === '/install')}>Track Repos</Link>
+        <Link to="/how-it-works" style={linkStyle(pathname === '/how-it-works')}>Architecture FAQ</Link>
+        <Link to="/verify/sample" style={{ ...linkStyle(pathname === '/verify/sample'), color: '#B9572B', fontWeight: 600 }}>
+          Sample Credential
+        </Link>
       </div>
 
-      {/* Right: Network + Theme Toggle + Link Wallet */}
+      {/* Right: Protocol Indicator + Theme Toggle + Auth Button */}
       <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
-
-        {/* Active network badge */}
-        <div style={{
-          display: 'flex', alignItems: 'center', gap: '6px',
-          background: 'rgba(168, 85, 247, 0.08)',
-          border: '1px solid rgba(168, 85, 247, 0.25)',
-          borderRadius: '99px', padding: '5px 12px',
-          color: '#C084FC', fontSize: '11px', fontWeight: 600,
-        }}>
-          <span style={{ width: '6px', height: '6px', borderRadius: '50%', background: '#A855F7', display: 'inline-block', flexShrink: 0 }} />
-          {(import.meta.env.VITE_NEAR_ENABLED ?? 'false') === 'true' ? 'NEAR TESTNET' : 'MONAD TESTNET'}
-          <span style={{ fontSize: '7px', opacity: 0.6 }}>▼</span>
+        {/* NEAR Protocol Indicator */}
+        <div
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: '6px',
+            background: 'rgba(185, 87, 43, 0.08)',
+            border: '1px solid rgba(185, 87, 43, 0.25)',
+            borderRadius: '99px',
+            padding: '5px 12px',
+            color: '#B9572B',
+            fontSize: '11px',
+            fontWeight: 700,
+            letterSpacing: '0.04em',
+          }}
+        >
+          <span
+            style={{
+              width: '6px',
+              height: '6px',
+              borderRadius: '50%',
+              background: '#B9572B',
+              display: 'inline-block',
+              flexShrink: 0,
+            }}
+          />
+          NEAR PROTOCOL
         </div>
 
-        {/* Theme Toggle */}
         <ThemeToggle />
 
-        {/* Link Wallet */}
         <button
-          id="nav-link-wallet"
-          onClick={() => navigate('/link-wallet')}
+          onClick={() => navigate('/auth')}
           style={{
-            display: 'flex', alignItems: 'center', gap: '6px',
-            background: 'linear-gradient(135deg, #FF7B00 0%, #E05300 100%)',
-            color: 'white', border: 'none', borderRadius: '99px',
-            padding: '7px 16px', fontSize: '12px', fontWeight: 700,
-            cursor: 'pointer', boxShadow: '0 4px 12px rgba(255,123,0,0.25)',
-            transition: 'transform 0.15s, box-shadow 0.15s',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '6px',
+            background: 'var(--signet-orange)',
+            color: '#EDE2D0',
+            border: 'none',
+            borderRadius: '99px',
+            padding: '7px 18px',
+            fontSize: '12.5px',
+            fontWeight: 700,
+            cursor: 'pointer',
+            boxShadow: '0 4px 12px rgba(185, 87, 43, 0.25)',
+            transition: 'transform 0.15s',
           }}
-          onMouseEnter={e => { (e.target as HTMLElement).style.transform = 'scale(1.03)' }}
-          onMouseLeave={e => { (e.target as HTMLElement).style.transform = 'scale(1)' }}
+          onMouseEnter={(e) => ((e.currentTarget as HTMLElement).style.transform = 'scale(1.02)')}
+          onMouseLeave={(e) => ((e.currentTarget as HTMLElement).style.transform = 'scale(1)')}
         >
-          <IconWallet size={13} color="white" />
-          Link Wallet
+          Sign In
         </button>
       </div>
     </nav>

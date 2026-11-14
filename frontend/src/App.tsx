@@ -2,6 +2,9 @@ import { useEffect } from 'react'
 import { BrowserRouter, Routes, Route } from 'react-router-dom'
 import Nav from './components/Nav'
 import Landing from './pages/Landing'
+import Auth from './pages/Auth'
+import VerifySample from './pages/VerifySample'
+import VerifyLive from './pages/VerifyLive'
 import Dashboard from './pages/Dashboard'
 import LinkWallet from './pages/LinkWallet'
 import Install from './pages/Install'
@@ -18,8 +21,11 @@ export default function App() {
   return (
     <BrowserRouter>
       <Routes>
-        {/* Pages that do not share the default top nav bar layout */}
+        {/* Dedicated standalone pages without top nav */}
         <Route path="/" element={<Landing />} />
+        <Route path="/auth" element={<Auth />} />
+        <Route path="/verify/sample" element={<VerifySample />} />
+        <Route path="/verify/:credentialId" element={<VerifyLive />} />
         <Route path="/dashboard" element={<Dashboard />} />
 
         {/* All other pages share the nav */}
