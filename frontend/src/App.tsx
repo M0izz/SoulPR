@@ -6,6 +6,7 @@ import Dashboard from './pages/Dashboard'
 import LinkWallet from './pages/LinkWallet'
 import Install from './pages/Install'
 import HowItWorks from './pages/HowItWorks'
+import CredentialDetail from './pages/CredentialDetail'
 import { initTheme } from './components/ThemeToggle'
 
 export default function App() {
@@ -29,6 +30,7 @@ export default function App() {
               <Route path="/link-wallet" element={<LinkWallet />} />
               <Route path="/install" element={<Install />} />
               <Route path="/how-it-works" element={<HowItWorks />} />
+        <Route path="/credential/:tokenId" element={<CredentialDetail />} />
             </Routes>
           </div>
         } />

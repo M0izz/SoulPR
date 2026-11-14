@@ -7,12 +7,12 @@ pub const SIGNET_ARTWORK_TEMPLATE: &str = "signet-artwork-1.0.0";
 pub const SIGNET_IDENTITY_DOMAIN: &str = "signet:credential-identity:v1";
 pub const SIGNET_COMPATIBILITY: &str = "signet-soulbound-registry-1.0.0";
 
-#[derive(Clone, Debug, PartialEq, Eq)]
+#[derive(BorshDeserialize, BorshSerialize, Clone, Debug, PartialEq, Eq)]
 pub enum CredentialCategory {
     MergedPullRequest,
 }
 
-#[derive(Clone, Debug, PartialEq, Eq)]
+#[derive(BorshDeserialize, BorshSerialize, Clone, Debug, PartialEq, Eq)]
 pub enum VerificationStatus {
     Valid,
     UnderReview,
@@ -20,7 +20,7 @@ pub enum VerificationStatus {
     Superseded,
 }
 
-#[derive(Clone, Debug, PartialEq, Eq)]
+#[derive(BorshDeserialize, BorshSerialize, Clone, Debug, PartialEq, Eq)]
 pub enum RevocationReason {
     IssuedInError,
     SourceCorrection,
@@ -29,13 +29,13 @@ pub enum RevocationReason {
     PrivacyTombstone,
 }
 
-#[derive(Clone, Debug, PartialEq, Eq)]
+#[derive(BorshDeserialize, BorshSerialize, Serialize, Deserialize, Clone, Debug, PartialEq, Eq)]
 pub struct EvidenceReference {
     pub uri: String,
     pub sha256: Vec<u8>,
 }
 
-#[derive(Clone, Debug, PartialEq, Eq)]
+#[derive(BorshDeserialize, BorshSerialize, Serialize, Deserialize, Clone, Debug, PartialEq, Eq)]
 pub struct CredentialEvidence {
     pub credential_id: String,
     pub contributor_account_id: AccountId,
@@ -74,7 +74,7 @@ pub struct CredentialMintInput {
     pub identity_hash: Vec<u8>,
 }
 
-#[derive(Clone, Debug, PartialEq, Eq)]
+#[derive(BorshDeserialize, BorshSerialize, Serialize, Deserialize, Clone, Debug, PartialEq, Eq)]
 pub struct CredentialStatus {
     pub verification_status: VerificationStatus,
     pub status_version: u64,
@@ -87,7 +87,7 @@ pub struct CredentialStatus {
     pub last_status_updated_by: AccountId,
 }
 
-#[derive(Clone, Debug, PartialEq, Eq)]
+#[derive(BorshDeserialize, BorshSerialize, Serialize, Deserialize, Clone, Debug, PartialEq, Eq)]
 pub struct Credential {
     pub evidence: CredentialEvidence,
     pub status: CredentialStatus,
@@ -159,7 +159,7 @@ mod tests {
 
     fn setup() {
         testing_env!(VMContextBuilder::new()
-            .current_account_id(AccountId::new_unvalidated("signet.testnet".into()))
+            .current_account_id(AccountId::from("signet.testnet".to_string()))
             .build());
     }
 

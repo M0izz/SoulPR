@@ -40,7 +40,7 @@ function RepoAvatar({ repo }: { repo: string }) {
   return (
     <div style={{
       width: '30px', height: '30px', borderRadius: '50%', flexShrink: 0,
-      background: isCore ? 'linear-gradient(135deg,#7C3AED,#4F46E5)' : '#1B1816',
+      background: isCore ? 'linear-gradient(135deg,#FF7B00,#B45E00)' : '#1B1816',
       display: 'flex', alignItems: 'center', justifyContent: 'center',
     }}>
       {isCore
@@ -77,8 +77,8 @@ function SBTsPanel({ badges, onSelect }: { badges: BadgeData[]; onSelect: (b: Ba
                 }
               }}
               style={{
-                background: 'linear-gradient(160deg, rgba(168,85,247,0.08) 0%, rgba(255,123,0,0.04) 100%)',
-                border: '1px solid rgba(168,85,247,0.2)', borderRadius: '14px',
+                background: 'linear-gradient(160deg, rgba(255,123,0,0.08) 0%, rgba(255,123,0,0.04) 100%)',
+                border: '1px solid rgba(255,123,0,0.2)', borderRadius: '14px',
                 padding: '1.4rem', cursor: 'pointer', textAlign: 'center',
                 transition: 'transform 0.15s, box-shadow 0.15s',
               }}
