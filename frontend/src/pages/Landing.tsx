@@ -1,499 +1,802 @@
 import { useNavigate } from 'react-router-dom'
-import Nav from '../components/Nav'
-import {
-  IconShield, IconLink, IconCode, IconZap,
-  IconArrowRight, IconUser
-} from '../components/Icons'
+import LandingNav from '../components/nav/LandingNav'
+import SignetHero from '../components/hero/SignetHero'
+import ProductWalkthrough from '../components/walkthrough/ProductWalkthrough'
+import CredentialCard from '../components/credential/CredentialCard'
+import SignetFooter from '../components/layout/SignetFooter'
+import SignetInsignia from '../components/brand/SignetInsignia'
 
 export default function Landing() {
   const navigate = useNavigate()
 
-  const featureCard = (
-    icon: React.ReactNode,
-    title: string,
-    desc: string,
-    detail: string,
-  ) => (
+  return (
     <div
-      key={title}
-      className="landing-feature-card"
       style={{
-        padding: '1.8rem',
-        borderRadius: '16px',
-        background: 'var(--paper-raised)',
-        border: '1px solid var(--rule)',
-        textAlign: 'left',
-        display: 'flex',
-        flexDirection: 'column',
-        gap: '0',
-        transition: 'border-color 0.2s, background 0.2s, transform 0.2s, box-shadow 0.2s',
-      }}
-      onMouseEnter={e => {
-        const el = e.currentTarget as HTMLElement
-        el.style.borderColor = 'rgba(255, 123, 0, 0.45)'
-        el.style.background = 'var(--stamp-bg)'
-        el.style.transform = 'translateY(-3px)'
-        el.style.boxShadow = '0 12px 32px rgba(255,123,0,0.1)'
-      }}
-      onMouseLeave={e => {
-        const el = e.currentTarget as HTMLElement
-        el.style.borderColor = 'var(--rule)'
-        el.style.background = 'var(--paper-raised)'
-        el.style.transform = 'translateY(0)'
-        el.style.boxShadow = 'none'
+        backgroundColor: '#10100F',
+        color: '#EDE2D0',
+        minHeight: '100vh',
+        fontFamily: 'var(--font-sans)',
       }}
     >
-      {/* Icon + title row */}
-      <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '14px' }}>
-        <div style={{
-          width: '36px', height: '36px', borderRadius: '9px',
-          background: 'rgba(255, 123, 0, 0.09)',
-          border: '1px solid rgba(255, 123, 0, 0.22)',
-          display: 'flex', alignItems: 'center', justifyContent: 'center',
-          flexShrink: 0,
-        }}>
-          {icon}
-        </div>
-        <div style={{ fontWeight: 800, fontSize: '12px', color: 'var(--ink)', textTransform: 'uppercase', letterSpacing: '0.06em' }}>
-          {title}
-        </div>
-      </div>
+      {/* ── Navigation ── */}
+      <LandingNav />
 
-      {/* Description */}
-      <div style={{ fontSize: '13px', color: 'var(--ink-muted)', lineHeight: '1.7', marginBottom: '16px', flexGrow: 1 }}>
-        {desc}
-      </div>
+      <main>
+        {/* ── SECTION 1: Cinematic Hero ── */}
+        <SignetHero />
 
-      {/* Stat / highlight badge */}
-      <div style={{
-        display: 'inline-flex', alignItems: 'center', gap: '7px',
-        fontSize: '11px', fontWeight: 700,
-        color: '#FF7B00',
-        background: 'rgba(255,123,0,0.07)',
-        border: '1px solid rgba(255,123,0,0.15)',
-        borderRadius: '99px',
-        padding: '5px 12px',
-        width: 'fit-content',
-      }}>
-        <span style={{ width: '5px', height: '5px', borderRadius: '50%', background: '#FF7B00', display: 'inline-block', flexShrink: 0 }} />
-        {detail}
-      </div>
-    </div>
-  )
+        {/* ── SECTION 2: The Problem (Warm Cream #F3E8D5) ── */}
+        <section
+          id="problem"
+          style={{
+            backgroundColor: '#F3E8D5',
+            color: '#191715',
+            padding: '6rem 2rem 6.5rem',
+            borderTop: '1px solid rgba(118, 103, 91, 0.25)',
+          }}
+          aria-labelledby="problem-headline"
+        >
+          <div style={{ maxWidth: '1240px', margin: '0 auto' }}>
+            <div
+              style={{
+                display: 'grid',
+                gridTemplateColumns: '1.05fr 0.95fr',
+                gap: '4rem',
+                alignItems: 'center',
+              }}
+              className="editorial-split-grid"
+            >
+              {/* Text Narrative */}
+              <div style={{ textAlign: 'left' }}>
+                <span
+                  style={{
+                    fontSize: '11px',
+                    fontWeight: 800,
+                    textTransform: 'uppercase',
+                    letterSpacing: '0.12em',
+                    color: '#B9572B',
+                    display: 'block',
+                    marginBottom: '10px',
+                  }}
+                >
+                  The Nature of Contribution
+                </span>
+                <h2
+                  id="problem-headline"
+                  className="signet-headline"
+                  style={{
+                    fontSize: 'clamp(34px, 4vw, 50px)',
+                    fontWeight: 500,
+                    lineHeight: 1.15,
+                    marginBottom: '1.4rem',
+                    color: '#191715',
+                  }}
+                >
+                  Your work deserves to outlive the moment.
+                </h2>
+                <p
+                  style={{
+                    fontSize: '16.5px',
+                    lineHeight: 1.75,
+                    color: 'var(--signet-muted)',
+                    marginBottom: '1.4rem',
+                  }}
+                >
+                  Valuable engineering contributions exist scattered across repositories, pull requests,
+                  organisations, and disconnected platforms. While the work exists in git history, its context
+                  is frequently lost, its significance difficult to articulate, and its underlying evidence
+                  cumbersome for peers, reviewers, or recruiters to inspect.
+                </p>
+                <p
+                  style={{
+                    fontSize: '15.5px',
+                    lineHeight: 1.7,
+                    color: '#191715',
+                    fontWeight: 500,
+                  }}
+                >
+                  Resumes rely on self-reported assertions. Portfolios fade. Meaningful contributions deserve
+                  a structured, durable record connected directly to its inspectable source proof.
+                </p>
+              </div>
 
-  return (
-    <div className="landing-page" style={{ position: 'relative', overflow: 'hidden', minHeight: '100vh', background: 'var(--paper)', color: 'var(--ink)', transition: 'background 0.3s, color 0.3s' }}>
-
-      {/* Floating ember particles */}
-      <div className="forge-embers" aria-hidden="true">
-        <div className="ember" style={{ left: '10%', width: '3px', height: '3px', animationDelay: '0s', animationDuration: '6s' }} />
-        <div className="ember" style={{ left: '30%', width: '4px', height: '4px', animationDelay: '1.5s', animationDuration: '8s' }} />
-        <div className="ember" style={{ left: '55%', width: '2px', height: '2px', animationDelay: '3s', animationDuration: '5s' }} />
-        <div className="ember" style={{ left: '72%', width: '5px', height: '5px', animationDelay: '4.5s', animationDuration: '9s' }} />
-        <div className="ember" style={{ left: '88%', width: '3px', height: '3px', animationDelay: '2s', animationDuration: '7s' }} />
-      </div>
-
-      {/* Background coin glow */}
-      <div className="bg-animation-container" aria-hidden="true">
-        <div className="bg-anim-coin coin-main" />
-        <div className="bg-anim-coin coin-top-left" />
-        <div className="bg-anim-coin coin-bottom-right" />
-      </div>
-
-      <Nav />
-
-      <main className="landing-main" style={{ padding: '5rem 2rem 5rem', position: 'relative', zIndex: 5, maxWidth: '1240px', margin: '0 auto' }}>
-
-        {/* 2-Column Hero */}
-        <div className="landing-hero-grid" style={{ display: 'grid', gridTemplateColumns: '1.15fr 0.85fr', gap: '4rem', alignItems: 'center', marginBottom: '5rem' }}>
-
-          {/* Left column */}
-          <div className="animate-fade-in" style={{ display: 'flex', flexDirection: 'column', textAlign: 'left' }}>
-
-            {/* Top pill badge */}
-            <div style={{ marginBottom: '1.8rem' }}>
-              <span style={{
-                display: 'inline-flex', alignItems: 'center', gap: '8px',
-                fontSize: '11px', fontWeight: 800, textTransform: 'uppercase',
-                color: '#FF7B00',
-                background: 'rgba(255, 123, 0, 0.07)',
-                border: '1px solid rgba(255, 123, 0, 0.2)',
-                padding: '7px 16px', borderRadius: '99px', letterSpacing: '0.08em',
-              }}>
-                <IconShield size={13} color="#FF7B00" />
-                SOULBOUND. NON-TRANSFERABLE. FOREVER YOURS.
-              </span>
-            </div>
-
-            {/* Headline */}
-            <h1 style={{
-              fontSize: '66px', lineHeight: '1.04',
-              marginBottom: '1.6rem', color: 'var(--ink)',
-              fontWeight: 900, fontFamily: 'var(--font-display)',
-            }}>
-              Your Code.<br />
-              Your Impact.<br />
-              <span style={{ color: '#FF7B00' }}>Your Proof.</span>
-            </h1>
-
-            {/* Divider accent */}
-            <div style={{ width: '56px', height: '4px', background: '#FF7B00', borderRadius: '99px', marginBottom: '1.8rem', opacity: 0.8 }} />
-
-            {/* Body copy */}
-            <p style={{ fontSize: '17.5px', color: 'var(--ink-muted)', marginBottom: '2.8rem', lineHeight: '1.75', maxWidth: '520px' }}>
-              SoulPR turns every merged pull request into a permanent, on-chain attestation — verifiable by anyone, anywhere. Built in public. Earned forever.
-            </p>
-
-            {/* CTA Buttons */}
-            <div style={{ display: 'flex', gap: '16px', flexWrap: 'wrap' }}>
-              <button
-                id="cta-dashboard"
-                onClick={() => navigate('/dashboard')}
+              {/* Fragmented Contribution Archive Visual */}
+              <div
                 style={{
-                  display: 'flex', alignItems: 'center', gap: '10px',
-                  background: 'linear-gradient(135deg, #FF7B00 0%, #E05300 100%)',
-                  color: 'white', borderRadius: '10px',
-                  padding: '1.05rem 2.2rem',
-                  fontWeight: 800, fontSize: '16px', border: 'none',
-                  cursor: 'pointer', boxShadow: '0 6px 20px rgba(255, 123, 0, 0.22)',
-                  transition: 'transform 0.15s, box-shadow 0.15s',
+                  position: 'relative',
+                  minHeight: '340px',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
                 }}
-                onMouseEnter={e => {
-                  (e.currentTarget as HTMLElement).style.transform = 'translateY(-1px)'
-                    ; (e.currentTarget as HTMLElement).style.boxShadow = '0 10px 28px rgba(255,123,0,0.3)'
-                }}
-                onMouseLeave={e => {
-                  (e.currentTarget as HTMLElement).style.transform = 'translateY(0)'
-                    ; (e.currentTarget as HTMLElement).style.boxShadow = '0 6px 20px rgba(255,123,0,0.22)'
-                }}
+                aria-label="Fragmented repository records"
               >
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                  <rect x="3" y="3" width="7" height="7" /><rect x="14" y="3" width="7" height="7" /><rect x="14" y="14" width="7" height="7" /><rect x="3" y="14" width="7" height="7" />
-                </svg>
-                Dashboard
-                <IconArrowRight size={14} color="white" />
-              </button>
+                {/* Fragment 1: PR Record Card */}
+                <div
+                  style={{
+                    position: 'absolute',
+                    top: '10px',
+                    left: '20px',
+                    width: '280px',
+                    backgroundColor: '#FFF',
+                    borderRadius: '10px',
+                    padding: '14px 16px',
+                    boxShadow: '0 8px 24px rgba(0,0,0,0.08)',
+                    border: '1px solid rgba(118, 103, 91, 0.22)',
+                    transform: 'rotate(-4deg)',
+                    textAlign: 'left',
+                  }}
+                >
+                  <div style={{ fontSize: '10px', fontFamily: 'var(--font-mono)', color: 'var(--signet-muted)', marginBottom: '4px' }}>
+                    github.com/rust-lang/cargo · PR #11402
+                  </div>
+                  <div style={{ fontWeight: 700, fontSize: '12.5px', color: '#191715' }}>
+                    Fix resolver lockfile backtracking logic
+                  </div>
+                  <div style={{ fontSize: '10px', color: '#2A7D4F', fontWeight: 600, marginTop: '6px' }}>
+                    Merged into master · 3 comments
+                  </div>
+                </div>
 
-              <button
-                id="cta-lookup"
-                onClick={() => navigate('/dashboard')}
-                style={{
-                  display: 'flex', alignItems: 'center', gap: '8px',
-                  background: 'rgba(255, 255, 255, 0.04)',
-                  color: '#FFF', borderRadius: '8px',
-                  padding: '0.9rem 1.8rem',
-                  fontWeight: 700, fontSize: '14px',
-                  border: '1px solid rgba(255,255,255,0.12)',
-                  cursor: 'pointer', transition: 'background 0.2s, border-color 0.2s',
-                }}
-                onMouseEnter={e => {
-                  (e.currentTarget as HTMLElement).style.background = 'rgba(255,255,255,0.07)'
-                    ; (e.currentTarget as HTMLElement).style.borderColor = 'rgba(255,255,255,0.2)'
-                }}
-                onMouseLeave={e => {
-                  (e.currentTarget as HTMLElement).style.background = 'rgba(255,255,255,0.04)'
-                    ; (e.currentTarget as HTMLElement).style.borderColor = 'rgba(255,255,255,0.12)'
-                }}
-              >
-                <IconUser size={14} color="#FFF" />
-                Look up a contributor
-                <IconArrowRight size={14} color="#FFF" />
-              </button>
-            </div>
+                {/* Fragment 2: Orphaned Commit Object */}
+                <div
+                  style={{
+                    position: 'absolute',
+                    bottom: '20px',
+                    right: '15px',
+                    width: '260px',
+                    backgroundColor: '#FFF',
+                    borderRadius: '10px',
+                    padding: '14px 16px',
+                    boxShadow: '0 12px 28px rgba(0,0,0,0.1)',
+                    border: '1px solid rgba(118, 103, 91, 0.22)',
+                    transform: 'rotate(3.5deg)',
+                    textAlign: 'left',
+                  }}
+                >
+                  <div style={{ fontSize: '10px', fontFamily: 'var(--font-mono)', color: '#B9572B', fontWeight: 700, marginBottom: '4px' }}>
+                    COMMIT 9c8f1e2a
+                  </div>
+                  <div style={{ fontWeight: 600, fontSize: '12px', color: '#191715' }}>
+                    Refactor peer connection retry loop
+                  </div>
+                  <div style={{ fontSize: '10.5px', color: 'var(--signet-muted)', marginTop: '4px' }}>
+                    Disconnected from author profile
+                  </div>
+                </div>
 
-            {/* Scroll indicator */}
-            <div style={{ marginTop: '4.5rem', display: 'flex', flexDirection: 'column', alignItems: 'flex-start', gap: '8px' }}>
-              <span style={{ fontSize: '9px', color: 'rgba(255,255,255,0.3)', textTransform: 'uppercase', letterSpacing: '0.12em', fontWeight: 700 }}>
-                SCROLL TO EXPLORE
-              </span>
-              <div style={{ width: '24px', height: '40px', border: '1.5px solid rgba(255,255,255,0.15)', borderRadius: '99px', display: 'flex', alignItems: 'flex-start', justifyContent: 'center', padding: '5px' }}>
-                <div style={{ width: '4px', height: '8px', background: '#FF7B00', borderRadius: '99px', animation: 'scrollDot 1.8s ease-in-out infinite' }} />
+                {/* Fragment 3: Central scattered git diff badge */}
+                <div
+                  style={{
+                    backgroundColor: '#191715',
+                    color: '#EDE2D0',
+                    borderRadius: '8px',
+                    padding: '12px 18px',
+                    fontFamily: 'var(--font-mono)',
+                    fontSize: '11px',
+                    boxShadow: '0 16px 36px rgba(0,0,0,0.25)',
+                    transform: 'translateY(-10px)',
+                    zIndex: 2,
+                    textAlign: 'left',
+                  }}
+                >
+                  <div style={{ color: '#B9572B', fontWeight: 700, marginBottom: '2px' }}>
+                    evidence_status: fragmented
+                  </div>
+                  <div>origin: 14 distinct repositories</div>
+                  <div style={{ color: 'rgba(237, 226, 208, 0.5)' }}>context: unpreserved</div>
+                </div>
               </div>
             </div>
           </div>
+        </section>
 
-          {/* Right column: Monad coin — 3D motion graphics */}
-          <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', animation: 'hero-float 6s ease-in-out infinite' }}>
+        {/* ── SECTION 3: The Solution (Charcoal #191715) ── */}
+        <section
+          id="protocol"
+          style={{
+            backgroundColor: '#191715',
+            color: '#EDE2D0',
+            padding: '6.5rem 2rem 7rem',
+            borderTop: '1px solid rgba(237, 226, 208, 0.08)',
+          }}
+          aria-labelledby="solution-headline"
+        >
+          <div style={{ maxWidth: '1240px', margin: '0 auto' }}>
+            <div style={{ textAlign: 'center', marginBottom: '4rem' }}>
+              <span
+                style={{
+                  fontSize: '10.5px',
+                  fontWeight: 800,
+                  textTransform: 'uppercase',
+                  letterSpacing: '0.14em',
+                  color: '#B9572B',
+                  display: 'block',
+                  marginBottom: '10px',
+                }}
+              >
+                The SIGNET Protocol Architecture
+              </span>
+              <h2
+                id="solution-headline"
+                className="signet-headline"
+                style={{
+                  fontSize: 'clamp(34px, 4vw, 50px)',
+                  fontWeight: 500,
+                  color: '#EDE2D0',
+                  marginBottom: '1.2rem',
+                }}
+              >
+                A lasting mark for meaningful work.
+              </h2>
+              <p
+                style={{
+                  fontSize: '16px',
+                  color: 'var(--signet-muted)',
+                  maxWidth: '640px',
+                  margin: '0 auto',
+                  lineHeight: 1.7,
+                }}
+              >
+                SIGNET bridges the gap between open-source repositories and permanent attestation.
+                By structuring contribution records into verifiable evidence, we turn scattered code into enduring credentials.
+              </p>
+            </div>
 
-            {/*
-             * OUTER GLOW — lives outside the mask so it bleeds freely
-             * into the page background without being clipped
-             */}
-            <div style={{ position: 'relative', width: '460px', height: '460px' }}>
-              <div style={{
-                position: 'absolute', inset: '-90px', borderRadius: '50%', zIndex: 0, pointerEvents: 'none',
-                background: 'radial-gradient(circle, rgba(255,150,0,0.28) 0%, rgba(255,80,0,0.1) 45%, transparent 68%)',
-                filter: 'blur(32px)',
-                animation: 'glow-breathe 4s ease-in-out infinite',
-              }} />
+            {/* Three Pillar Convergence Grid */}
+            <div
+              style={{
+                display: 'grid',
+                gridTemplateColumns: 'repeat(3, 1fr)',
+                gap: '2rem',
+                textAlign: 'left',
+              }}
+              className="three-pillar-grid"
+            >
+              <div
+                style={{
+                  backgroundColor: '#141312',
+                  border: '1px solid rgba(237, 226, 208, 0.1)',
+                  borderRadius: '14px',
+                  padding: '2.2rem 2rem',
+                }}
+              >
+                <div style={{ color: '#B9572B', fontWeight: 800, fontSize: '13px', textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: '12px' }}>
+                  01. Evidence
+                </div>
+                <h3 style={{ fontFamily: 'var(--font-serif)', fontSize: '22px', fontWeight: 600, color: '#EDE2D0', marginBottom: '10px' }}>
+                  Identifiable Source Records
+                </h3>
+                <p style={{ fontSize: '14px', color: 'var(--signet-muted)', lineHeight: 1.65 }}>
+                  Every credential ties back to real, inspectable git evidence: commit hashes, pull request discussions,
+                  code diff metrics, and maintainer signatures.
+                </p>
+              </div>
 
-              {/*
-               * MASK WRAPPER — radial circular clip removes the PNG's
-               * hard rectangular black corners with a smooth fade-out
-               */}
-              <div style={{
-                position: 'absolute', inset: 0,
-                WebkitMaskImage: 'radial-gradient(circle 205px at 50% 50%, black 48%, rgba(0,0,0,0.85) 62%, rgba(0,0,0,0.35) 76%, transparent 92%)',
-                maskImage: 'radial-gradient(circle 205px at 50% 50%, black 48%, rgba(0,0,0,0.85) 62%, rgba(0,0,0,0.35) 76%, transparent 92%)',
-                zIndex: 2,
-              }}>
-                <img
-                  src="/golden_monad_coin.png?v=3"
-                  alt="Monad Coin"
+              <div
+                style={{
+                  backgroundColor: '#141312',
+                  border: '1px solid rgba(237, 226, 208, 0.1)',
+                  borderRadius: '14px',
+                  padding: '2.2rem 2rem',
+                }}
+              >
+                <div style={{ color: '#B9572B', fontWeight: 800, fontSize: '13px', textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: '12px' }}>
+                  02. Verification
+                </div>
+                <h3 style={{ fontFamily: 'var(--font-serif)', fontSize: '22px', fontWeight: 600, color: '#EDE2D0', marginBottom: '10px' }}>
+                  Rigorous Inspection Process
+                </h3>
+                <p style={{ fontSize: '14px', color: 'var(--signet-muted)', lineHeight: 1.65 }}>
+                  Evidence is audited according to implemented SIGNET requirements.
+                  A merged pull request is not proof by itself; validation establishes authenticity before attestation.
+                </p>
+              </div>
+
+              <div
+                style={{
+                  backgroundColor: '#141312',
+                  border: '1px solid rgba(237, 226, 208, 0.1)',
+                  borderRadius: '14px',
+                  padding: '2.2rem 2rem',
+                }}
+              >
+                <div style={{ color: '#B9572B', fontWeight: 800, fontSize: '13px', textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: '12px' }}>
+                  03. Credential
+                </div>
+                <h3 style={{ fontFamily: 'var(--font-serif)', fontSize: '22px', fontWeight: 600, color: '#EDE2D0', marginBottom: '10px' }}>
+                  Independently Inspectable
+                </h3>
+                <p style={{ fontSize: '14px', color: 'var(--signet-muted)', lineHeight: 1.65 }}>
+                  An issued credential stands on its own. Anyone can inspect its evidence trail without trusting a centralised
+                  platform, private database, or proprietary API key.
+                </p>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        {/* ── SECTION 4: Interactive Product Walkthrough (Warm Cream) ── */}
+        <ProductWalkthrough />
+
+        {/* ── SECTION 5: Credential Showcase (Charcoal #191715) ── */}
+        <section
+          id="credentials"
+          style={{
+            backgroundColor: '#191715',
+            color: '#EDE2D0',
+            padding: '6.5rem 2rem 7rem',
+            borderBottom: '1px solid rgba(237, 226, 208, 0.08)',
+          }}
+          aria-labelledby="showcase-headline"
+        >
+          <div style={{ maxWidth: '1240px', margin: '0 auto' }}>
+            <div
+              style={{
+                display: 'grid',
+                gridTemplateColumns: '1.05fr 0.95fr',
+                gap: '4rem',
+                alignItems: 'center',
+              }}
+              className="editorial-split-grid"
+            >
+              {/* Left Column: Narrative */}
+              <div style={{ textAlign: 'left' }}>
+                <span
                   style={{
-                    width: '100%', height: '100%',
-                    objectFit: 'contain',
-                    filter: 'drop-shadow(0 0 55px rgba(255,145,0,0.65)) brightness(1.12) saturate(1.15)',
-                    /* Coin rotates on its own vertical axis — like a coin spinning */
-                    animation: 'coin-axis-spin 10s linear infinite',
+                    fontSize: '10.5px',
+                    fontWeight: 800,
+                    textTransform: 'uppercase',
+                    letterSpacing: '0.12em',
+                    color: '#B9572B',
+                    display: 'block',
+                    marginBottom: '10px',
+                  }}
+                >
+                  Archival Digital Artifact
+                </span>
+                <h2
+                  id="showcase-headline"
+                  className="signet-headline"
+                  style={{
+                    fontSize: 'clamp(34px, 4vw, 50px)',
+                    fontWeight: 500,
+                    color: '#EDE2D0',
+                    lineHeight: 1.15,
+                    marginBottom: '1.4rem',
+                  }}
+                >
+                  Not just a badge. A record worth inspecting.
+                </h2>
+                <p
+                  style={{
+                    fontSize: '16px',
+                    color: 'var(--signet-muted)',
+                    lineHeight: 1.75,
+                    marginBottom: '1.6rem',
+                  }}
+                >
+                  SIGNET credentials avoid gamified achievement ribbons or speculative trading card aesthetics.
+                  They are designed with archival luxury: tactile paper finishes, intaglio-engraved seals,
+                  and precise tabular technical typography.
+                </p>
+                <p
+                  style={{
+                    fontSize: '15px',
+                    color: '#EDE2D0',
+                    lineHeight: 1.7,
+                    marginBottom: '2.5rem',
+                  }}
+                >
+                  Every credential contains its complete provenance: recipient, contribution title, repository ID,
+                  and deep evidence inspection references.
+                </p>
+
+                <button
+                  onClick={() => navigate('/verify/sample')}
+                  style={{
+                    backgroundColor: 'var(--signet-orange)',
+                    color: '#EDE2D0',
+                    fontWeight: 700,
+                    fontSize: '14.5px',
+                    padding: '12px 24px',
+                    borderRadius: '8px',
+                    border: 'none',
+                    cursor: 'pointer',
+                    boxShadow: '0 6px 20px rgba(185, 87, 43, 0.3)',
+                    transition: 'transform 0.15s',
+                  }}
+                  onMouseEnter={(e) => (e.currentTarget.style.transform = 'translateY(-1px)')}
+                  onMouseLeave={(e) => (e.currentTarget.style.transform = 'translateY(0)')}
+                >
+                  Inspect sample credential →
+                </button>
+              </div>
+
+              {/* Right Column: Floating Luxury Credential Card */}
+              <div
+                style={{
+                  display: 'flex',
+                  justifyContent: 'center',
+                  alignItems: 'center',
+                  perspective: '1000px',
+                }}
+              >
+                <CredentialCard
+                  onInspect={() => navigate('/verify/sample')}
+                  style={{
+                    transform: 'rotate(-1.5deg)',
                   }}
                 />
               </div>
-
-              {/*
-               * 3D RING SCENE — perspective container so each ring
-               * spins on a different real 3D axis
-               */}
-              <div style={{
-                position: 'absolute', inset: '-20px',
-                perspective: '700px',
-                perspectiveOrigin: '50% 50%',
-                zIndex: 3, pointerEvents: 'none',
-              }}>
-
-                {/* Ring A — tumbles on X axis (top/bottom go into screen) */}
-                <div style={{
-                  position: 'absolute', inset: '40px',
-                  borderRadius: '50%',
-                  border: '3px solid rgba(255,185,55,0.75)',
-                  boxShadow: '0 0 14px rgba(255,155,30,0.5), 0 0 4px rgba(255,200,80,0.3)',
-                  animation: 'ring-3d-x 9s linear infinite',
-                  transformStyle: 'preserve-3d',
-                }} />
-
-                {/* Ring B — tilts on Y axis (left/right go into screen) */}
-                <div style={{
-                  position: 'absolute', inset: '65px',
-                  borderRadius: '50%',
-                  border: '2.5px solid rgba(255,215,90,0.6)',
-                  boxShadow: '0 0 10px rgba(255,200,50,0.35)',
-                  animation: 'ring-3d-y 13s linear infinite reverse',
-                  transformStyle: 'preserve-3d',
-                }} />
-
-                {/* Ring C — flat spin on Z axis */}
-                <div style={{
-                  position: 'absolute', inset: '90px',
-                  borderRadius: '50%',
-                  border: '2px dashed rgba(255,145,30,0.55)',
-                  boxShadow: '0 0 8px rgba(255,130,20,0.25)',
-                  animation: 'ring-3d-z 6s linear infinite',
-                  transformStyle: 'preserve-3d',
-                }} />
-
-                {/* Ring D — diagonal tumble (X+Y combined) */}
-                <div style={{
-                  position: 'absolute', inset: '20px',
-                  borderRadius: '50%',
-                  border: '1.5px solid rgba(255,230,120,0.3)',
-                  animation: 'ring-3d-diag 18s linear infinite',
-                  transformStyle: 'preserve-3d',
-                }} />
-
-              </div>
-
-              {/* Pulse ripple rings */}
-              <div style={{
-                position: 'absolute', inset: '60px', borderRadius: '50%',
-                border: '1.5px solid rgba(255,150,30,0.35)',
-                animation: 'pulse-ring 3.2s ease-out infinite',
-                zIndex: 4, pointerEvents: 'none',
-              }} />
-              <div style={{
-                position: 'absolute', inset: '40px', borderRadius: '50%',
-                border: '1px solid rgba(255,200,80,0.2)',
-                animation: 'pulse-ring 3.2s ease-out infinite 1.6s',
-                zIndex: 4, pointerEvents: 'none',
-              }} />
-
             </div>
           </div>
-        </div>
+        </section>
 
+        {/* ── SECTION 6: Who SIGNET Serves (Warm Cream #F3E8D5) ── */}
+        <section
+          id="audiences"
+          style={{
+            backgroundColor: '#F3E8D5',
+            color: '#191715',
+            padding: '6rem 2rem 6.5rem',
+          }}
+          aria-labelledby="audience-headline"
+        >
+          <div style={{ maxWidth: '1240px', margin: '0 auto' }}>
+            <div style={{ textAlign: 'center', marginBottom: '4rem' }}>
+              <span
+                style={{
+                  fontSize: '10.5px',
+                  fontWeight: 800,
+                  textTransform: 'uppercase',
+                  letterSpacing: '0.14em',
+                  color: '#B9572B',
+                  display: 'block',
+                  marginBottom: '10px',
+                }}
+              >
+                Connected Participants
+              </span>
+              <h2
+                id="audience-headline"
+                className="signet-headline"
+                style={{
+                  fontSize: 'clamp(34px, 4vw, 50px)',
+                  fontWeight: 500,
+                  color: '#191715',
+                  marginBottom: '1rem',
+                }}
+              >
+                Recognition that travels beyond the repository.
+              </h2>
+              <p
+                style={{
+                  fontSize: '16px',
+                  color: 'var(--signet-muted)',
+                  maxWidth: '640px',
+                  margin: '0 auto',
+                  lineHeight: 1.65,
+                }}
+              >
+                Developers remain the central focus of SIGNET. Communities, maintainers, organizations,
+                and reviewers form the surrounding ecosystem of verifiable recognition.
+              </p>
+            </div>
 
-        {/* Divider */}
-        <div style={{ height: '1px', background: 'rgba(78, 66, 56, 0.28)', marginBottom: '3.5rem' }} />
-
-        {/* Feature cards row */}
-        <div id="features" className="landing-feature-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '1.5rem', scrollMarginTop: '100px' }}>
-          {featureCard(
-            <IconShield size={16} color="#FF7B00" />,
-            'Soulbound',
-            'Your proof of work is permanently tied to your wallet. It can never be transferred, sold, or revoked. Once earned, it is yours forever on-chain.',
-            'Non-transferable by design',
-          )}
-          {featureCard(
-            <IconLink size={16} color="#FF7B00" />,
-            'Verifiable',
-            'Every attestation is stored on Monad and queryable by anyone, anywhere. No API key, no central server. Pure on-chain transparency.',
-            'Query any wallet, anytime',
-          )}
-          {featureCard(
-            <IconCode size={16} color="#FF7B00" />,
-            'Open Source',
-            'SoulPR\'s contracts, indexer, and webhook engine are open source. Anyone can audit, fork, or build on top. Community-owned infrastructure.',
-            'Fully auditable contracts',
-          )}
-          {featureCard(
-            <IconZap size={16} color="#FF7B00" />,
-            'Built on Monad',
-            'Monad\'s 10,000 TPS throughput means instant minting with sub-cent gas fees. Every PR becomes a zero-friction, permanent on-chain event.',
-            '100% free for contributors',
-          )}
-        </div>
-
-        {/* How It Works section */}
-        <div id="how-it-works" className="landing-section" style={{ marginTop: '5rem', padding: '3.5rem 2.5rem', background: 'var(--paper-raised)', border: '1px solid var(--rule)', borderRadius: '20px', textAlign: 'center', scrollMarginTop: '100px' }}>
-          <div style={{ fontSize: '10px', fontWeight: 800, color: '#FF7B00', letterSpacing: '0.12em', textTransform: 'uppercase', marginBottom: '10px' }}>
-            HOW IT WORKS & FAQ
-          </div>
-          <h2 style={{ fontSize: '32px', fontWeight: 900, color: 'var(--ink)', marginBottom: '1rem', fontFamily: 'var(--font-display)' }}>
-            From Pull Request to <span style={{ color: '#FF7B00' }}>On-Chain Proof</span>
-          </h2>
-          <p style={{ fontSize: '14px', color: 'var(--ink-muted)', maxWidth: '580px', margin: '0 auto 2.5rem', lineHeight: '1.7' }}>
-            SoulPR monitors tracked GitHub repositories in real time. The moment a pull request is merged, an automated webhook triggers the minting of a non-transferable Soulbound Token directly to your linked wallet.
-          </p>
-
-          {/* FAQ list inside Landing page */}
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', maxWidth: '780px', margin: '0 auto', textAlign: 'left' }}>
-            {[
-              { q: 'What is SoulPR?', a: 'SoulPR turns your real open-source contributions into soulbound attestations on Monad. These digital credentials are non-transferable, verifiable by anyone worldwide, and permanently bound to your Web3 identity.' },
-              { q: 'How does automated minting work?', a: 'We listen to GitHub webhook events. When a pull request is merged in a registered repository, our backend verifies your commit metadata against your linked wallet and triggers a mint transaction on Monad.' },
-              { q: 'What is a Soulbound Token (SBT)?', a: 'Soulbound Tokens (SBTs) are non-transferable digital credentials tied to a single address. Unlike regular NFTs, they cannot be bought, sold, or transferred to another wallet.' },
-              { q: 'Do I need to pay gas fees?', a: 'No. Gas fees for minting on-chain SBTs are sponsored by our automated backend relayer wallet. Minting is completely free for open-source contributors.' },
-              { q: 'Which GitHub repositories are supported?', a: 'SoulPR supports any public or private GitHub repository configured with the SoulPR integration webhook. Maintainers can register their repositories in seconds.' },
-              { q: 'What happens if a pull request is closed without merging?', a: 'SBTs are only minted for merged contributions. Closed, unmerged, or draft pull requests do not generate any on-chain tokens.' },
-              { q: 'How can recruiters or protocols verify my credentials?', a: 'Anyone can query your wallet address on the Monad blockchain explorer or via the SoulPR dashboard to independently verify your full history of verified contributions.' },
-              { q: 'Can I change or update my linked wallet later?', a: 'Yes. You can manage your identity mappings through your GitHub authentication profile. Previously minted SBTs remain attached to the wallet address present at the time of minting.' },
-            ].map(({ q, a }, idx) => (
-              <details key={idx} style={{ background: 'rgba(255,123,0,0.02)', border: '1px solid var(--rule)', borderRadius: '12px', padding: '1.2rem 1.4rem', cursor: 'pointer' }}>
-                <summary style={{ fontSize: '15px', fontWeight: 700, color: 'var(--ink)', outline: 'none', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                  <span>{q}</span>
-                  <span style={{ color: '#FF7B00', fontSize: '18px', fontWeight: 900 }}>+</span>
-                </summary>
-                <p style={{ fontSize: '13.5px', color: 'var(--ink-muted)', lineHeight: '1.7', marginTop: '1rem', marginBottom: 0 }}>
-                  {a}
+            {/* Audience Grid */}
+            <div
+              style={{
+                display: 'grid',
+                gridTemplateColumns: 'repeat(4, 1fr)',
+                gap: '1.5rem',
+                textAlign: 'left',
+              }}
+              className="audience-four-grid"
+            >
+              <div style={{ backgroundColor: '#FAF3E7', borderRadius: '12px', padding: '1.8rem 1.6rem', border: '1px solid rgba(118, 103, 91, 0.22)' }}>
+                <div style={{ fontSize: '11px', fontWeight: 800, color: '#B9572B', textTransform: 'uppercase', marginBottom: '8px' }}>
+                  Developers · Primary
+                </div>
+                <h3 style={{ fontFamily: 'var(--font-serif)', fontSize: '20px', fontWeight: 600, color: '#191715', marginBottom: '8px' }}>
+                  Preserve Your Legacy
+                </h3>
+                <p style={{ fontSize: '13px', color: 'var(--signet-muted)', lineHeight: 1.6 }}>
+                  Preserve and share a credible, permanent record of meaningful contributions across any public or private repository.
                 </p>
-              </details>
-            ))}
-          </div>
-        </div>
+              </div>
 
-        {/* About section */}
-        <div id="about" className="landing-section" style={{ marginTop: '4rem', padding: '4rem 2.5rem', background: 'var(--paper-raised)', border: '1px solid var(--rule)', borderRadius: '20px', textAlign: 'center', scrollMarginTop: '100px' }}>
-          <div style={{ fontSize: '10px', fontWeight: 800, color: '#FF7B00', letterSpacing: '0.12em', textTransform: 'uppercase', marginBottom: '10px' }}>
-            ABOUT SOULPR
-          </div>
-          <h2 style={{ fontSize: '32px', fontWeight: 900, color: 'var(--ink)', marginBottom: '1.2rem', fontFamily: 'var(--font-display)' }}>
-            Built for Builders, Owned by You
-          </h2>
-          <p style={{ fontSize: '15px', color: 'var(--ink-muted)', maxWidth: '700px', margin: '0 auto 3rem', lineHeight: '1.75' }}>
-            SoulPR bridges open-source development and Web3 identity. By turning merged pull requests into non-transferable Soulbound Tokens (SBTs) on the Monad network, SoulPR ensures that your code contributions are permanently verifiable, tamper-proof, and forever attributed to your identity.
-          </p>
+              <div style={{ backgroundColor: '#FAF3E7', borderRadius: '12px', padding: '1.8rem 1.6rem', border: '1px solid rgba(118, 103, 91, 0.22)' }}>
+                <div style={{ fontSize: '11px', fontWeight: 800, color: 'var(--signet-muted)', textTransform: 'uppercase', marginBottom: '8px' }}>
+                  Communities
+                </div>
+                <h3 style={{ fontFamily: 'var(--font-serif)', fontSize: '20px', fontWeight: 600, color: '#191715', marginBottom: '8px' }}>
+                  Recognise Builders
+                </h3>
+                <p style={{ fontSize: '13px', color: 'var(--signet-muted)', lineHeight: 1.6 }}>
+                  Strengthen your ecosystem by celebrating and attributing the actual contributors whose work powers your libraries.
+                </p>
+              </div>
 
-          {/* About Pillars Grid */}
-          <div className="landing-about-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '1.5rem', textAlign: 'left' }}>
-            <div style={{ padding: '1.5rem', background: 'rgba(255,255,255,0.02)', border: '1px solid var(--rule)', borderRadius: '14px' }}>
-              <div style={{ color: '#FF7B00', fontWeight: 800, fontSize: '14px', marginBottom: '8px', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
-                01. Trustless Reputation
+              <div style={{ backgroundColor: '#FAF3E7', borderRadius: '12px', padding: '1.8rem 1.6rem', border: '1px solid rgba(118, 103, 91, 0.22)' }}>
+                <div style={{ fontSize: '11px', fontWeight: 800, color: 'var(--signet-muted)', textTransform: 'uppercase', marginBottom: '8px' }}>
+                  Maintainers & Orgs
+                </div>
+                <h3 style={{ fontFamily: 'var(--font-serif)', fontSize: '20px', fontWeight: 600, color: '#191715', marginBottom: '8px' }}>
+                  Structured Records
+                </h3>
+                <p style={{ fontSize: '13px', color: 'var(--signet-muted)', lineHeight: 1.6 }}>
+                  Create clear, verifiable credentials for contributors without adding administrative burden to pull request reviews.
+                </p>
               </div>
-              <p style={{ fontSize: '13px', color: 'var(--ink-muted)', lineHeight: '1.65', margin: 0 }}>
-                Traditional resumes rely on self-reported claims. SoulPR replaces resume padding with cryptographically proven code contributions that live permanently on-chain.
-              </p>
-            </div>
-            <div style={{ padding: '1.5rem', background: 'rgba(255,255,255,0.02)', border: '1px solid var(--rule)', borderRadius: '14px' }}>
-              <div style={{ color: '#FF7B00', fontWeight: 800, fontSize: '14px', marginBottom: '8px', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
-                02. Automated Relaying
+
+              <div style={{ backgroundColor: '#FAF3E7', borderRadius: '12px', padding: '1.8rem 1.6rem', border: '1px solid rgba(118, 103, 91, 0.22)' }}>
+                <div style={{ fontSize: '11px', fontWeight: 800, color: 'var(--signet-muted)', textTransform: 'uppercase', marginBottom: '8px' }}>
+                  Reviewers & Recruiters
+                </div>
+                <h3 style={{ fontFamily: 'var(--font-serif)', fontSize: '20px', fontWeight: 600, color: '#191715', marginBottom: '8px' }}>
+                  Direct Source Proof
+                </h3>
+                <p style={{ fontSize: '13px', color: 'var(--signet-muted)', lineHeight: 1.6 }}>
+                  Inspect real contribution evidence and commit diffs instead of relying only on unverifiable resume assertions.
+                </p>
               </div>
-              <p style={{ fontSize: '13px', color: 'var(--ink-muted)', lineHeight: '1.65', margin: 0 }}>
-                Developers should focus on code, not transaction signing. Our backend automatically signs and mints tokens for merged work without disrupting your GitHub workflow.
-              </p>
-            </div>
-            <div style={{ padding: '1.5rem', background: 'rgba(255,255,255,0.02)', border: '1px solid var(--rule)', borderRadius: '14px' }}>
-              <div style={{ color: '#FF7B00', fontWeight: 800, fontSize: '14px', marginBottom: '8px', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
-                03. Ecosystem Native
-              </div>
-              <p style={{ fontSize: '13px', color: 'var(--ink-muted)', lineHeight: '1.65', margin: 0 }}>
-                Designed specifically for Monad high-throughput EVM execution. SoulPR enables DAOs, protocols, and grant funds to query developer credentials instantaneously.
-              </p>
             </div>
           </div>
-        </div>
+        </section>
 
+        {/* ── SECTION 7: Technical Credibility (Deep Charcoal #10100F) ── */}
+        <section
+          id="technical"
+          style={{
+            backgroundColor: '#10100F',
+            color: '#EDE2D0',
+            padding: '6.5rem 2rem 7rem',
+            borderTop: '1px solid rgba(237, 226, 208, 0.08)',
+          }}
+          aria-labelledby="tech-headline"
+        >
+          <div style={{ maxWidth: '1240px', margin: '0 auto' }}>
+            <div style={{ textAlign: 'center', marginBottom: '4rem' }}>
+              <span
+                style={{
+                  fontSize: '10.5px',
+                  fontWeight: 800,
+                  textTransform: 'uppercase',
+                  letterSpacing: '0.14em',
+                  color: '#B9572B',
+                  display: 'block',
+                  marginBottom: '10px',
+                }}
+              >
+                Protocol Integrity & Verification
+              </span>
+              <h2
+                id="tech-headline"
+                className="signet-headline"
+                style={{
+                  fontSize: 'clamp(34px, 4vw, 50px)',
+                  fontWeight: 500,
+                  color: '#EDE2D0',
+                  marginBottom: '1.2rem',
+                }}
+              >
+                A credential should be more than a claim.
+              </h2>
+              <p
+                style={{
+                  fontSize: '16px',
+                  color: 'var(--signet-muted)',
+                  maxWidth: '640px',
+                  margin: '0 auto',
+                  lineHeight: 1.7,
+                }}
+              >
+                Behind every SIGNET credential is an inspectable verification pipeline connecting git state
+                to on-chain cryptographic settlement.
+              </p>
+            </div>
+
+            {/* Architecture Flow Diagram */}
+            <div
+              style={{
+                backgroundColor: '#141312',
+                border: '1px solid rgba(237, 226, 208, 0.1)',
+                borderRadius: '16px',
+                padding: '2.5rem',
+                marginBottom: '3rem',
+              }}
+            >
+              <div
+                style={{
+                  display: 'grid',
+                  gridTemplateColumns: 'repeat(5, 1fr)',
+                  gap: '1rem',
+                  alignItems: 'center',
+                }}
+                className="tech-flow-grid"
+              >
+                <div style={{ textAlign: 'center', padding: '1rem' }}>
+                  <div style={{ fontSize: '10px', color: '#B9572B', fontWeight: 800, marginBottom: '4px' }}>STEP 1</div>
+                  <div style={{ fontSize: '14px', fontWeight: 700 }}>GitHub Contribution</div>
+                  <div style={{ fontSize: '11px', color: 'var(--signet-muted)', marginTop: '4px' }}>Merged PR webhook event</div>
+                </div>
+
+                <div style={{ textAlign: 'center', color: '#B9572B', fontSize: '18px' }}>→</div>
+
+                <div style={{ textAlign: 'center', padding: '1rem' }}>
+                  <div style={{ fontSize: '10px', color: '#B9572B', fontWeight: 800, marginBottom: '4px' }}>STEP 2</div>
+                  <div style={{ fontSize: '14px', fontWeight: 700 }}>Evidence Extraction</div>
+                  <div style={{ fontSize: '11px', color: 'var(--signet-muted)', marginTop: '4px' }}>Commit SHA, diffs & signatures</div>
+                </div>
+
+                <div style={{ textAlign: 'center', color: '#B9572B', fontSize: '18px' }}>→</div>
+
+                <div style={{ textAlign: 'center', padding: '1rem' }}>
+                  <div style={{ fontSize: '10px', color: '#B9572B', fontWeight: 800, marginBottom: '4px' }}>STEP 3</div>
+                  <div style={{ fontSize: '14px', fontWeight: 700 }}>NEAR Attestation</div>
+                  <div style={{ fontSize: '11px', color: 'var(--signet-muted)', marginTop: '4px' }}>Non-transferable on-chain record</div>
+                </div>
+              </div>
+            </div>
+
+            {/* Technical Documentation Link Cards */}
+            <div style={{ display: 'flex', justifyContent: 'center', gap: '1.5rem', flexWrap: 'wrap' }}>
+              <button
+                onClick={() => navigate('/how-it-works')}
+                style={{
+                  backgroundColor: 'rgba(255, 255, 255, 0.04)',
+                  color: '#EDE2D0',
+                  border: '1px solid rgba(237, 226, 208, 0.15)',
+                  borderRadius: '8px',
+                  padding: '10px 20px',
+                  fontSize: '13px',
+                  fontWeight: 600,
+                  cursor: 'pointer',
+                }}
+              >
+                Read Protocol Architecture FAQ →
+              </button>
+
+              <button
+                onClick={() => navigate('/install')}
+                style={{
+                  backgroundColor: 'rgba(255, 255, 255, 0.04)',
+                  color: '#EDE2D0',
+                  border: '1px solid rgba(237, 226, 208, 0.15)',
+                  borderRadius: '8px',
+                  padding: '10px 20px',
+                  fontSize: '13px',
+                  fontWeight: 600,
+                  cursor: 'pointer',
+                }}
+              >
+                Track Repositories with GitHub App →
+              </button>
+            </div>
+          </div>
+        </section>
+
+        {/* ── SECTION 8: Final Call to Action (Deep Charcoal #10100F) ── */}
+        <section
+          style={{
+            backgroundColor: '#10100F',
+            color: '#EDE2D0',
+            padding: '7rem 2rem 8rem',
+            textAlign: 'center',
+            position: 'relative',
+            overflow: 'hidden',
+          }}
+          aria-labelledby="cta-headline"
+        >
+          {/* Subtle seal watermark in background */}
+          <div
+            style={{
+              position: 'absolute',
+              top: '50%',
+              left: '50%',
+              transform: 'translate(-50%, -50%)',
+              opacity: 0.04,
+              pointerEvents: 'none',
+            }}
+          >
+            <SignetInsignia size={480} color="#B9572B" />
+          </div>
+
+          <div style={{ maxWidth: '780px', margin: '0 auto', position: 'relative', zIndex: 1 }}>
+            <span
+              style={{
+                fontSize: '11px',
+                fontWeight: 800,
+                textTransform: 'uppercase',
+                letterSpacing: '0.16em',
+                color: '#B9572B',
+                display: 'block',
+                marginBottom: '12px',
+              }}
+            >
+              Protocol Access
+            </span>
+            <h2
+              id="cta-headline"
+              className="signet-headline"
+              style={{
+                fontSize: 'clamp(38px, 5vw, 56px)',
+                fontWeight: 500,
+                marginBottom: '1.2rem',
+                color: '#EDE2D0',
+              }}
+            >
+              Make your mark.
+            </h2>
+            <p
+              style={{
+                fontSize: '18px',
+                color: 'var(--signet-muted)',
+                lineHeight: 1.7,
+                maxWidth: '580px',
+                margin: '0 auto 2.5rem',
+              }}
+            >
+              Your work deserves more than a place in repository history.
+              Give it a lasting, verifiable record.
+            </p>
+
+            <button
+              onClick={() => navigate('/auth')}
+              style={{
+                backgroundColor: 'var(--signet-orange)',
+                color: '#EDE2D0',
+                fontWeight: 800,
+                fontSize: '16px',
+                padding: '14px 34px',
+                borderRadius: '8px',
+                border: 'none',
+                cursor: 'pointer',
+                letterSpacing: '0.02em',
+                boxShadow: '0 8px 24px rgba(185, 87, 43, 0.35)',
+                transition: 'transform 0.15s, box-shadow 0.15s',
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.transform = 'translateY(-2px)'
+                e.currentTarget.style.boxShadow = '0 12px 32px rgba(185, 87, 43, 0.5)'
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.transform = 'translateY(0)'
+                e.currentTarget.style.boxShadow = '0 8px 24px rgba(185, 87, 43, 0.35)'
+              }}
+            >
+              Create your SIGNET
+            </button>
+          </div>
+        </section>
       </main>
 
+      {/* ── SECTION 9: Minimal Editorial Footer ── */}
+      <SignetFooter />
+
       <style>{`
-        /* Scroll dot */
-        @keyframes scrollDot {
-          0%   { transform: translateY(0);    opacity: 1;   }
-          80%  { transform: translateY(14px); opacity: 0.2; }
-          100% { transform: translateY(0);    opacity: 1;   }
+        @media (max-width: 900px) {
+          .editorial-split-grid {
+            grid-template-columns: 1fr !important;
+            gap: 2.5rem !important;
+          }
+          .three-pillar-grid {
+            grid-template-columns: 1fr !important;
+          }
+          .audience-four-grid {
+            grid-template-columns: 1fr 1fr !important;
+          }
+          .tech-flow-grid {
+            grid-template-columns: 1fr !important;
+          }
         }
-
-        /* Whole scene idle float + slight tilt */
-        @keyframes hero-float {
-          0%   { transform: translateY(0px)   rotate(0deg);    }
-          30%  { transform: translateY(-10px) rotate(0.4deg);  }
-          70%  { transform: translateY(-6px)  rotate(-0.3deg); }
-          100% { transform: translateY(0px)   rotate(0deg);    }
-        }
-
-        /* Coin spins on its own Y axis — coin-flip effect */
-        @keyframes coin-axis-spin {
-          0%   { transform: rotateY(0deg);   }
-          100% { transform: rotateY(360deg); }
-        }
-
-        /* Ring A — tumbles top-to-bottom (X axis rotation) */
-        @keyframes ring-3d-x {
-          0%   { transform: rotateX(0deg);   }
-          100% { transform: rotateX(360deg); }
-        }
-
-        /* Ring B — tilts left-to-right (Y axis rotation) */
-        @keyframes ring-3d-y {
-          0%   { transform: rotateY(0deg);   }
-          100% { transform: rotateY(360deg); }
-        }
-
-        /* Ring C — flat spin (Z axis rotation) */
-        @keyframes ring-3d-z {
-          0%   { transform: rotateZ(0deg);   }
-          100% { transform: rotateZ(360deg); }
-        }
-
-        /* Ring D — combined diagonal tumble */
-        @keyframes ring-3d-diag {
-          0%   { transform: rotateX(0deg)   rotateY(0deg);   }
-          50%  { transform: rotateX(180deg) rotateY(90deg);  }
-          100% { transform: rotateX(360deg) rotateY(180deg); }
-        }
-
-        /* Glow halo breathes in/out */
-        @keyframes glow-breathe {
-          0%   { opacity: 0.65; transform: scale(1);    }
-          50%  { opacity: 1;    transform: scale(1.09); }
-          100% { opacity: 0.65; transform: scale(1);    }
-        }
-
-        /* Expanding ripple rings */
-        @keyframes pulse-ring {
-          0%   { transform: scale(1);    opacity: 0.55; }
-          65%  { transform: scale(1.22); opacity: 0.12; }
-          100% { transform: scale(1.35); opacity: 0;    }
+        @media (max-width: 600px) {
+          .audience-four-grid {
+            grid-template-columns: 1fr !important;
+          }
         }
       `}</style>
-
     </div>
   )
 }

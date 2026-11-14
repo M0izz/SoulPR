@@ -1,28 +1,25 @@
-import { useState, useEffect, useRef } from 'react'
+import { useState, useEffect } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
-import { ethers } from 'ethers'
-import BadgeDetailModal, { type BadgeData } from '../components/BadgeDetailModal'
-import { getAttestations } from '../lib/contract'
-import api from '../lib/api'
+import api, { type RepoItem } from '../lib/api'
 import { fetchGitHubUserStats, type GitHubStats } from '../lib/github'
 import ThemeToggle from '../components/ThemeToggle'
+import SignetBrandLockup from '../components/brand/SignetBrandLockup'
+import CredentialSeal from '../components/credential/CredentialSeal'
 import {
-  IconSoulPRLogo, IconHome, IconShieldCheck, IconAward, IconCode,
-  IconSettings, IconWallet,
-  IconPackage, IconUserPlus, IconBook, IconFolder, IconCheck,
+  IconHome, IconAward, IconCode,
+  IconSettings, IconUserPlus, IconFolder,
 } from '../components/Icons'
 
-// ─── Types ──────────────────────────────────────────────────
-type NavId = 'overview' | 'sbts' | 'contributions' | 'settings'
+type NavId = 'overview' | 'credentials' | 'contributions' | 'repos' | 'settings'
 
-// ─── Helpers ─────────────────────────────────────────────────
-function formatDuration(ts: number) {
-  const d = Math.floor(Date.now() / 1000) - ts
-  if (d < 60) return 'Just now'
-  if (d < 3600) return `${Math.floor(d / 60)} minutes ago`
-  if (d < 86400) return `${Math.floor(d / 3600)} hours ago`
-  if (d < 604800) return `${Math.floor(d / 86400)} days ago`
-  return `${Math.floor(d / 604800)} week ago`
+export interface CredentialSummary {
+  id: string
+  repo: string
+  prNumber: number
+  prTitle: string
+  contributor: string
+  issuanceDate: string
+  status: string
 }
 
 function formatDate(isoString?: string) {
@@ -35,68 +32,109 @@ function formatDate(isoString?: string) {
   }
 }
 
-function RepoAvatar({ repo }: { repo: string }) {
-  const isCore = repo.startsWith('soulpr/core') || repo.includes('core')
-  return (
-    <div style={{
-      width: '30px', height: '30px', borderRadius: '50%', flexShrink: 0,
-      background: isCore ? 'linear-gradient(135deg,#7C3AED,#4F46E5)' : '#1B1816',
-      display: 'flex', alignItems: 'center', justifyContent: 'center',
-    }}>
-      {isCore
-        ? <IconCode size={13} color="white" />
-        : <IconGitHub size={17} color="white" />}
-    </div>
-  )
-}
+// ─── PANEL 1: Credentials Shelf Panel ─────────────────────────
+function CredentialsPanel({
+  credentials,
+  onSelect,
+}: {
+  credentials: CredentialSummary[]
+  onSelect: (c: CredentialSummary) => void
+}) {
+  const navigate = useNavigate()
 
-// ─── Panel components ─────────────────────────────────────────
-
-function SBTsPanel({ badges, onSelect }: { badges: BadgeData[]; onSelect: (b: BadgeData) => void }) {
   return (
     <div>
-      <h2 style={{ fontSize: '20px', fontWeight: 900, color: 'var(--ink)', marginBottom: '1.5rem' }}>SBTs</h2>
-      {badges.length === 0 ? (
-        <div style={{ padding: '3rem 2rem', textAlign: 'center', background: 'var(--paper-raised)', border: '1px dashed var(--rule)', borderRadius: '16px', color: 'var(--ink-muted)' }}>
-          <div style={{ fontSize: '15px', fontWeight: 800, marginBottom: '6px', color: 'var(--ink)' }}>No Soulbound Tokens Minted Yet</div>
-          <div style={{ fontSize: '13px' }}>Merge pull requests on tracked repositories to automatically earn on-chain SBTs.</div>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
+        <h2 style={{ fontSize: '22px', fontWeight: 800, color: 'var(--ink)', margin: 0, fontFamily: 'var(--font-serif)' }}>
+          Issued Contribution Credentials
+        </h2>
+        <button
+          onClick={() => navigate('/verify/sample')}
+          style={{
+            fontSize: '12px',
+            fontWeight: 700,
+            color: '#B9572B',
+            background: 'none',
+            border: 'none',
+            cursor: 'pointer',
+          }}
+        >
+          View Illustrative Sample Credential →
+        </button>
+      </div>
+
+      {credentials.length === 0 ? (
+        <div
+          style={{
+            padding: '3.5rem 2rem',
+            textAlign: 'center',
+            background: 'var(--paper-raised)',
+            border: '1px dashed var(--rule)',
+            borderRadius: '16px',
+            color: 'var(--ink-muted)',
+          }}
+        >
+          <div style={{ marginBottom: '1rem', display: 'flex', justifyContent: 'center' }}>
+            <CredentialSeal size={52} />
+          </div>
+          <div style={{ fontSize: '16px', fontWeight: 800, marginBottom: '6px', color: 'var(--ink)', fontFamily: 'var(--font-serif)' }}>
+            No Credentials Issued Yet
+          </div>
+          <div style={{ fontSize: '13px', maxWidth: '420px', margin: '0 auto 1.5rem', lineHeight: 1.6 }}>
+            Merge pull requests on tracked open-source repositories to automatically synthesize verifiable SIGNET credentials.
+          </div>
+          <button
+            onClick={() => navigate('/verify/sample')}
+            style={{
+              backgroundColor: 'var(--signet-orange)',
+              color: '#EDE2D0',
+              fontWeight: 700,
+              fontSize: '12.5px',
+              padding: '8px 18px',
+              borderRadius: '6px',
+              border: 'none',
+              cursor: 'pointer',
+            }}
+          >
+            Inspect Sample Credential →
+          </button>
         </div>
       ) : (
-        <div className="proof-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '1.2rem' }}>
-          {badges.map(b => (
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '1.2rem' }}>
+          {credentials.map((c) => (
             <div
-              key={b.tokenId}
-              role="button"
-              tabIndex={0}
-              aria-label={`View proof ${b.tokenId}: Open Source Contributor`}
-              onClick={() => onSelect(b)}
-              onKeyDown={event => {
-                if (event.key === 'Enter' || event.key === ' ') {
-                  event.preventDefault()
-                  onSelect(b)
-                }
-              }}
+              key={c.id}
+              onClick={() => onSelect(c)}
               style={{
-                background: 'linear-gradient(160deg, rgba(168,85,247,0.08) 0%, rgba(255,123,0,0.04) 100%)',
-                border: '1px solid rgba(168,85,247,0.2)', borderRadius: '14px',
-                padding: '1.4rem', cursor: 'pointer', textAlign: 'center',
+                backgroundColor: 'var(--paper-raised)',
+                border: '1px solid var(--rule)',
+                borderRadius: '14px',
+                padding: '1.4rem',
+                cursor: 'pointer',
+                textAlign: 'left',
                 transition: 'transform 0.15s, box-shadow 0.15s',
               }}
-              onMouseEnter={e => { (e.currentTarget as HTMLElement).style.transform = 'translateY(-2px)'; (e.currentTarget as HTMLElement).style.boxShadow = '0 8px 24px rgba(168,85,247,0.12)' }}
-              onMouseLeave={e => { (e.currentTarget as HTMLElement).style.transform = 'translateY(0)'; (e.currentTarget as HTMLElement).style.boxShadow = 'none' }}
+              onMouseEnter={(e) => {
+                ;(e.currentTarget as HTMLElement).style.transform = 'translateY(-2px)'
+                ;(e.currentTarget as HTMLElement).style.boxShadow = '0 8px 24px rgba(185,87,43,0.1)'
+              }}
+              onMouseLeave={(e) => {
+                ;(e.currentTarget as HTMLElement).style.transform = 'translateY(0)'
+                ;(e.currentTarget as HTMLElement).style.boxShadow = 'none'
+              }}
             >
-              <div style={{
-                width: '56px', height: '64px', margin: '0 auto 12px',
-                clipPath: 'polygon(50% 0%,100% 25%,100% 75%,50% 100%,0% 75%,0% 25%)',
-                background: 'linear-gradient(135deg,rgba(168,85,247,0.3),rgba(59,130,246,0.3))',
-                border: '1.5px solid rgba(168,85,247,0.5)',
-                display: 'flex', alignItems: 'center', justifyContent: 'center',
-              }}>
-                <IconCode size={20} color="#E9D5FF" />
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '10px' }}>
+                <span style={{ fontSize: '9px', fontWeight: 800, color: '#B9572B', textTransform: 'uppercase', letterSpacing: '0.06em' }}>
+                  CREDENTIAL
+                </span>
+                <CredentialSeal size={28} />
               </div>
-              <div style={{ fontSize: '9px', fontWeight: 800, color: '#A855F7', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: '6px' }}>ON-CHAIN PROOF</div>
-              <div style={{ fontSize: '12px', fontWeight: 800, color: 'var(--ink)', textTransform: 'uppercase', marginBottom: '4px' }}>Open Source Contributor</div>
-              <div style={{ fontSize: '10px', color: 'var(--ink-muted)', fontFamily: 'var(--font-mono)' }}>SBT #{String(b.tokenId).padStart(5, '0')}</div>
+              <div style={{ fontSize: '14px', fontWeight: 700, color: 'var(--ink)', marginBottom: '4px', fontFamily: 'var(--font-serif)' }}>
+                {c.prTitle}
+              </div>
+              <div style={{ fontSize: '11px', color: 'var(--ink-muted)', fontFamily: 'var(--font-mono)' }}>
+                {c.repo} · PR #{c.prNumber}
+              </div>
             </div>
           ))}
         </div>
@@ -105,45 +143,55 @@ function SBTsPanel({ badges, onSelect }: { badges: BadgeData[]; onSelect: (b: Ba
   )
 }
 
-function ContributionsPanel({ badges, ghStats, loadingStats }: { badges: BadgeData[]; ghStats: GitHubStats | null; loadingStats: boolean }) {
-  const mergedPRsCount = ghStats?.mergedPrCount ?? badges.length
-  const reposCount = ghStats?.publicRepos ?? new Set(badges.map(b => b.repo)).size
+// ─── PANEL 2: Contributions Activity Panel ────────────────────
+function ContributionsPanel({
+  credentials,
+  ghStats,
+  loadingStats,
+}: {
+  credentials: CredentialSummary[]
+  ghStats: GitHubStats | null
+  loadingStats: boolean
+}) {
+  const mergedPRsCount = ghStats?.mergedPrCount ?? credentials.length
+  const reposCount = ghStats?.publicRepos ?? new Set(credentials.map((b) => b.repo)).size
 
   return (
     <div>
-      <h2 style={{ fontSize: '20px', fontWeight: 900, color: 'var(--ink)', marginBottom: '1.5rem' }}>Contributions</h2>
-      <div style={{ background: 'var(--paper-raised)', border: '1px solid var(--rule)', borderRadius: '16px', padding: '1.6rem' }}>
-        <div className="contribution-metrics" style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '1rem', marginBottom: '1.5rem' }}>
+      <h2 style={{ fontSize: '22px', fontWeight: 800, color: 'var(--ink)', marginBottom: '1.5rem', fontFamily: 'var(--font-serif)' }}>
+        Open-Source Contribution Evidence
+      </h2>
+      <div style={{ background: 'var(--paper-raised)', border: '1px solid var(--rule)', borderRadius: '16px', padding: '1.8rem' }}>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '1rem', marginBottom: '1.8rem' }}>
           {[
-            { label: 'GitHub Merged PRs', val: loadingStats ? '...' : mergedPRsCount.toLocaleString(), color: '#FF7B00' },
-            { label: 'GitHub Repositories', val: loadingStats ? '...' : reposCount.toLocaleString(), color: '#16A34A' },
-            { label: 'On-Chain Attested', val: `${badges.length}`, color: '#A855F7' },
+            { label: 'GitHub Merged PRs', val: loadingStats ? '...' : mergedPRsCount.toLocaleString(), color: '#B9572B' },
+            { label: 'Public Repositories', val: loadingStats ? '...' : reposCount.toLocaleString(), color: '#2A7D4F' },
+            { label: 'Issued Credentials', val: `${credentials.length}`, color: '#B9572B' },
           ].map(({ label, val, color }) => (
-            <div key={label} style={{ background: 'var(--paper)', borderRadius: '10px', padding: '1rem', textAlign: 'center', border: '1px solid var(--rule)' }}>
-              <div style={{ fontSize: '26px', fontWeight: 900, color, marginBottom: '4px' }}>{val}</div>
-              <div style={{ fontSize: '11px', color: 'var(--ink-muted)', fontWeight: 600 }}>{label}</div>
+            <div key={label} style={{ background: 'var(--paper)', borderRadius: '10px', padding: '1.2rem', textAlign: 'center', border: '1px solid var(--rule)' }}>
+              <div style={{ fontSize: '28px', fontWeight: 900, color, marginBottom: '4px', fontFamily: 'var(--font-serif)' }}>{val}</div>
+              <div style={{ fontSize: '11px', color: 'var(--ink-muted)', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.04em' }}>{label}</div>
             </div>
           ))}
         </div>
-        <div style={{ fontSize: '12px', fontWeight: 800, color: 'var(--ink)', marginBottom: '12px', textTransform: 'uppercase', letterSpacing: '0.04em' }}>
-          Attested Contributions
+
+        <div style={{ fontSize: '12px', fontWeight: 800, color: 'var(--ink)', marginBottom: '12px', textTransform: 'uppercase', letterSpacing: '0.06em' }}>
+          Attested Work History
         </div>
-        {badges.length === 0 ? (
-          <div style={{ padding: '2rem', textAlign: 'center', color: 'var(--ink-muted)', fontSize: '12px', background: 'var(--paper)', borderRadius: '8px' }}>
-            No attested contributions on Monad Testnet yet.
+
+        {credentials.length === 0 ? (
+          <div style={{ padding: '2.5rem', textAlign: 'center', color: 'var(--ink-muted)', fontSize: '13px', background: 'var(--paper)', borderRadius: '8px' }}>
+            No on-chain credentials registered yet. Live GitHub contributions will be automatically audited as PRs merge.
           </div>
         ) : (
           <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-            {badges.map(b => (
-              <div key={b.tokenId} className="proof-list-row" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '10px 12px', borderRadius: '8px', background: 'var(--paper)', border: '1px solid var(--rule)' }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                  <RepoAvatar repo={b.repo} />
-                  <div>
-                    <div style={{ fontWeight: 700, fontSize: '13px', color: 'var(--ink)' }}>{b.prTitle}</div>
-                    <div style={{ fontSize: '10px', color: 'var(--ink-muted)' }}>{b.repo} · PR #{b.prNumber}</div>
-                  </div>
+            {credentials.map((c) => (
+              <div key={c.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '12px 14px', borderRadius: '8px', background: 'var(--paper)', border: '1px solid var(--rule)' }}>
+                <div>
+                  <div style={{ fontWeight: 700, fontSize: '13.5px', color: 'var(--ink)' }}>{c.prTitle}</div>
+                  <div style={{ fontSize: '11px', color: 'var(--ink-muted)', fontFamily: 'var(--font-mono)' }}>{c.repo} · PR #{c.prNumber}</div>
                 </div>
-                <div style={{ fontSize: '11px', color: 'var(--ink-muted)' }}>{formatDuration(b.mergeTimestamp)}</div>
+                <div style={{ fontSize: '11px', color: 'var(--signet-muted)', fontFamily: 'var(--font-mono)' }}>{c.issuanceDate}</div>
               </div>
             ))}
           </div>
@@ -153,389 +201,189 @@ function ContributionsPanel({ badges, ghStats, loadingStats }: { badges: BadgeDa
   )
 }
 
-function SettingsPanel({
-  githubUser,
-  walletAddress,
-  onUpdateGithub,
+// ─── PANEL 3: Tracked Repositories Panel ──────────────────────
+function TrackedReposPanel({
+  repos,
+  onToggleTrack,
+  onSave,
+  saving,
 }: {
-  githubUser: string
-  walletAddress: string | null
-  onUpdateGithub: (user: string) => void
+  repos: RepoItem[]
+  onToggleTrack: (name: string) => void
+  onSave: () => void
+  saving: boolean
 }) {
-  const [saved, setSaved] = useState(false)
-  const [githubInput, setGithubInput] = useState(githubUser)
-  const [notifs, setNotifs] = useState(true)
-
-  useEffect(() => {
-    setGithubInput(githubUser)
-  }, [githubUser])
-
-  function handleSave() {
-    onUpdateGithub(githubInput)
-    setSaved(true)
-    setTimeout(() => setSaved(false), 2000)
-  }
-
   return (
     <div>
-      <h2 style={{ fontSize: '20px', fontWeight: 900, color: 'var(--ink)', marginBottom: '1.5rem' }}>Settings</h2>
-      <div style={{ display: 'flex', flexDirection: 'column', gap: '1.2rem', maxWidth: '560px' }}>
-
-        {/* GitHub */}
-        <div style={{ background: 'var(--paper-raised)', border: '1px solid var(--rule)', borderRadius: '14px', padding: '1.4rem' }}>
-          <label htmlFor="github-username-setting" style={{ display: 'block', fontWeight: 800, fontSize: '13px', color: 'var(--ink)', marginBottom: '4px' }}>GitHub Username</label>
-          <div style={{ fontSize: '12px', color: 'var(--ink-muted)', marginBottom: '12px' }}>Linked GitHub handle for fetching real open-source activity</div>
-          <input
-            value={githubInput}
-            id="github-username-setting"
-            onChange={e => setGithubInput(e.target.value)}
-            placeholder="your-github-username"
-            autoComplete="username"
-            style={{ width: '100%', padding: '10px 14px', border: '1px solid var(--rule)', borderRadius: '8px', fontSize: '13px', fontFamily: 'inherit', outline: 'none', color: 'var(--ink)', background: 'var(--paper)' }}
-          />
-        </div>
-
-        {/* Wallet */}
-        <div style={{ background: 'var(--paper-raised)', border: '1px solid var(--rule)', borderRadius: '14px', padding: '1.4rem' }}>
-          <div style={{ fontWeight: 800, fontSize: '13px', color: 'var(--ink)', marginBottom: '4px' }}>Connected Wallet</div>
-          <div style={{ fontSize: '12px', color: 'var(--ink-muted)', marginBottom: '12px' }}>Your on-chain identity for SBT minting on Monad</div>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '10px 14px', border: '1px solid rgba(255,123,0,0.25)', borderRadius: '8px', background: 'rgba(255,123,0,0.06)', color: '#FF7B00', fontSize: '12px', fontWeight: 700, fontFamily: 'var(--font-mono)' }}>
-            <IconWallet size={14} color="#FF7B00" />
-            {walletAddress || 'No wallet linked'}
-          </div>
-        </div>
-
-        {/* Notifications */}
-        <div style={{ background: 'var(--paper-raised)', border: '1px solid var(--rule)', borderRadius: '14px', padding: '1.4rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-          <div>
-            <div style={{ fontWeight: 800, fontSize: '13px', color: 'var(--ink)', marginBottom: '3px' }}>Proof Notifications</div>
-            <div style={{ fontSize: '12px', color: 'var(--ink-muted)' }}>Get notified when a new SBT is minted</div>
-          </div>
-          <button
-            onClick={() => setNotifs(v => !v)}
-            type="button"
-            role="switch"
-            aria-checked={notifs}
-            aria-label="Proof Notifications"
-            style={{
-              width: '42px', height: '24px', borderRadius: '99px', border: 'none', cursor: 'pointer',
-              background: notifs ? '#FF7B00' : 'var(--rule)',
-              position: 'relative', transition: 'background 0.2s',
-            }}
-          >
-            <span style={{
-              position: 'absolute', top: '3px', left: notifs ? '20px' : '3px',
-              width: '18px', height: '18px', borderRadius: '50%', background: '#FFF',
-              transition: 'left 0.2s',
-            }} />
-          </button>
-        </div>
-
-        {/* Network */}
-        <div style={{ background: 'var(--paper-raised)', border: '1px solid var(--rule)', borderRadius: '14px', padding: '1.4rem' }}>
-          <div style={{ fontWeight: 800, fontSize: '13px', color: 'var(--ink)', marginBottom: '4px' }}>Network</div>
-          <div style={{ fontSize: '12px', color: 'var(--ink-muted)', marginBottom: '12px' }}>Active blockchain network</div>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '10px 14px', border: '1px solid var(--rule)', borderRadius: '8px', fontSize: '12px', fontWeight: 600, color: 'var(--ink)' }}>
-            <span style={{ width: '8px', height: '8px', borderRadius: '50%', background: '#FF7B00', display: 'inline-block' }} />
-            Monad Testnet
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
+        <div>
+          <h2 style={{ fontSize: '22px', fontWeight: 800, color: 'var(--ink)', margin: '0 0 4px', fontFamily: 'var(--font-serif)' }}>
+            Tracked Repositories
+          </h2>
+          <div style={{ fontSize: '12.5px', color: 'var(--ink-muted)' }}>
+            SIGNET listens for merged pull requests on selected repositories to synthesize credentials.
           </div>
         </div>
 
         <button
-          onClick={handleSave}
-          style={{ padding: '11px 0', borderRadius: '8px', border: 'none', background: saved ? '#16A34A' : '#FF7B00', color: '#FFF', fontWeight: 800, fontSize: '14px', cursor: 'pointer', transition: 'background 0.2s' }}
+          onClick={onSave}
+          disabled={saving}
+          style={{
+            backgroundColor: 'var(--signet-orange)',
+            color: '#EDE2D0',
+            fontWeight: 700,
+            fontSize: '12.5px',
+            padding: '8px 18px',
+            borderRadius: '6px',
+            border: 'none',
+            cursor: saving ? 'wait' : 'pointer',
+          }}
         >
-          {saved ? 'Saved!' : 'Save Settings'}
+          {saving ? 'Saving...' : 'Save Settings'}
         </button>
       </div>
-    </div>
-  )
-}
 
-// ─── Shared proof row (used in Overview + ProofsPanel) ────────
-function ProofRow({ b, onSelect }: { b: BadgeData; onSelect: (b: BadgeData) => void }) {
-  return (
-    <div
-      role="button"
-      tabIndex={0}
-      className="proof-row-button"
-      aria-label={`View proof for ${b.prTitle} in ${b.repo}`}
-      onClick={() => onSelect(b)}
-      onKeyDown={event => {
-        if (event.key === 'Enter' || event.key === ' ') {
-          event.preventDefault()
-          onSelect(b)
-        }
-      }}
-      style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '10px 12px', borderRadius: '10px', border: '1px solid var(--rule)', background: 'var(--paper)', cursor: 'pointer', transition: 'background 0.15s, border-color 0.15s', textAlign: 'left' }}
-      onMouseEnter={e => { (e.currentTarget as HTMLElement).style.background = 'rgba(255,123,0,0.05)'; (e.currentTarget as HTMLElement).style.borderColor = 'rgba(255,123,0,0.25)' }}
-      onMouseLeave={e => { (e.currentTarget as HTMLElement).style.background = 'var(--paper)'; (e.currentTarget as HTMLElement).style.borderColor = 'var(--rule)' }}
-    >
-      <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-        <RepoAvatar repo={b.repo} />
-        <div>
-          <div style={{ fontWeight: 700, fontSize: '13px', color: 'var(--ink)' }}>{b.prTitle}</div>
-          <div style={{ fontSize: '10px', color: 'var(--ink-muted)', marginTop: '2px' }}>{b.repo}</div>
-        </div>
-      </div>
-      <div style={{ display: 'flex', alignItems: 'center', gap: '14px', flexShrink: 0 }}>
-        <span style={{ fontSize: '11px', color: 'var(--ink-muted)' }}>{formatDuration(b.mergeTimestamp)}</span>
-        <span style={{ display: 'flex', alignItems: 'center', gap: '4px', background: 'rgba(22,163,74,0.12)', color: '#16A34A', border: '1px solid rgba(22,163,74,0.25)', borderRadius: '99px', fontSize: '10px', fontWeight: 700, padding: '3px 9px', whiteSpace: 'nowrap' }}>
-          <IconCheck size={10} color="#16A34A" /> Attested
-        </span>
-      </div>
-    </div>
-  )
-}
-
-// ─── Overview panel ───────────────────────────────────────────
-function OverviewPanel({
-  badges,
-  ghStats,
-  navigate,
-  loadingStats,
-  onSelect,
-  onViewAll,
-  onNavTo,
-  onSearch,
-}: {
-  badges: BadgeData[]
-  ghStats: GitHubStats | null
-  navigate: ReturnType<typeof useNavigate>
-  loadingStats: boolean
-  onSelect: (b: BadgeData) => void
-  onViewAll: () => void
-  onNavTo: (id: NavId) => void
-  onSearch: () => void
-}) {
-  // Real metrics calculation
-  const mergedPRsCount = ghStats?.mergedPrCount ?? badges.length
-  const publicReposCount = ghStats?.publicRepos ?? new Set(badges.map(b => b.repo)).size
-  const attestationsCount = badges.length
-
-  // Dynamic real XP calculation
-  const builderXP = (mergedPRsCount * 100) + (attestationsCount * 250) + (publicReposCount * 50)
-  const builderLevel = Math.max(1, Math.floor(builderXP / 500) + 1)
-  const levelFloorXP = (builderLevel - 1) * 500
-  const nextLevelXP = builderLevel * 500
-  const currentLevelProgress = builderXP - levelFloorXP
-  const progressPct = Math.min(100, Math.max(5, (currentLevelProgress / 500) * 100))
-
-  return (
-    <>
-      {/* Builder score hero */}
-      <section style={{ background: '#110F0E', color: 'white', borderRadius: '16px', padding: '2rem 2.5rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.8rem', position: 'relative', overflow: 'hidden' }}>
-        <div style={{ position: 'absolute', inset: 0, background: 'radial-gradient(ellipse at 5% 30%, rgba(255,123,0,0.12) 0%, transparent 55%)' }} />
-        <div style={{ position: 'relative', zIndex: 2 }}>
-          <div style={{ fontSize: '10px', fontWeight: 800, color: 'rgba(255,255,255,0.4)', textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: '10px' }}>
-            {ghStats ? `@${ghStats.username}'S BUILDER XP` : 'YOUR BUILDER XP'}
-          </div>
-          <div style={{ display: 'flex', alignItems: 'baseline', gap: '12px', marginBottom: '8px' }}>
-            <span style={{ fontSize: '44px', fontWeight: 900, color: '#FFF', lineHeight: 1 }}>
-              {loadingStats ? '...' : builderXP.toLocaleString()}
-            </span>
-            <span style={{ background: 'rgba(255,123,0,0.15)', border: '1px solid rgba(255,123,0,0.3)', borderRadius: '99px', padding: '4px 12px', fontSize: '10px', color: '#FF7B00', fontWeight: 800 }}>
-              Builder <span style={{ opacity: 0.7 }}>Lv. {builderLevel}</span>
-            </span>
-          </div>
-          <p style={{ fontSize: '11px', color: 'rgba(255,255,255,0.45)', marginBottom: '1.4rem' }}>
-            {loadingStats ? 'Fetching live GitHub and on-chain contributions...' : `Earned from ${mergedPRsCount.toLocaleString()} merged PRs across ${publicReposCount.toLocaleString()} GitHub repositories.`}
-          </p>
-          <div className="builder-progress" style={{ width: '320px' }}>
+      <div style={{ background: 'var(--paper-raised)', border: '1px solid var(--rule)', borderRadius: '16px', padding: '1.4rem' }}>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+          {repos.map((r) => (
             <div
-              role="progressbar"
-              aria-label="Progress to next builder level"
-              aria-valuenow={Math.round(progressPct)}
-              aria-valuemin={0}
-              aria-valuemax={100}
-              style={{ width: '100%', height: '6px', background: 'rgba(255,255,255,0.08)', borderRadius: '99px', overflow: 'hidden', marginBottom: '6px' }}
+              key={r.fullName}
+              onClick={() => onToggleTrack(r.fullName)}
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'space-between',
+                padding: '12px 14px',
+                borderRadius: '8px',
+                background: 'var(--paper)',
+                border: '1px solid var(--rule)',
+                cursor: 'pointer',
+              }}
             >
-              <div style={{ width: `${progressPct}%`, height: '100%', background: 'linear-gradient(90deg,#FFA940,#FF7B00)', borderRadius: '99px', transition: 'width 0.4s ease' }} />
-            </div>
-            <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '9px', color: 'rgba(255,255,255,0.35)', fontFamily: 'var(--font-mono)' }}>
-              <span>{builderXP.toLocaleString()} / {nextLevelXP.toLocaleString()} XP</span>
-              <span>Next: Lv. {builderLevel + 1}</span>
-            </div>
-          </div>
-        </div>
-        <div style={{ position: 'relative', width: '130px', height: '130px', zIndex: 2, flexShrink: 0 }}>
-          <div style={{ position: 'absolute', inset: 0, background: 'radial-gradient(circle, rgba(255,123,0,0.28) 0%, transparent 70%)', filter: 'blur(14px)' }} />
-          <img src="/reputation_shield.png" alt="Builder Shield" className="animate-float" style={{ width: '100%', height: '100%', objectFit: 'contain', filter: 'drop-shadow(0 10px 24px rgba(255,123,0,0.4))', mixBlendMode: 'screen' }} />
-        </div>
-      </section>
-
-      {/* 4 real stats */}
-      <section className="overview-stats" style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '1.2rem', marginBottom: '1.8rem' }}>
-        {[
-          {
-            icon: <IconAward size={14} color="#FF7B00" />,
-            label: 'On-Chain Proofs',
-            value: attestationsCount.toString(),
-            sub: attestationsCount > 0 ? `${attestationsCount} SBTs minted` : '0 minted on-chain',
-            subColor: attestationsCount > 0 ? '#16A34A' : 'var(--ink-muted)',
-            nav: 'sbts' as NavId,
-          },
-          {
-            icon: <IconCode size={14} color="#FF7B00" />,
-            label: 'GitHub Merged PRs',
-            value: loadingStats ? '...' : mergedPRsCount.toLocaleString(),
-            sub: ghStats ? `Real GitHub data` : 'Live GitHub search',
-            subColor: '#16A34A',
-            nav: 'contributions' as NavId,
-          },
-          {
-            icon: <IconShieldCheck size={14} color="#FF7B00" />,
-            label: 'Contribution Level',
-            value: `Lv. ${builderLevel}`,
-            sub: `${builderXP.toLocaleString()} Verified XP`,
-            subColor: '#FF7B00',
-            nav: undefined,
-          },
-          {
-            icon: <IconFolder size={14} color="#FF7B00" />,
-            label: 'GitHub Repositories',
-            value: loadingStats ? '...' : publicReposCount.toLocaleString(),
-            sub: 'Public repositories',
-            subColor: 'var(--ink-muted)',
-            nav: 'contributions' as NavId,
-          },
-        ].map(({ icon, label, value, sub, subColor, nav }) => (
-          <div
-            key={label}
-            onClick={() => nav && onNavTo(nav)}
-            style={{ background: 'var(--paper-raised)', border: '1px solid var(--rule)', borderRadius: '12px', padding: '1.4rem', textAlign: 'left', cursor: nav ? 'pointer' : 'default', transition: 'box-shadow 0.15s' }}
-            onMouseEnter={e => { if (nav) (e.currentTarget as HTMLElement).style.boxShadow = '0 4px 12px rgba(255,123,0,0.08)' }}
-            onMouseLeave={e => { (e.currentTarget as HTMLElement).style.boxShadow = 'none' }}
-          >
-            <div style={{ fontSize: '11px', color: 'var(--ink-muted)', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '10px' }}>{icon} {label}</div>
-            <span style={{ fontSize: '30px', fontWeight: 900, color: 'var(--ink)', display: 'block', lineHeight: 1 }}>{value}</span>
-            <span style={{ fontSize: '10px', color: subColor, fontWeight: 700, marginTop: '6px', display: 'block' }}>{sub}</span>
-          </div>
-        ))}
-      </section>
-
-      {/* 2-col bottom */}
-      <div className="overview-bottom" style={{ display: 'grid', gridTemplateColumns: '1.3fr 0.7fr', gap: '1.8rem', alignItems: 'start' }}>
-
-        {/* Recent Proofs */}
-        <section style={{ background: 'var(--paper-raised)', border: '1px solid var(--rule)', borderRadius: '16px', padding: '1.6rem' }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.4rem' }}>
-            <h2 style={{ fontSize: '15px', fontWeight: 900, color: 'var(--ink)', margin: 0 }}>Recent On-Chain Proofs</h2>
-            <button id="view-all-proofs" onClick={onViewAll} style={{ color: '#FF7B00', fontSize: '12px', fontWeight: 700, background: 'none', border: 'none', cursor: 'pointer', padding: 0 }}>View all</button>
-          </div>
-          {badges.length === 0 ? (
-            <div style={{ padding: '2rem', textAlign: 'center', color: 'var(--ink-muted)', fontSize: '13px', background: 'var(--paper)', borderRadius: '10px', border: '1px dashed var(--rule)' }}>
-              No on-chain attestations found for this account yet.<br />
-              <span style={{ fontSize: '11px', color: '#FF7B00', marginTop: '6px', display: 'inline-block' }}>Merge a PR on a tracked repository to earn your first SBT.</span>
-            </div>
-          ) : (
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-              {badges.map(b => <ProofRow key={b.tokenId} b={b} onSelect={onSelect} />)}
-            </div>
-          )}
-        </section>
-
-        {/* Right column */}
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
-
-          {/* Real GitHub & Chain Stats */}
-          <div style={{ background: 'var(--paper-raised)', border: '1px solid var(--rule)', borderRadius: '16px', padding: '1.4rem' }}>
-            <h3 style={{ fontSize: '13px', fontWeight: 800, color: 'var(--ink)', borderBottom: '1px solid var(--rule)', paddingBottom: '10px', marginBottom: '14px' }}>
-              {ghStats ? `@${ghStats.username}'s GitHub Profile` : 'GitHub & Chain Stats'}
-            </h3>
-            {[
-              { icon: <IconCode size={13} color="var(--ink-muted)" />, label: 'Merged PRs', val: loadingStats ? '...' : mergedPRsCount.toLocaleString() },
-              { icon: <IconFolder size={13} color="var(--ink-muted)" />, label: 'Public Repos', val: loadingStats ? '...' : publicReposCount.toLocaleString() },
-              { icon: <IconAward size={13} color="var(--ink-muted)" />, label: 'Attested SBTs', val: attestationsCount.toString() },
-              { icon: <IconGlobe size={13} color="var(--ink-muted)" />, label: 'Active Network', val: 'Monad Testnet' },
-              { icon: <IconUserPlus size={13} color="var(--ink-muted)" />, label: 'GitHub Joined', val: loadingStats ? '...' : formatDate(ghStats?.createdAt) },
-            ].map(({ icon, label, val }) => (
-              <div key={label} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: '12px', padding: '7px 0', borderBottom: '1px solid var(--rule)' }}>
-                <span style={{ color: 'var(--ink-muted)', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '6px' }}>{icon}{label}</span>
-                <strong style={{ color: 'var(--ink)' }}>{val}</strong>
-              </div>
-            ))}
-          </div>
-
-          {/* Dynamic Recent Activity */}
-          <div style={{ background: 'var(--paper-raised)', border: '1px solid var(--rule)', borderRadius: '16px', padding: '1.4rem' }}>
-            <h3 style={{ fontSize: '13px', fontWeight: 800, color: 'var(--ink)', borderBottom: '1px solid var(--rule)', paddingBottom: '10px', marginBottom: '14px' }}>Recent Activity</h3>
-            {badges.length > 0 ? (
-              badges.slice(0, 4).map((b) => (
-                <div key={b.tokenId} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', fontSize: '11px', padding: '6px 0', gap: '8px' }}>
-                  <div style={{ display: 'flex', gap: '8px', alignItems: 'flex-start' }}>
-                    <span style={{ width: '6px', height: '6px', borderRadius: '50%', background: '#FF7B00', marginTop: '4px', flexShrink: 0 }} />
-                    <div>
-                      <div style={{ fontWeight: 800, color: 'var(--ink)' }}>SBT Minted #{b.tokenId}</div>
-                      <div style={{ color: 'var(--ink-muted)', marginTop: '1px', textOverflow: 'ellipsis', overflow: 'hidden', whiteSpace: 'nowrap', maxWidth: '160px' }}>{b.prTitle}</div>
-                    </div>
-                  </div>
-                  <span style={{ color: '#C0824E', fontSize: '10px', flexShrink: 0 }}>{formatDuration(b.mergeTimestamp)}</span>
-                </div>
-              ))
-            ) : (
-              <div style={{ fontSize: '11px', color: 'var(--ink-muted)', padding: '8px 0' }}>
-                No on-chain activity recorded yet.
-              </div>
-            )}
-          </div>
-
-          {/* Quick Actions */}
-          <div style={{ background: 'var(--paper-raised)', border: '1px solid var(--rule)', borderRadius: '16px', padding: '1.2rem 1.4rem' }}>
-            <h3 style={{ fontSize: '11px', color: 'var(--ink-muted)', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '14px' }}>Quick Actions</h3>
-            <div className="quick-actions-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '8px' }}>
-              {[
-                { icon: <IconShieldCheck size={18} color="#FF7B00" />, label: 'Verify Proof', action: () => navigate('/how-it-works') },
-                { icon: <IconPackage size={18} color="#FF7B00" />, label: 'Mint SBT', action: () => onNavTo('sbts') },
-                { icon: <IconUserPlus size={18} color="#FF7B00" />, label: 'Lookup User', action: onSearch },
-                { icon: <IconBook size={18} color="#FF7B00" />, label: 'View Docs', action: () => navigate('/install') },
-              ].map(({ icon, label, action }) => (
-                <button
-                  key={label}
-                  onClick={action}
-                  style={{ background: 'none', border: 'none', cursor: 'pointer', textAlign: 'center', padding: '4px 0' }}
+              <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                <span
+                  style={{
+                    width: '18px',
+                    height: '18px',
+                    borderRadius: '4px',
+                    border: '1.5px solid var(--rule)',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    backgroundColor: r.tracked ? 'var(--signet-orange)' : 'transparent',
+                    borderColor: r.tracked ? 'var(--signet-orange)' : 'var(--rule)',
+                    color: '#FFF',
+                    fontSize: '11px',
+                    fontWeight: 800,
+                  }}
                 >
-                  <div
-                    style={{ width: '40px', height: '40px', borderRadius: '10px', background: 'rgba(255,123,0,0.06)', border: '1px solid rgba(255,123,0,0.15)', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 6px', transition: 'background 0.15s' }}
-                    onMouseEnter={e => (e.currentTarget as HTMLElement).style.background = 'rgba(255,123,0,0.14)'}
-                    onMouseLeave={e => (e.currentTarget as HTMLElement).style.background = 'rgba(255,123,0,0.06)'}
-                  >
-                    {icon}
-                  </div>
-                  <span style={{ fontSize: '9px', fontWeight: 700, color: 'var(--ink-muted)', display: 'block', lineHeight: 1.2 }}>{label}</span>
-                </button>
-              ))}
+                  {r.tracked && '✓'}
+                </span>
+                <span style={{ fontFamily: 'var(--font-mono)', fontSize: '13px', fontWeight: 600, color: 'var(--ink)' }}>
+                  {r.fullName}
+                </span>
+              </div>
+
+              <span
+                style={{
+                  fontSize: '10px',
+                  fontWeight: 800,
+                  textTransform: 'uppercase',
+                  padding: '3px 8px',
+                  borderRadius: '99px',
+                  backgroundColor: r.tracked ? 'rgba(42, 125, 79, 0.1)' : 'rgba(118, 103, 91, 0.1)',
+                  color: r.tracked ? '#2A7D4F' : 'var(--signet-muted)',
+                }}
+              >
+                {r.tracked ? 'Active Tracking' : 'Paused'}
+              </span>
             </div>
-          </div>
+          ))}
         </div>
       </div>
-    </>
+    </div>
   )
 }
 
-// ─── Main component ───────────────────────────────────────────
+// ─── PANEL 4: Settings Panel ──────────────────────────────────
+function SettingsPanel({
+  githubUser,
+  walletAddress,
+  onLogout,
+}: {
+  githubUser: string
+  walletAddress: string | null
+  onLogout: () => void
+}) {
+  return (
+    <div>
+      <h2 style={{ fontSize: '22px', fontWeight: 800, color: 'var(--ink)', marginBottom: '1.5rem', fontFamily: 'var(--font-serif)' }}>
+        Protocol Settings
+      </h2>
+      <div style={{ display: 'flex', flexDirection: 'column', gap: '1.2rem', maxWidth: '580px' }}>
+        <div style={{ background: 'var(--paper-raised)', border: '1px solid var(--rule)', borderRadius: '14px', padding: '1.4rem' }}>
+          <div style={{ fontWeight: 800, fontSize: '13px', color: 'var(--ink)', marginBottom: '4px' }}>Connected GitHub Contributor</div>
+          <div style={{ fontSize: '12px', color: 'var(--ink-muted)', marginBottom: '12px' }}>Authoritative identity handle used for commit and pull request attribution</div>
+          <div style={{ fontFamily: 'var(--font-mono)', fontSize: '13px', fontWeight: 700, color: '#B9572B', backgroundColor: 'var(--paper)', padding: '10px 14px', borderRadius: '8px', border: '1px solid var(--rule)' }}>
+            @{githubUser}
+          </div>
+        </div>
+
+        <div style={{ background: 'var(--paper-raised)', border: '1px solid var(--rule)', borderRadius: '14px', padding: '1.4rem' }}>
+          <div style={{ fontWeight: 800, fontSize: '13px', color: 'var(--ink)', marginBottom: '4px' }}>Target Blockchain Protocol</div>
+          <div style={{ fontSize: '12px', color: 'var(--ink-muted)', marginBottom: '12px' }}>Decentralized attestation layer for non-transferable credential records</div>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '10px 14px', border: '1px solid var(--rule)', borderRadius: '8px', fontSize: '12.5px', fontWeight: 700, color: 'var(--ink)', backgroundColor: 'var(--paper)' }}>
+            <span style={{ width: '8px', height: '8px', borderRadius: '50%', background: '#B9572B', display: 'inline-block' }} />
+            NEAR Protocol (Testnet) · Account Mapping: {walletAddress ? `${walletAddress.slice(0, 10)}...` : `${githubUser}.near (Staged)`}
+          </div>
+        </div>
+
+        <div style={{ background: 'var(--paper-raised)', border: '1px solid var(--rule)', borderRadius: '14px', padding: '1.4rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+          <div>
+            <div style={{ fontWeight: 800, fontSize: '13px', color: 'var(--ink)', marginBottom: '2px' }}>Session Management</div>
+            <div style={{ fontSize: '12px', color: 'var(--ink-muted)' }}>Terminate active browser session cookies</div>
+          </div>
+          <button
+            onClick={onLogout}
+            style={{
+              backgroundColor: 'transparent',
+              border: '1px solid rgba(239, 68, 68, 0.4)',
+              color: '#EF4444',
+              borderRadius: '6px',
+              padding: '8px 16px',
+              fontSize: '12px',
+              fontWeight: 700,
+              cursor: 'pointer',
+            }}
+          >
+            Sign Out
+          </button>
+        </div>
+      </div>
+    </div>
+  )
+}
+
+// ─── MAIN DASHBOARD COMPONENT ─────────────────────────────────
 export default function Dashboard() {
   const navigate = useNavigate()
-  const [query, setQuery] = useState('')
-  const [badges, setBadges] = useState<BadgeData[]>([])
-  const [ghStats, setGhStats] = useState<GitHubStats | null>(null)
-  const [selected, setSelected] = useState<BadgeData | null>(null)
-  const [loading, setLoading] = useState(false)
-  const [loadingStats, setLoadingStats] = useState(true)
-  const [lookupError, setLookupError] = useState<string | null>(null)
-  const [lookupInputInvalid, setLookupInputInvalid] = useState(false)
-  const [showSearchModal, setShowSearchModal] = useState(false)
   const [activeNav, setActiveNav] = useState<NavId>('overview')
+  const [credentials] = useState<CredentialSummary[]>([])
+  const [ghStats, setGhStats] = useState<GitHubStats | null>(null)
+  const [loadingStats, setLoadingStats] = useState(true)
   const [userGithub, setUserGithub] = useState<string>('moizz')
   const [userWallet, setUserWallet] = useState<string | null>(null)
-  const lookupDialogRef = useRef<HTMLDivElement>(null)
+  const [repos, setRepos] = useState<RepoItem[]>([])
+  const [savingRepos, setSavingRepos] = useState(false)
+  const [showSearchModal, setShowSearchModal] = useState(false)
+  const [searchQuery, setSearchQuery] = useState('')
+  const [selectedCredential, setSelectedCredential] = useState<CredentialSummary | null>(null)
 
-  // 1. Initial load real session & GitHub / Monad stats
+  // 1. Initial Load: Session check, GitHub metrics & Tracked Repos
   useEffect(() => {
     async function initDashboard() {
       setLoadingStats(true)
       let currentGhUser = 'moizz'
-      let currentWallet: string | null = null
 
       try {
         const status = await api.getWalletStatus()
@@ -544,7 +392,6 @@ export default function Dashboard() {
           setUserGithub(status.githubUsername)
         }
         if (status.linked && status.walletAddress) {
-          currentWallet = status.walletAddress
           setUserWallet(status.walletAddress)
         }
       } catch (err) {
@@ -555,124 +402,144 @@ export default function Dashboard() {
       const stats = await fetchGitHubUserStats(currentGhUser)
       setGhStats(stats)
 
-      // Fetch real on-chain attestations for wallet
-      if (currentWallet) {
-        try {
-          const live = await getAttestations(currentWallet)
-          setBadges(live)
-        } catch (err) {
-          console.warn('[Dashboard] Attestation fetch failed:', err)
-          setBadges([])
+      // Fetch Tracked Repositories
+      try {
+        const repoData = await api.getTrackedRepos()
+        if (repoData && repoData.repos) {
+          setRepos(repoData.repos)
         }
+      } catch (err) {
+        console.warn('[Dashboard] Tracked repos fetch fallback:', err)
       }
+
       setLoadingStats(false)
     }
 
     initDashboard()
   }, [])
 
-  // 2. Handle contributor search/lookup
-  async function handleLookup(lookupQuery: string) {
-    if (!lookupQuery.trim()) {
-      setLookupInputInvalid(true)
-      setLookupError('Enter a GitHub username or wallet address to search.')
-      return
-    }
-    setLookupInputInvalid(false)
-    setLoading(true)
-    setLoadingStats(true)
-    setLookupError(null)
-    setBadges([])
-    const target = lookupQuery.trim().replace(/^@/, '')
+  // 2. Handle Logout
+  const handleLogout = async () => {
     try {
-      let resolvedWallet: string
-      if (ethers.isAddress(target)) {
-        resolvedWallet = target
-        setUserWallet(target)
-        setGhStats(null)
-      } else {
-        setUserGithub(target)
-        setUserWallet(null)
-        const ghData = await fetchGitHubUserStats(target)
-        setGhStats(ghData)
+      await api.logout()
+    } catch (e) {
+      console.warn('Logout error:', e)
+    }
+    navigate('/auth')
+  }
 
-        const data = await api.resolveWallet(target)
-        if (data === null) {
-          setLookupError('No wallet is linked to this GitHub account. Link a wallet to view its SBTs.')
-          return
-        }
+  // 3. Handle Repository Tracking Toggle & Save
+  const handleToggleTrack = (name: string) => {
+    setRepos((prev) =>
+      prev.map((r) => (r.fullName === name ? { ...r, tracked: !r.tracked } : r))
+    )
+  }
 
-        if (
-          typeof data !== 'object' ||
-          data === null ||
-          !('walletAddress' in data) ||
-          typeof data.walletAddress !== 'string' ||
-          !ethers.isAddress(data.walletAddress)
-        ) {
-          throw new Error('Wallet lookup returned an invalid address')
-        }
-        resolvedWallet = data.walletAddress
-      }
-
-      const live = await getAttestations(resolvedWallet)
-      setBadges(live)
-      setShowSearchModal(false)
-    } catch (err) {
-      console.warn('[Dashboard] Contributor lookup failed:', err)
-      setBadges([])
-      setLookupError('Unable to look up this contributor. Please try again.')
+  const handleSaveRepos = async () => {
+    setSavingRepos(true)
+    try {
+      const trackedNames = repos.filter((r) => r.tracked).map((r) => r.fullName)
+      await api.saveTrackedRepos(trackedNames)
+    } catch (e) {
+      console.error('Failed saving repos:', e)
     } finally {
-      setLoading(false)
-      setLoadingStats(false)
+      setSavingRepos(false)
     }
   }
 
+  // 4. Handle Contributor Lookup
+  const handleLookup = async (query: string) => {
+    if (!query.trim()) return
+    const target = query.trim().replace(/^@/, '')
+    setUserGithub(target)
+    setLoadingStats(true)
+    const ghData = await fetchGitHubUserStats(target)
+    if (ghData) {
+      setGhStats(ghData)
+    }
+    setLoadingStats(false)
+    setShowSearchModal(false)
+  }
+
+  // Sidebar Links
   const sidebarLinks: { id: NavId; icon: React.ReactNode; label: string }[] = [
     { id: 'overview', icon: <IconHome size={16} />, label: 'Overview' },
-    { id: 'sbts', icon: <IconAward size={16} />, label: 'SBTs' },
+    { id: 'credentials', icon: <IconAward size={16} />, label: 'Credentials' },
     { id: 'contributions', icon: <IconCode size={16} />, label: 'Contributions' },
+    { id: 'repos', icon: <IconFolder size={16} />, label: 'Tracked Repos' },
     { id: 'settings', icon: <IconSettings size={16} />, label: 'Settings' },
   ]
 
-  const pageTitle: Record<NavId, string> = {
-    overview: 'Dashboard',
-    sbts: 'SBTs',
-    contributions: 'Contributions',
-    settings: 'Settings',
-  }
-
-  const displayWallet = userWallet
-    ? `${userWallet.slice(0, 6)}...${userWallet.slice(-4)}`
-    : 'Not linked'
+  // Calculated Metrics
+  const mergedPRsCount = ghStats?.mergedPrCount ?? credentials.length
+  const publicReposCount = ghStats?.publicRepos ?? repos.length
+  const builderXP = mergedPRsCount * 120 + credentials.length * 300 + publicReposCount * 40
+  const builderLevel = Math.max(1, Math.floor(builderXP / 500) + 1)
 
   return (
-    <div className="dashboard-root" style={{ display: 'flex', minHeight: '100vh', background: 'var(--paper)', color: 'var(--ink)', fontFamily: 'var(--font-body)', overflowX: 'hidden', transition: 'background 0.3s, color 0.3s' }}>
-
+    <div
+      className="dashboard-container"
+      style={{
+        display: 'flex',
+        minHeight: '100vh',
+        backgroundColor: 'var(--paper)',
+        color: 'var(--ink)',
+        fontFamily: 'var(--font-sans)',
+      }}
+    >
       {/* ── SIDEBAR ── */}
-      <aside className="dashboard-sidebar" style={{ width: '260px', background: 'var(--paper-raised)', flexShrink: 0, borderRight: '1px solid var(--rule)', padding: '2rem 1.2rem', display: 'flex', flexDirection: 'column', justifyContent: 'space-between', position: 'sticky', top: 0, height: '100vh' }}>
+      <aside
+        className="dashboard-sidebar"
+        style={{
+          width: '260px',
+          backgroundColor: 'var(--paper-raised)',
+          flexShrink: 0,
+          borderRight: '1px solid var(--rule)',
+          padding: '2rem 1.4rem',
+          display: 'flex',
+          flexDirection: 'column',
+          justifyContent: 'space-between',
+          position: 'sticky',
+          top: 0,
+          height: '100vh',
+          boxSizing: 'border-box',
+        }}
+      >
         <div>
-          <Link to="/" style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '2.5rem', textDecoration: 'none' }}>
-            <IconSoulPRLogo size={32} />
-            <div style={{ display: 'flex', flexDirection: 'column', lineHeight: 1.1 }}>
-              <span style={{ fontWeight: 900, fontSize: '17px', color: 'var(--ink)' }}>SoulPR</span>
-              <span style={{ fontSize: '8px', textTransform: 'uppercase', color: '#E05300', letterSpacing: '0.06em', fontWeight: 700 }}>proof that builds you</span>
-            </div>
-          </Link>
+          <div style={{ marginBottom: '2.5rem' }}>
+            <SignetBrandLockup
+              color="var(--ink)"
+              markColor="#B9572B"
+              markSize={28}
+              wordmarkSize={18}
+            />
+          </div>
 
-          <nav style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+          <nav style={{ display: 'flex', flexDirection: 'column', gap: '4px' }} aria-label="Dashboard navigation">
             {sidebarLinks.map(({ id, icon, label }) => {
               const isActive = activeNav === id
               return (
                 <button
                   key={id}
-                  id={`sidebar-${id}`}
                   onClick={() => setActiveNav(id)}
-                  aria-current={isActive ? 'page' : undefined}
-                  style={{ display: 'flex', alignItems: 'center', gap: '12px', padding: '11px 14px', borderRadius: '10px', border: 'none', background: isActive ? 'rgba(255,123,0,0.12)' : 'transparent', color: isActive ? '#FF7B00' : 'var(--ink-muted)', fontWeight: isActive ? 800 : 600, fontSize: '14.5px', cursor: 'pointer', width: '100%', textAlign: 'left', transition: 'background 0.15s, color 0.15s' }}
-                  onMouseEnter={e => { if (!isActive) (e.currentTarget as HTMLElement).style.background = 'rgba(255,123,0,0.05)' }}
-                  onMouseLeave={e => { if (!isActive) (e.currentTarget as HTMLElement).style.background = 'transparent' }}
+                  style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '12px',
+                    padding: '11px 14px',
+                    borderRadius: '8px',
+                    border: 'none',
+                    backgroundColor: isActive ? 'rgba(185, 87, 43, 0.12)' : 'transparent',
+                    color: isActive ? '#B9572B' : 'var(--ink-muted)',
+                    fontWeight: isActive ? 800 : 600,
+                    fontSize: '14px',
+                    cursor: 'pointer',
+                    width: '100%',
+                    textAlign: 'left',
+                    transition: 'all 0.15s ease',
+                  }}
                 >
-                  <span style={{ color: isActive ? '#FF7B00' : 'var(--ink-faint)' }}>{icon}</span>
+                  <span style={{ color: isActive ? '#B9572B' : 'var(--ink-faint)' }}>{icon}</span>
                   {label}
                 </button>
               )
@@ -680,188 +547,482 @@ export default function Dashboard() {
           </nav>
         </div>
 
-        {/* Bottom widget */}
-        <div style={{ background: 'rgba(255,123,0,0.06)', border: '1px solid rgba(255,123,0,0.15)', borderRadius: '12px', padding: '1.2rem 1rem', textAlign: 'center' }}>
-          <div style={{ width: '42px', height: '42px', margin: '0 auto 10px', background: 'rgba(255,123,0,0.1)', border: '1.5px solid rgba(255,123,0,0.25)', borderRadius: '10px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-            <IconShieldCheck size={22} color="#FF7B00" />
+        {/* Sidebar Bottom Box */}
+        <div style={{ backgroundColor: 'rgba(185, 87, 43, 0.06)', border: '1px solid rgba(185, 87, 43, 0.2)', borderRadius: '12px', padding: '1.2rem 1rem', textAlign: 'center' }}>
+          <div style={{ marginBottom: '8px', display: 'flex', justifyContent: 'center' }}>
+            <CredentialSeal size={32} />
           </div>
-          <div style={{ fontWeight: 800, fontSize: '12px', color: 'var(--ink)', marginBottom: '5px' }}>Build. Proof. Grow.</div>
-          <div style={{ fontSize: '11px', color: 'var(--ink-muted)', marginBottom: '14px', lineHeight: 1.5 }}>Your proof is your superpower.</div>
+          <div style={{ fontWeight: 800, fontSize: '12px', color: 'var(--ink)', marginBottom: '4px' }}>
+            Your work is your mark.
+          </div>
+          <div style={{ fontSize: '11px', color: 'var(--ink-muted)', marginBottom: '12px' }}>
+            Inspect protocol verification.
+          </div>
           <button
-            id="sidebar-lookup-btn"
-            onClick={() => {
-              setLookupError(null)
-              setShowSearchModal(true)
+            onClick={() => navigate('/verify/sample')}
+            style={{
+              width: '100%',
+              backgroundColor: 'var(--signet-orange)',
+              color: '#EDE2D0',
+              border: 'none',
+              borderRadius: '6px',
+              padding: '7px 0',
+              fontSize: '11px',
+              fontWeight: 700,
+              cursor: 'pointer',
             }}
-            style={{ width: '100%', background: '#FF7B00', color: '#FFF', border: 'none', borderRadius: '6px', padding: '7px 0', fontSize: '11px', fontWeight: 700, cursor: 'pointer' }}
           >
-            Look up a contributor
+            Sample Credential →
           </button>
         </div>
       </aside>
 
-      {/* ── MAIN CONTENT ── */}
-      <main className="dashboard-main" style={{ flex: 1, padding: '2rem 2.5rem', overflowY: 'auto' }}>
-
-        {/* Header */}
-        <header className="dashboard-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem' }}>
+      {/* ── MAIN CONTENT AREA ── */}
+      <main style={{ flex: 1, padding: '2.5rem 3rem', overflowY: 'auto' }}>
+        {/* Header Bar */}
+        <header style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2.5rem' }}>
           <div style={{ textAlign: 'left' }}>
-            <h1 style={{ fontSize: '26px', fontWeight: 900, color: 'var(--ink)', margin: 0, fontFamily: 'var(--font-display)' }}>{pageTitle[activeNav]}</h1>
+            <h1 style={{ fontSize: '28px', fontWeight: 600, color: 'var(--ink)', margin: 0, fontFamily: 'var(--font-serif)' }}>
+              {activeNav === 'overview' && 'Contributor Workspace'}
+              {activeNav === 'credentials' && 'Credentials'}
+              {activeNav === 'contributions' && 'Contributions'}
+              {activeNav === 'repos' && 'Tracked Repositories'}
+              {activeNav === 'settings' && 'Protocol Settings'}
+            </h1>
             {activeNav === 'overview' && (
-              <div style={{ fontSize: '13px', color: 'var(--ink-muted)', marginTop: '3px' }}>
-                Welcome back, @{userGithub}!
+              <div style={{ fontSize: '13px', color: 'var(--ink-muted)', marginTop: '2px' }}>
+                Welcome back, <strong>@{userGithub}</strong>
               </div>
             )}
           </div>
-          <div className="dashboard-header-actions" style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
-            <button
-              type="button"
-              className="dashboard-mobile-lookup"
-              onClick={() => {
-                setLookupError(null)
-                setShowSearchModal(true)
+
+          <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
+            {/* Protocol Badge */}
+            <div
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: '6px',
+                background: 'var(--paper-raised)',
+                border: '1px solid var(--rule)',
+                borderRadius: '8px',
+                padding: '6px 14px',
+                fontSize: '11px',
+                fontWeight: 700,
+                color: '#B9572B',
               }}
-              style={{ alignItems: 'center', gap: '6px', background: 'var(--paper-raised)', border: '1px solid var(--rule-strong)', borderRadius: '8px', padding: '6px 12px', fontSize: '11px', color: 'var(--ink)', fontWeight: 700 }}
             >
-              Look up
-            </button>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '6px', background: 'var(--paper-raised)', border: '1px solid var(--rule)', borderRadius: '8px', padding: '6px 14px', fontSize: '11px', fontWeight: 600, color: 'var(--ink)' }}>
-              <span style={{ width: '6px', height: '6px', borderRadius: '50%', background: '#FF7B00', display: 'inline-block' }} />
-              MONAD TESTNET
-              <span style={{ fontSize: '8px', opacity: 0.5 }}>▼</span>
+              <span style={{ width: '6px', height: '6px', borderRadius: '50%', background: '#B9572B', display: 'inline-block' }} />
+              NEAR PROTOCOL (TESTNET)
             </div>
+
             <button
-              onClick={() => navigate('/link-wallet')}
-              style={{ display: 'flex', alignItems: 'center', gap: '7px', background: 'var(--paper-raised)', border: '1px solid rgba(255,123,0,0.35)', borderRadius: '8px', padding: '6px 14px', fontSize: '11px', color: '#FF7B00', fontWeight: 700, cursor: 'pointer' }}
+              onClick={() => setShowSearchModal(true)}
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: '6px',
+                background: 'var(--paper-raised)',
+                border: '1px solid var(--rule)',
+                borderRadius: '8px',
+                padding: '6px 14px',
+                fontSize: '11px',
+                fontWeight: 600,
+                color: 'var(--ink)',
+                cursor: 'pointer',
+              }}
             >
-              <IconWallet size={13} color="#FF7B00" />
-              {displayWallet}
-              <span style={{ fontSize: '8px', opacity: 0.5 }}>▼</span>
+              <IconUserPlus size={13} color="var(--ink-muted)" />
+              Look Up Contributor
             </button>
+
             <ThemeToggle />
           </div>
         </header>
 
-        {/* Active panel */}
+        {/* ── Active Panel Rendering ── */}
         {activeNav === 'overview' && (
-          <OverviewPanel
-            badges={badges}
-            ghStats={ghStats}
-            loadingStats={loadingStats}
-            onSelect={setSelected}
-            onViewAll={() => setActiveNav('contributions')}
-            onNavTo={setActiveNav}
-            onSearch={() => {
-              setLookupError(null)
-              setShowSearchModal(true)
-            }}
-            navigate={navigate}
+          <div>
+            {/* Contributor Score Hero Banner */}
+            <section
+              style={{
+                backgroundColor: '#191715',
+                color: '#EDE2D0',
+                borderRadius: '16px',
+                padding: '2rem 2.5rem',
+                display: 'flex',
+                justifyContent: 'space-between',
+                alignItems: 'center',
+                marginBottom: '2rem',
+                position: 'relative',
+                overflow: 'hidden',
+                textAlign: 'left',
+              }}
+            >
+              <div style={{ position: 'relative', zIndex: 1 }}>
+                <div style={{ fontSize: '10.5px', fontWeight: 800, color: '#B9572B', textTransform: 'uppercase', letterSpacing: '0.12em', marginBottom: '8px' }}>
+                  @{userGithub}'s Verified Contributor XP
+                </div>
+                <div style={{ display: 'flex', alignItems: 'baseline', gap: '14px', marginBottom: '8px' }}>
+                  <span style={{ fontSize: '42px', fontWeight: 600, color: '#EDE2D0', fontFamily: 'var(--font-serif)', lineHeight: 1 }}>
+                    {loadingStats ? '...' : builderXP.toLocaleString()}
+                  </span>
+                  <span style={{ backgroundColor: 'rgba(185, 87, 43, 0.2)', border: '1px solid rgba(185, 87, 43, 0.4)', borderRadius: '99px', padding: '4px 12px', fontSize: '11px', color: '#B9572B', fontWeight: 800 }}>
+                    Contributor Lv. {builderLevel}
+                  </span>
+                </div>
+                <p style={{ fontSize: '12.5px', color: 'var(--signet-muted)', maxWidth: '480px', margin: 0 }}>
+                  Earned from {mergedPRsCount} merged pull requests across {publicReposCount} repositories.
+                </p>
+              </div>
+
+              <div style={{ position: 'relative', zIndex: 1 }}>
+                <CredentialSeal size={96} glow={true} />
+              </div>
+            </section>
+
+            {/* 4 Stat Tiles */}
+            <section className="dashboard-stat-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '1.2rem', marginBottom: '2rem' }}>
+              {[
+                { label: 'Verified Credentials', val: `${credentials.length}`, sub: 'SIGNET records', action: () => setActiveNav('credentials') },
+                { label: 'GitHub Merged PRs', val: loadingStats ? '...' : `${mergedPRsCount}`, sub: 'Authoritative git merges', action: () => setActiveNav('contributions') },
+                { label: 'Contributor Level', val: `Lv. ${builderLevel}`, sub: `${builderXP} Verified XP`, action: undefined },
+                { label: 'Tracked Repos', val: `${repos.filter((r) => r.tracked).length}`, sub: 'Automated merge monitoring', action: () => setActiveNav('repos') },
+              ].map(({ label, val, sub, action }) => (
+                <div
+                  key={label}
+                  onClick={action}
+                  style={{
+                    backgroundColor: 'var(--paper-raised)',
+                    border: '1px solid var(--rule)',
+                    borderRadius: '12px',
+                    padding: '1.4rem',
+                    textAlign: 'left',
+                    cursor: action ? 'pointer' : 'default',
+                    transition: 'box-shadow 0.15s',
+                  }}
+                  onMouseEnter={(e) => {
+                    if (action) (e.currentTarget as HTMLElement).style.boxShadow = '0 4px 14px rgba(185,87,43,0.1)'
+                  }}
+                  onMouseLeave={(e) => {
+                    if (action) (e.currentTarget as HTMLElement).style.boxShadow = 'none'
+                  }}
+                >
+                  <div style={{ fontSize: '11px', color: 'var(--ink-muted)', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.04em', marginBottom: '8px' }}>
+                    {label}
+                  </div>
+                  <div style={{ fontSize: '28px', fontWeight: 700, color: 'var(--ink)', fontFamily: 'var(--font-serif)', lineHeight: 1, marginBottom: '6px' }}>
+                    {val}
+                  </div>
+                  <div style={{ fontSize: '11px', color: 'var(--signet-muted)' }}>{sub}</div>
+                </div>
+              ))}
+            </section>
+
+            {/* 2-Column Overview Bottom */}
+            <div className="dashboard-overview-grid" style={{ display: 'grid', gridTemplateColumns: '1.3fr 0.7fr', gap: '2rem', alignItems: 'start' }}>
+              {/* Recent Credentials Card */}
+              <section style={{ backgroundColor: 'var(--paper-raised)', border: '1px solid var(--rule)', borderRadius: '16px', padding: '1.6rem', textAlign: 'left' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.2rem' }}>
+                  <h2 style={{ fontSize: '18px', fontWeight: 700, color: 'var(--ink)', margin: 0, fontFamily: 'var(--font-serif)' }}>
+                    Recent Verifiable Credentials
+                  </h2>
+                  <button
+                    onClick={() => setActiveNav('credentials')}
+                    style={{ color: '#B9572B', fontSize: '12px', fontWeight: 700, background: 'none', border: 'none', cursor: 'pointer' }}
+                  >
+                    View all
+                  </button>
+                </div>
+
+                {credentials.length === 0 ? (
+                  <div style={{ padding: '2.5rem 1.5rem', textAlign: 'center', background: 'var(--paper)', borderRadius: '10px', border: '1px dashed var(--rule)' }}>
+                    <div style={{ fontSize: '13px', color: 'var(--ink-muted)', marginBottom: '8px' }}>
+                      No credentials issued on NEAR Testnet yet.
+                    </div>
+                    <Link to="/verify/sample" style={{ fontSize: '12px', color: '#B9572B', fontWeight: 700, textDecoration: 'none' }}>
+                      Inspect demonstration credential on /verify/sample →
+                    </Link>
+                  </div>
+                ) : (
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                    {credentials.map((c) => (
+                      <div
+                        key={c.id}
+                        onClick={() => setSelectedCredential(c)}
+                        style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '10px 14px', borderRadius: '8px', border: '1px solid var(--rule)', background: 'var(--paper)', cursor: 'pointer' }}
+                      >
+                        <div>
+                          <div style={{ fontWeight: 700, fontSize: '13px' }}>{c.prTitle}</div>
+                          <div style={{ fontSize: '10.5px', color: 'var(--ink-muted)', fontFamily: 'var(--font-mono)' }}>{c.repo} · PR #{c.prNumber}</div>
+                        </div>
+                        <span style={{ fontSize: '11px', color: '#2A7D4F', fontWeight: 700 }}>Inspect Evidence →</span>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </section>
+
+              {/* Contributor Profile Audit Card */}
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
+                <div style={{ backgroundColor: 'var(--paper-raised)', border: '1px solid var(--rule)', borderRadius: '16px', padding: '1.5rem', textAlign: 'left' }}>
+                  <h3 style={{ fontSize: '14px', fontWeight: 800, color: 'var(--ink)', borderBottom: '1px solid var(--rule)', paddingBottom: '10px', marginBottom: '12px' }}>
+                    Authoritative Profile Audit
+                  </h3>
+                  {[
+                    { label: 'GitHub Handle', val: `@${userGithub}` },
+                    { label: 'Merged Pull Requests', val: loadingStats ? '...' : `${mergedPRsCount}` },
+                    { label: 'Public Repositories', val: loadingStats ? '...' : `${publicReposCount}` },
+                    { label: 'Attestation Settlement', val: 'NEAR Protocol' },
+                    { label: 'Account Created', val: formatDate(ghStats?.createdAt) },
+                  ].map(({ label, val }) => (
+                    <div key={label} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: '12px', padding: '6px 0', borderBottom: '1px solid var(--rule)' }}>
+                      <span style={{ color: 'var(--ink-muted)' }}>{label}</span>
+                      <strong style={{ color: 'var(--ink)', fontFamily: 'var(--font-mono)' }}>{val}</strong>
+                    </div>
+                  ))}
+                </div>
+
+                {/* Quick Action Navigation Buttons */}
+                <div style={{ backgroundColor: 'var(--paper-raised)', border: '1px solid var(--rule)', borderRadius: '16px', padding: '1.2rem', textAlign: 'left' }}>
+                  <div style={{ fontSize: '11px', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.06em', color: 'var(--signet-muted)', marginBottom: '10px' }}>
+                    Quick Actions
+                  </div>
+                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '8px' }}>
+                    <button
+                      onClick={() => navigate('/verify/sample')}
+                      style={{ padding: '8px 10px', borderRadius: '6px', border: '1px solid var(--rule)', background: 'var(--paper)', fontSize: '11.5px', fontWeight: 600, color: 'var(--ink)', cursor: 'pointer', textAlign: 'left' }}
+                    >
+                      Sample Credential →
+                    </button>
+                    <button
+                      onClick={() => setActiveNav('repos')}
+                      style={{ padding: '8px 10px', borderRadius: '6px', border: '1px solid var(--rule)', background: 'var(--paper)', fontSize: '11.5px', fontWeight: 600, color: 'var(--ink)', cursor: 'pointer', textAlign: 'left' }}
+                    >
+                      Track Repositories →
+                    </button>
+                    <button
+                      onClick={() => setShowSearchModal(true)}
+                      style={{ padding: '8px 10px', borderRadius: '6px', border: '1px solid var(--rule)', background: 'var(--paper)', fontSize: '11.5px', fontWeight: 600, color: 'var(--ink)', cursor: 'pointer', textAlign: 'left' }}
+                    >
+                      Look Up Contributor →
+                    </button>
+                    <button
+                      onClick={() => navigate('/install')}
+                      style={{ padding: '8px 10px', borderRadius: '6px', border: '1px solid var(--rule)', background: 'var(--paper)', fontSize: '11.5px', fontWeight: 600, color: 'var(--ink)', cursor: 'pointer', textAlign: 'left' }}
+                    >
+                      GitHub App Setup →
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {activeNav === 'credentials' && (
+          <CredentialsPanel
+            credentials={credentials}
+            onSelect={(c) => setSelectedCredential(c)}
           />
         )}
-        {activeNav === 'sbts' && <SBTsPanel badges={badges} onSelect={setSelected} />}
+
         {activeNav === 'contributions' && (
-          <ContributionsPanel badges={badges} ghStats={ghStats} loadingStats={loadingStats} />
+          <ContributionsPanel
+            credentials={credentials}
+            ghStats={ghStats}
+            loadingStats={loadingStats}
+          />
         )}
+
+        {activeNav === 'repos' && (
+          <TrackedReposPanel
+            repos={repos}
+            onToggleTrack={handleToggleTrack}
+            onSave={handleSaveRepos}
+            saving={savingRepos}
+          />
+        )}
+
         {activeNav === 'settings' && (
           <SettingsPanel
             githubUser={userGithub}
             walletAddress={userWallet}
-            onUpdateGithub={(newUser) => {
-              setUserGithub(newUser)
-              fetchGitHubUserStats(newUser).then(setGhStats)
-            }}
+            onLogout={handleLogout}
           />
         )}
       </main>
 
-      {/* Search Modal */}
+      {/* Contributor Search Modal */}
       {showSearchModal && (
         <div
-          className="modal-overlay lookup-overlay"
-          role="presentation"
-          onClick={() => setShowSearchModal(false)}
-          onKeyDown={e => {
-            if (e.key === 'Escape') setShowSearchModal(false)
+          style={{
+            position: 'fixed',
+            inset: 0,
+            backgroundColor: 'rgba(0,0,0,0.65)',
+            backdropFilter: 'blur(6px)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            zIndex: 1000,
+            padding: '1.5rem',
           }}
-          style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(0,0,0,0.5)' }}
+          onClick={() => setShowSearchModal(false)}
         >
           <div
-            ref={lookupDialogRef}
-            className="lookup-dialog"
-            role="dialog"
-            aria-modal="true"
-            aria-labelledby="lookup-title"
-            onClick={e => e.stopPropagation()}
-            onKeyDown={e => {
-              if (e.key !== 'Tab') return
-              const focusable = lookupDialogRef.current?.querySelectorAll<HTMLElement>(
-                'button:not(:disabled), input:not(:disabled), [href], [tabindex]:not([tabindex="-1"])',
-              )
-              if (!focusable?.length) return
-              const first = focusable[0]
-              const last = focusable[focusable.length - 1]
-              if (e.shiftKey && document.activeElement === first) {
-                e.preventDefault()
-                last.focus()
-              } else if (!e.shiftKey && document.activeElement === last) {
-                e.preventDefault()
-                first.focus()
-              }
+            onClick={(e) => e.stopPropagation()}
+            style={{
+              backgroundColor: 'var(--paper-raised)',
+              border: '1px solid var(--rule)',
+              borderRadius: '14px',
+              padding: '2rem',
+              maxWidth: '440px',
+              width: '100%',
+              textAlign: 'left',
             }}
-            style={{ background: 'var(--paper-raised)', border: '1px solid var(--rule)', padding: '2rem', borderRadius: '16px', width: '100%', maxWidth: '420px', boxShadow: '0 20px 60px rgba(0,0,0,0.3)' }}
           >
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '1rem', marginBottom: '1rem' }}>
-              <h3 id="lookup-title" style={{ fontSize: '16px', fontWeight: 900, color: 'var(--ink)' }}>Look up a contributor</h3>
-              <button type="button" aria-label="Close contributor lookup" onClick={() => setShowSearchModal(false)} style={{ color: 'var(--ink-muted)', fontSize: '20px', padding: '0.2rem 0.5rem' }}>×</button>
-            </div>
-            <div className="lookup-form" style={{ display: 'flex', gap: '8px' }}>
+            <h3 style={{ fontFamily: 'var(--font-serif)', fontSize: '22px', fontWeight: 600, color: 'var(--ink)', margin: '0 0 8px' }}>
+              Look Up Open-Source Contributor
+            </h3>
+            <p style={{ fontSize: '12.5px', color: 'var(--ink-muted)', marginBottom: '1.4rem' }}>
+              Query any GitHub handle to inspect public merged pull requests and contribution records.
+            </p>
+            <div style={{ display: 'flex', gap: '8px' }}>
               <input
-                id="lookup-input"
-                autoFocus
-                aria-label="GitHub username or wallet address"
-                aria-invalid={lookupInputInvalid}
-                aria-describedby={lookupError ? 'lookup-error' : undefined}
-                placeholder="GitHub username or wallet address"
-                value={query}
-                onChange={e => {
-                  setQuery(e.target.value)
-                  setLookupError(null)
-                  setLookupInputInvalid(false)
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                onKeyDown={(e) => e.key === 'Enter' && handleLookup(searchQuery)}
+                placeholder="GitHub username (e.g. torvalds)"
+                style={{
+                  flex: 1,
+                  padding: '10px 14px',
+                  borderRadius: '6px',
+                  border: '1px solid var(--rule)',
+                  backgroundColor: 'var(--paper)',
+                  color: 'var(--ink)',
+                  fontSize: '13px',
+                  outline: 'none',
                 }}
-                onKeyDown={e => e.key === 'Enter' && handleLookup(query)}
-                style={{ flex: 1, padding: '10px 14px', border: '1px solid var(--rule)', borderRadius: '8px', fontSize: '13px', fontFamily: 'inherit', outline: 'none', color: 'var(--ink)', background: 'var(--paper)' }}
               />
-              <button id="lookup-submit" onClick={() => handleLookup(query)} disabled={loading} aria-busy={loading} style={{ background: '#FF7B00', color: '#FFF', border: 'none', borderRadius: '8px', padding: '0 18px', fontWeight: 700, fontSize: '13px', cursor: 'pointer' }}>
-                {loading ? 'Searching...' : 'Search'}
+              <button
+                onClick={() => handleLookup(searchQuery)}
+                style={{
+                  backgroundColor: 'var(--signet-orange)',
+                  color: '#EDE2D0',
+                  border: 'none',
+                  borderRadius: '6px',
+                  padding: '0 16px',
+                  fontSize: '13px',
+                  fontWeight: 700,
+                  cursor: 'pointer',
+                }}
+              >
+                Inspect
               </button>
             </div>
-            {lookupError && (
-              <div id="lookup-error" className="status-message" role="alert" style={{ marginTop: '10px', color: '#DC2626', fontSize: '12px' }}>
-                {lookupError}
-              </div>
-            )}
           </div>
         </div>
       )}
 
-      {selected && <BadgeDetailModal badge={selected} onClose={() => setSelected(null)} />}
-    </div>
-  )
-}
+      {/* Selected Credential Inspection Modal */}
+      {selectedCredential && (
+        <div
+          style={{
+            position: 'fixed',
+            inset: 0,
+            backgroundColor: 'rgba(0,0,0,0.7)',
+            backdropFilter: 'blur(6px)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            zIndex: 1000,
+            padding: '1.5rem',
+          }}
+          onClick={() => setSelectedCredential(null)}
+        >
+          <div
+            onClick={(e) => e.stopPropagation()}
+            style={{
+              backgroundColor: '#F3E8D5',
+              color: '#191715',
+              borderRadius: '16px',
+              padding: '2.5rem',
+              maxWidth: '480px',
+              width: '100%',
+              textAlign: 'left',
+            }}
+          >
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '1.5rem' }}>
+              <div>
+                <span style={{ fontSize: '10px', fontWeight: 800, textTransform: 'uppercase', color: '#B9572B', letterSpacing: '0.08em' }}>
+                  Credential Inspection
+                </span>
+                <h3 style={{ fontFamily: 'var(--font-serif)', fontSize: '24px', fontWeight: 600, color: '#191715', margin: '4px 0 0' }}>
+                  {selectedCredential.prTitle}
+                </h3>
+              </div>
+              <CredentialSeal size={42} />
+            </div>
 
-// ─── Inline helpers ───────────────────────────────────────────
-function IconGlobe({ size = 16, color = 'currentColor' }: { size?: number; color?: string }) {
-  return (
-    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-      <circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/>
-      <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10z"/>
-    </svg>
-  )
-}
-function IconGitHub({ size = 16, color = 'currentColor' }: { size?: number; color?: string }) {
-  return (
-    <svg width={size} height={size} viewBox="0 0 24 24" fill={color}>
-      <path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0 0 24 12c0-6.63-5.37-12-12-12z"/>
-    </svg>
+            <div style={{ backgroundColor: 'rgba(25, 23, 21, 0.05)', padding: '12px 14px', borderRadius: '8px', marginBottom: '1.5rem', fontFamily: 'var(--font-mono)', fontSize: '12px' }}>
+              <div>Repo: {selectedCredential.repo}</div>
+              <div>Pull Request: #{selectedCredential.prNumber}</div>
+              <div>Contributor: @{selectedCredential.contributor}</div>
+              <div>Issuance: {selectedCredential.issuanceDate}</div>
+            </div>
+
+            <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '10px' }}>
+              <button
+                onClick={() => setSelectedCredential(null)}
+                style={{ padding: '8px 14px', borderRadius: '6px', border: '1px solid rgba(118, 103, 91, 0.3)', background: 'none', cursor: 'pointer', fontSize: '12px', fontWeight: 600 }}
+              >
+                Close
+              </button>
+              <button
+                onClick={() => navigate('/verify/sample')}
+                style={{ padding: '8px 16px', borderRadius: '6px', border: 'none', backgroundColor: 'var(--signet-orange)', color: '#EDE2D0', cursor: 'pointer', fontSize: '12px', fontWeight: 700 }}
+              >
+                View Full Evidence →
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      <style>{`
+        @media (max-width: 960px) {
+          .dashboard-container {
+            flex-direction: column !important;
+          }
+          .dashboard-sidebar {
+            width: 100% !important;
+            height: auto !important;
+            position: static !important;
+            border-right: none !important;
+            border-bottom: 1px solid var(--rule) !important;
+            padding: 1.2rem 1.4rem !important;
+          }
+          .dashboard-sidebar nav {
+            flex-direction: row !important;
+            flex-wrap: wrap !important;
+            gap: 8px !important;
+          }
+          .dashboard-sidebar nav button {
+            width: auto !important;
+          }
+          .dashboard-stat-grid {
+            grid-template-columns: repeat(2, 1fr) !important;
+          }
+          .dashboard-overview-grid {
+            grid-template-columns: 1fr !important;
+          }
+        }
+        @media (max-width: 600px) {
+          .dashboard-stat-grid {
+            grid-template-columns: 1fr !important;
+          }
+        }
+      `}</style>
+    </div>
   )
 }
