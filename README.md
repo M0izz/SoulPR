@@ -1,4 +1,4 @@
-# SoulPR — Proof That Builds You
+# SIGNET (formerly known as SoulPR) — Proof That Builds You
 
 > **Automated open-source contribution receipts rendered as Soulbound Tokens (SBTs).**
 
