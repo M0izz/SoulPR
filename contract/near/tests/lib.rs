@@ -1,7 +1,7 @@
 use near_sdk::test_utils::accounts;
 use near_sdk::{test_utils::VMContextBuilder, testing_env, AccountId, NearToken};
-use soulpr_near::*;
 use signet_schema::*;
+use soulpr_near::*;
 
 fn context(predecessor: AccountId) -> near_sdk::VMContext {
     VMContextBuilder::new()
@@ -65,7 +65,11 @@ fn backend_can_mint_and_duplicate_is_rejected() {
     testing_env!(context(backend));
     // Mint first credential
     let input = make_input(
-        accounts(2), 12345, 67890, 42, "Fix",
+        accounts(2),
+        12345,
+        67890,
+        42,
+        "Fix",
         "0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef",
         backend.clone(),
     );
@@ -73,7 +77,11 @@ fn backend_can_mint_and_duplicate_is_rejected() {
 
     // Mint second credential with different identity (should succeed, not duplicate)
     let input2 = make_input(
-        accounts(3), 99999, 88888, 99, "Other PR",
+        accounts(3),
+        99999,
+        88888,
+        99,
+        "Other PR",
         "abcdef0123456789abcdef0123456789abcdef0123456789abcdef01234567",
         backend.clone(),
     );
@@ -81,15 +89,24 @@ fn backend_can_mint_and_duplicate_is_rejected() {
 
     // Verify the first contributor owns token 1
     let contributor_tokens = contract.nft_tokens_by_owner(accounts(2).clone());
-    assert!(contributor_tokens.contains(&1), "First contributor should own token 1");
+    assert!(
+        contributor_tokens.contains(&1),
+        "First contributor should own token 1"
+    );
 
     // Verify the second contributor owns token 2
     let contributor_tokens2 = contract.nft_tokens_by_owner(accounts(3).clone());
-    assert!(contributor_tokens2.contains(&2), "Second contributor should own token 2");
+    assert!(
+        contributor_tokens2.contains(&2),
+        "Second contributor should own token 2"
+    );
 
     // Total supply should be 2 (two distinct credentials minted)
     let total_supply = contract.nft_total_supply();
-    assert_eq!(total_supply, 2, "Total supply should be 2 after minting two distinct credentials");
+    assert_eq!(
+        total_supply, 2,
+        "Total supply should be 2 after minting two distinct credentials"
+    );
 
     // Owner should see all token IDs
     let owner_tokens = contract.nft_tokens_by_owner(owner);
@@ -108,13 +125,15 @@ fn valid_canonical_identity_matches_shared_vector() {
     let sha = "0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef";
     let category = CredentialCategory::MergedPullRequest;
 
-    let encoded = signet_schema::encode_credential_identity(github, repo, pr, sha, category.clone());
+    let encoded =
+        signet_schema::encode_credential_identity(github, repo, pr, sha, category.clone());
     let digest = signet_schema::credential_identity_hash(github, repo, pr, sha, category.clone());
 
     let expected_encoded = hex::decode("7369676e65743a63726564656e7469616c2d6964656e746974793a763100000000000030390000000000010932000000000000002a00403031323334353637383961626364656630313233343536373839616263646566303132333435363738396162636465663031323334353637383961626364656600136d65726765645f70756c6c5f72657175657374").unwrap();
     assert_eq!(encoded, expected_encoded);
 
-    let expected_digest = hex::decode("088e86743693dbed2e622481ef2245c12267ec83202daf6ac8a7f49d6e0a3f9d").unwrap();
+    let expected_digest =
+        hex::decode("088e86743693dbed2e622481ef2245c12267ec83202daf6ac8a7f49d6e0a3f9d").unwrap();
     assert_eq!(digest, expected_digest);
 }
 
@@ -160,12 +179,16 @@ fn same_identity_produces_same_digest() {
 #[test]
 fn different_identity_inputs_produce_different_digests() {
     let hash_a = signet_schema::credential_identity_hash(
-        1, 2, 3,
+        1,
+        2,
+        3,
         "abcdef0123456789abcdef0123456789abcdef0123456789abcdef0123456789",
         CredentialCategory::MergedPullRequest,
     );
     let hash_b = signet_schema::credential_identity_hash(
-        1, 2, 4,
+        1,
+        2,
+        4,
         "abcdef0123456789abcdef0123456789abcdef0123456789abcdef0123456789",
         CredentialCategory::MergedPullRequest,
     );
@@ -176,12 +199,16 @@ fn different_identity_inputs_produce_different_digests() {
 #[test]
 fn contributor_wallet_does_not_affect_identity() {
     let hash_a = signet_schema::credential_identity_hash(
-        12345, 67890, 42,
+        12345,
+        67890,
+        42,
         "0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef",
         CredentialCategory::MergedPullRequest,
     );
     let hash_b = signet_schema::credential_identity_hash(
-        12345, 67890, 42,
+        12345,
+        67890,
+        42,
         "0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef",
         CredentialCategory::MergedPullRequest,
     );
@@ -193,7 +220,9 @@ fn contributor_wallet_does_not_affect_identity() {
 #[should_panic(expected = "ERR_INVALID_MERGE_SHA")]
 fn uppercase_merge_sha_is_rejected() {
     signet_schema::encode_credential_identity(
-        1, 2, 3,
+        1,
+        2,
+        3,
         "ABCDEF0123456789ABCDEF0123456789ABCDEF0123456789ABCDEF0123456789",
         CredentialCategory::MergedPullRequest,
     );
@@ -203,12 +232,13 @@ fn uppercase_merge_sha_is_rejected() {
 #[should_panic(expected = "ERR_MERGE_COMMIT_SHA_NOT_HEX")]
 fn non_hex_merge_sha_is_rejected() {
     signet_schema::encode_credential_identity(
-        1, 2, 3,
+        1,
+        2,
+        3,
         "zzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzz",
         CredentialCategory::MergedPullRequest,
     );
 }
-
 
 // ---------------------------------------------------------------------------
 // Validation tests
@@ -220,7 +250,11 @@ fn empty_github_username_is_rejected() {
     let mut contract = SoulPR::init(accounts(0), accounts(1));
     testing_env!(context(accounts(1)));
     let mut input = make_input(
-        accounts(2), 12345, 67890, 42, "Fix",
+        accounts(2),
+        12345,
+        67890,
+        42,
+        "Fix",
         "0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef",
         accounts(1),
     );
@@ -234,7 +268,11 @@ fn github_username_too_long_is_rejected() {
     let mut contract = SoulPR::init(accounts(0), accounts(1));
     testing_env!(context(accounts(1)));
     let mut input = make_input(
-        accounts(2), 12345, 67890, 42, "Fix",
+        accounts(2),
+        12345,
+        67890,
+        42,
+        "Fix",
         "0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef",
         accounts(1),
     );
@@ -248,7 +286,11 @@ fn repository_full_name_too_long_is_rejected() {
     let mut contract = SoulPR::init(accounts(0), accounts(1));
     testing_env!(context(accounts(1)));
     let mut input = make_input(
-        accounts(2), 12345, 67890, 42, "Fix",
+        accounts(2),
+        12345,
+        67890,
+        42,
+        "Fix",
         "0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef",
         accounts(1),
     );
@@ -262,7 +304,11 @@ fn pr_title_too_long_is_rejected() {
     let mut contract = SoulPR::init(accounts(0), accounts(1));
     testing_env!(context(accounts(1)));
     let mut input = make_input(
-        accounts(2), 12345, 67890, 42, "Fix",
+        accounts(2),
+        12345,
+        67890,
+        42,
+        "Fix",
         "0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef",
         accounts(1),
     );
@@ -276,7 +322,11 @@ fn uri_too_long_is_rejected() {
     let mut contract = SoulPR::init(accounts(0), accounts(1));
     testing_env!(context(accounts(1)));
     let mut input = make_input(
-        accounts(2), 12345, 67890, 42, "Fix",
+        accounts(2),
+        12345,
+        67890,
+        42,
+        "Fix",
         "0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef",
         accounts(1),
     );
@@ -299,7 +349,10 @@ fn backend_can_mint_and_duplicate_is_rejected() {
     testing_env!(context(backend));
     let input = make_input(
         contributor.clone(),
-        12345, 67890, 42, "Fix",
+        12345,
+        67890,
+        42,
+        "Fix",
         "0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef",
         backend.clone(),
     );
@@ -308,7 +361,9 @@ fn backend_can_mint_and_duplicate_is_rejected() {
 
     // Identity lookup works
     let identity = signet_schema::credential_identity_hash(
-        12345, 67890, 42,
+        12345,
+        67890,
+        42,
         "0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef",
         CredentialCategory::MergedPullRequest,
     );
@@ -323,7 +378,10 @@ fn backend_can_mint_and_duplicate_is_rejected() {
     assert_eq!(credential.evidence.repository_id, 67890);
     assert_eq!(credential.evidence.pr_number, 42);
     assert_eq!(credential.evidence.pr_title, "Fix");
-    assert_eq!(credential.status.verification_status, VerificationStatus::Valid);
+    assert_eq!(
+        credential.status.verification_status,
+        VerificationStatus::Valid
+    );
     assert_eq!(credential.status.status_version, 1);
 
     // Owner enumeration
@@ -341,7 +399,11 @@ fn non_backend_cannot_mint() {
     let mut contract = SoulPR::init(owner, backend);
     testing_env!(context(accounts(2)));
     let input = make_input(
-        accounts(3), 12345, 67890, 42, "Fix",
+        accounts(3),
+        12345,
+        67890,
+        42,
+        "Fix",
         "0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef",
         accounts(2),
     );
@@ -360,7 +422,10 @@ fn duplicate_identity_is_rejected() {
     testing_env!(context(backend));
     let input = make_input(
         contributor.clone(),
-        12345, 67890, 42, "Fix",
+        12345,
+        67890,
+        42,
+        "Fix",
         "0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef",
         backend.clone(),
     );
@@ -381,7 +446,10 @@ fn identity_hash_is_stored_and_retrievable() {
     testing_env!(context(backend));
     let input = make_input(
         contributor.clone(),
-        12345, 67890, 42, "Fix",
+        12345,
+        67890,
+        42,
+        "Fix",
         "0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef",
         backend.clone(),
     );
@@ -389,7 +457,9 @@ fn identity_hash_is_stored_and_retrievable() {
     contract.mint(input);
 
     // Retrieve by identity hash
-    let credential = contract.get_credential_by_identity(identity_hash.clone()).unwrap();
+    let credential = contract
+        .get_credential_by_identity(identity_hash.clone())
+        .unwrap();
     assert_eq!(credential.identity_hash, identity_hash);
 
     // Get token id by identity
@@ -447,7 +517,10 @@ fn legacy_is_minted_still_works() {
     testing_env!(context(backend));
     let input = make_input(
         contributor.clone(),
-        12345, 67890, 42, "Fix",
+        12345,
+        67890,
+        42,
+        "Fix",
         "0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef",
         backend.clone(),
     );
@@ -472,7 +545,11 @@ fn invalid_identity_hash_is_rejected() {
 
     testing_env!(context(backend));
     let mut input = make_input(
-        accounts(2), 12345, 67890, 42, "Fix",
+        accounts(2),
+        12345,
+        67890,
+        42,
+        "Fix",
         "0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef",
         backend.clone(),
     );
@@ -488,7 +565,11 @@ fn evidence_sha256_wrong_is_rejected() {
 
     testing_env!(context(accounts(1)));
     let mut input = make_input(
-        accounts(2), 12345, 67890, 42, "Fix",
+        accounts(2),
+        12345,
+        67890,
+        42,
+        "Fix",
         "0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef",
         accounts(1),
     );
@@ -503,7 +584,10 @@ fn invalid_contributor_account_id_is_rejected() {
     testing_env!(context(accounts(1)));
     let mut input = make_input(
         AccountId::new_unvalidated("not-a-valid-account".to_string()),
-        12345, 67890, 42, "Fix",
+        12345,
+        67890,
+        42,
+        "Fix",
         "0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef",
         accounts(1),
     );
@@ -521,7 +605,11 @@ fn version_string_too_long_is_rejected() {
     testing_env!(context(backend));
     // Mint a valid credential first
     let input = make_input(
-        accounts(2), 12345, 67890, 42, "Fix",
+        accounts(2),
+        12345,
+        67890,
+        42,
+        "Fix",
         "0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef",
         backend.clone(),
     );
@@ -530,7 +618,11 @@ fn version_string_too_long_is_rejected() {
     // Now try with a too-long metadata version
     testing_env!(context(backend));
     let mut input = make_input(
-        accounts(3), 12345, 67890, 42, "Fix",
+        accounts(3),
+        12345,
+        67890,
+        42,
+        "Fix",
         "0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef",
         backend.clone(),
     );
@@ -546,7 +638,11 @@ fn invalid_digest_length_is_rejected() {
 
     testing_env!(context(accounts(1)));
     let mut input = make_input(
-        accounts(2), 12345, 67890, 42, "Fix",
+        accounts(2),
+        12345,
+        67890,
+        42,
+        "Fix",
         "0123456789ab", // too short - invalid digest length
         accounts(1),
     );
