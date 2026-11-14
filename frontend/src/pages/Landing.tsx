@@ -1,113 +1,25 @@
 import { useNavigate } from 'react-router-dom'
 import Nav from '../components/Nav'
 import {
-  IconShield, IconLink, IconCode, IconZap,
-  IconArrowRight, IconUser
+  IconShield, IconLink, IconCode, IconUser,
+  IconCheck, IconClock, IconGitHub
 } from '../components/Icons'
 
 export default function Landing() {
   const navigate = useNavigate()
-
-  const featureCard = (
-    icon: React.ReactNode,
-    title: string,
-    desc: string,
-    detail: string,
-  ) => (
-    <div
-      key={title}
-      className="landing-feature-card"
-      style={{
-        padding: '1.8rem',
-        borderRadius: '16px',
-        background: 'var(--paper-raised)',
-        border: '1px solid var(--rule)',
-        textAlign: 'left',
-        display: 'flex',
-        flexDirection: 'column',
-        gap: '0',
-        transition: 'border-color 0.2s, background 0.2s, transform 0.2s, box-shadow 0.2s',
-      }}
-      onMouseEnter={e => {
-        const el = e.currentTarget as HTMLElement
-        el.style.borderColor = 'rgba(255, 123, 0, 0.45)'
-        el.style.background = 'var(--stamp-bg)'
-        el.style.transform = 'translateY(-3px)'
-        el.style.boxShadow = '0 12px 32px rgba(255,123,0,0.1)'
-      }}
-      onMouseLeave={e => {
-        const el = e.currentTarget as HTMLElement
-        el.style.borderColor = 'var(--rule)'
-        el.style.background = 'var(--paper-raised)'
-        el.style.transform = 'translateY(0)'
-        el.style.boxShadow = 'none'
-      }}
-    >
-      {/* Icon + title row */}
-      <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '14px' }}>
-        <div style={{
-          width: '36px', height: '36px', borderRadius: '9px',
-          background: 'rgba(255, 123, 0, 0.09)',
-          border: '1px solid rgba(255, 123, 0, 0.22)',
-          display: 'flex', alignItems: 'center', justifyContent: 'center',
-          flexShrink: 0,
-        }}>
-          {icon}
-        </div>
-        <div style={{ fontWeight: 800, fontSize: '12px', color: 'var(--ink)', textTransform: 'uppercase', letterSpacing: '0.06em' }}>
-          {title}
-        </div>
-      </div>
-
-      {/* Description */}
-      <div style={{ fontSize: '13px', color: 'var(--ink-muted)', lineHeight: '1.7', marginBottom: '16px', flexGrow: 1 }}>
-        {desc}
-      </div>
-
-      {/* Stat / highlight badge */}
-      <div style={{
-        display: 'inline-flex', alignItems: 'center', gap: '7px',
-        fontSize: '11px', fontWeight: 700,
-        color: '#FF7B00',
-        background: 'rgba(255,123,0,0.07)',
-        border: '1px solid rgba(255,123,0,0.15)',
-        borderRadius: '99px',
-        padding: '5px 12px',
-        width: 'fit-content',
-      }}>
-        <span style={{ width: '5px', height: '5px', borderRadius: '50%', background: '#FF7B00', display: 'inline-block', flexShrink: 0 }} />
-        {detail}
-      </div>
-    </div>
-  )
+    {/* Hero section starts below - featureCard removed */}
 
   return (
     <div className="landing-page" style={{ position: 'relative', overflow: 'hidden', minHeight: '100vh', background: 'var(--paper)', color: 'var(--ink)', transition: 'background 0.3s, color 0.3s' }}>
 
-      {/* Floating ember particles */}
-      <div className="forge-embers" aria-hidden="true">
-        <div className="ember" style={{ left: '10%', width: '3px', height: '3px', animationDelay: '0s', animationDuration: '6s' }} />
-        <div className="ember" style={{ left: '30%', width: '4px', height: '4px', animationDelay: '1.5s', animationDuration: '8s' }} />
-        <div className="ember" style={{ left: '55%', width: '2px', height: '2px', animationDelay: '3s', animationDuration: '5s' }} />
-        <div className="ember" style={{ left: '72%', width: '5px', height: '5px', animationDelay: '4.5s', animationDuration: '9s' }} />
-        <div className="ember" style={{ left: '88%', width: '3px', height: '3px', animationDelay: '2s', animationDuration: '7s' }} />
-      </div>
-
-      {/* Background coin glow */}
-      <div className="bg-animation-container" aria-hidden="true">
-        <div className="bg-anim-coin coin-main" />
-        <div className="bg-anim-coin coin-top-left" />
-        <div className="bg-anim-coin coin-bottom-right" />
-      </div>
-
       <Nav />
 
-      <main className="landing-main" style={{ padding: '5rem 2rem 5rem', position: 'relative', zIndex: 5, maxWidth: '1240px', margin: '0 auto' }}>
+      <main className="landing-main" style={{ maxWidth: '1240px', margin: '0 auto', padding: '4rem 2rem' }}>
 
-        {/* 2-Column Hero */}
+      {/* Hero */}
         <div className="landing-hero-grid" style={{ display: 'grid', gridTemplateColumns: '1.15fr 0.85fr', gap: '4rem', alignItems: 'center', marginBottom: '5rem' }}>
 
-          {/* Left column */}
+          {/* Section */}
           <div className="animate-fade-in" style={{ display: 'flex', flexDirection: 'column', textAlign: 'left' }}>
 
             {/* Top pill badge */}
