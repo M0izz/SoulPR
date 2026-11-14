@@ -1,5 +1,4 @@
 import { connect, KeyPair, transactions, utils, keyStores } from "near-api-js";
-import { PublicKey } from "near-api-js/lib/utils";
 
 /**
  * NearChainService — NEAR Protocol chain integration for SoulPR.
@@ -111,7 +110,7 @@ class NearChainService {
       `[NearChainService] Submitting mint for ${contributor} - ${repo} #${prNumber}`,
     );
 
-    const outcome = await this.account.signAndSendTransactions({
+    const outcome = await (this.account as any).signAndSendTransaction({
       receiverId: this.contractId,
       actions: [
         transactions.functionCall(
@@ -166,6 +165,23 @@ class NearChainService {
     return Array.isArray(result) ? result.map(String) : [];
   }
 
+  /** Bounded enumeration of all credentials (max 100 per call). */
+  async nftTokensByOwnerStandard(
+    owner: string,
+    fromIndex: number = 0,
+    limit: number = 50,
+  ): Promise<any[]> {
+    await this.ensureInitialized();
+    const result: any = await this.account.viewFunction(
+      this.contractId,
+      "nft_tokens_by_owner_standard",
+      {
+        args: { account_id: owner, from_index: fromIndex, limit },
+      },
+    );
+    return Array.isArray(result) ? result : [];
+  }
+
   /** Total number of attestation tokens minted. */
   async nftTotalSupply(): Promise<number> {
     await this.ensureInitialized();
@@ -183,15 +199,32 @@ class NearChainService {
         outcome?.transaction?.transaction?.hash ??
         outcome?.transaction_hash ??
         outcome?.hash;
-      if (hash == null) return "";
+      if (hash == null) throw new Error("No transaction hash found in outcome");
       if (typeof hash === "string") return hash;
       if (Buffer.isBuffer(hash) || hash instanceof Uint8Array) {
         return Buffer.from(hash).toString("base64");
       }
       return String(hash);
     } catch {
-      return "";
+      throw new Error("No transaction hash found in outcome");
     }
+  }
+  private extractTokenId(outcome: any): string | undefined {
+    const value = outcome?.status?.SuccessValue;
+    if (!value) return undefined;
+    try {
+      return String(Buffer.from(value, "base64").toString("utf8"));
+    } catch {
+      return undefined;
+    }
+  }
+
+  private extractBlockHeight(outcome: any): number | undefined {
+    const heights = [
+      outcome?.transaction_outcome?.block_height,
+      ...(outcome?.receipts_outcome ?? []).map((r: any) => r.block_height),
+    ].filter(Number.isFinite);
+    return heights.length ? Math.max(...heights) : undefined;
   }
 }
 
