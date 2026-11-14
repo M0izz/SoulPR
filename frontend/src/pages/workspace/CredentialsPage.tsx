@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import CredentialSeal from '../../components/credential/CredentialSeal'
+import HolographicCredential3D from '../../components/credential/HolographicCredential3D'
 import {
   IconShieldCheck,
   IconExternalLink,
@@ -152,6 +153,33 @@ export default function CredentialsPage() {
             >
               <IconShieldCheck size={15} color="#B9572B" /> View Sample Credential
             </Link>
+          </div>
+
+          {/* ── 3D HOLOGRAPHIC SAMPLE SHOWCASE ── */}
+          <div style={{ marginTop: '3rem', borderTop: '1px solid var(--rule)', paddingTop: '2.5rem' }}>
+            <span
+              style={{
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '6px',
+                fontSize: '10px',
+                fontWeight: 800,
+                color: 'var(--signet-orange)',
+                background: 'var(--signet-orange-subtle)',
+                border: '1px solid var(--signet-orange-border)',
+                padding: '4px 14px',
+                borderRadius: '99px',
+                textTransform: 'uppercase',
+                letterSpacing: '0.12em',
+                marginBottom: '10px',
+              }}
+            >
+              ILLUSTRATIVE SAMPLE · ROTATING 3D HOLOGRAPHIC CREDENTIAL
+            </span>
+            <p style={{ fontSize: '13px', color: 'var(--ink-muted)', maxWidth: '440px', margin: '0 auto 1.5rem auto' }}>
+              How your verified credentials appear upon cryptographic confirmation on NEAR Protocol:
+            </p>
+            <HolographicCredential3D autoRotate={true} showPedestal={true} />
           </div>
         </div>
       ) : (

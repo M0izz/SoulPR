@@ -1,10 +1,13 @@
+import { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import SignetBrandLockup from '../components/brand/SignetBrandLockup'
 import CredentialCard, { type CredentialCardData } from '../components/credential/CredentialCard'
+import HolographicCredential3D from '../components/credential/HolographicCredential3D'
 import EvidenceInspector, { type EvidenceRecord } from '../components/credential/EvidenceInspector'
 
 export default function VerifySample() {
   const navigate = useNavigate()
+  const [cardView, setCardView] = useState<'3d_holo' | 'archival'>('3d_holo')
 
   const sampleCardData: CredentialCardData = {
     credentialId: 'SGT-2026-08492-NEAR',
@@ -168,20 +171,56 @@ export default function VerifySample() {
           </p>
         </div>
 
+        {/* ── View Format Switcher Pills ── */}
+        <div style={{ display: 'flex', justifyContent: 'center', gap: '10px', marginBottom: '2.5rem' }}>
+          <button
+            onClick={() => setCardView('3d_holo')}
+            className={cardView === '3d_holo' ? 'btn-signet-primary' : 'btn-signet-secondary'}
+            style={{ fontSize: '12.5px', padding: '6px 16px' }}
+          >
+            ✨ 3D Holographic Credential
+          </button>
+          <button
+            onClick={() => setCardView('archival')}
+            className={cardView === 'archival' ? 'btn-signet-primary' : 'btn-signet-secondary'}
+            style={{ fontSize: '12.5px', padding: '6px 16px' }}
+          >
+            📜 Archival Parchment Card
+          </button>
+        </div>
+
         {/* ── 2-Column Presentation: Credential Card & Overview ── */}
         <div
           style={{
             display: 'grid',
-            gridTemplateColumns: '440px 1fr',
+            gridTemplateColumns: 'minmax(340px, 560px) 1fr',
             gap: '3rem',
             alignItems: 'start',
             marginBottom: '3.5rem',
           }}
           className="verify-sample-grid"
         >
-          {/* Column 1: Archival Credential Card */}
-          <div style={{ display: 'flex', justifyContent: 'center' }}>
-            <CredentialCard data={sampleCardData} interactive={false} />
+          {/* Column 1: Credential Showcase (3D Hologram or Archival) */}
+          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', width: '100%' }}>
+            {cardView === '3d_holo' ? (
+              <HolographicCredential3D
+                data={{
+                  credentialId: 'SIG-2025-0426-001',
+                  contributor: 'alex-dev.testnet',
+                  repository: 'near/core-contracts',
+                  contributionTitle: 'Implement non-transferable credential registry',
+                  mergeDate: 'Apr 26, 2025 · 14:32 UTC',
+                  network: 'NEAR Blockchain',
+                  txHash: '9k8xY2nF82BqWz7P1oM6rT5uV4eL3aK2jH1gD9sC',
+                  evidenceDigest: 'sha256:d8a2b5e7c1094f382a6e9b4d8c7a1f5e2b3c4d5e6f7a8b9c0d1e2f3a4b5c6d7e',
+                  isSample: true,
+                }}
+                autoRotate={true}
+                showPedestal={true}
+              />
+            ) : (
+              <CredentialCard data={sampleCardData} interactive={false} />
+            )}
           </div>
 
           {/* Column 2: Audit Summary & Reviewer Guidance */}

@@ -2,7 +2,7 @@ import { useNavigate } from 'react-router-dom'
 import LandingNav from '../components/nav/LandingNav'
 import SignetHero from '../components/hero/SignetHero'
 import ProductWalkthrough from '../components/walkthrough/ProductWalkthrough'
-import CredentialCard from '../components/credential/CredentialCard'
+import HolographicCredential3D from '../components/credential/HolographicCredential3D'
 import SignetFooter from '../components/layout/SignetFooter'
 import SignetInsignia from '../components/brand/SignetInsignia'
 
@@ -422,10 +422,18 @@ export default function Landing() {
                   perspective: '1000px',
                 }}
               >
-                <CredentialCard
-                  onInspect={() => navigate('/verify/sample')}
-                  style={{
-                    transform: 'rotate(-1.5deg)',
+                <HolographicCredential3D
+                  autoRotate={true}
+                  showPedestal={true}
+                  data={{
+                    credentialId: 'SIG-2025-0426-001',
+                    contributor: 'm0izz.testnet',
+                    repository: 'm0izz/signet',
+                    contributionTitle: 'Add evidence dossier support',
+                    mergeDate: 'Apr 26, 2025 · 14:32 UTC',
+                    network: 'NEAR Blockchain',
+                    evidenceDigest: '7f83b1657ff1fc53b92dc18148a1d65dfc2d4b1fa3d677284addd200126d9069',
+                    isSample: true,
                   }}
                 />
               </div>
