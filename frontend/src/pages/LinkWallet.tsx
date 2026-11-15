@@ -34,7 +34,10 @@ export default function LinkWallet() {
   useEffect(() => {
     const checkStatus = async () => {
       const urlUser = searchParams.get('githubUsername')
-      if (urlUser) setGithubUser(urlUser)
+      if (urlUser) {
+        setGithubUser(urlUser)
+        localStorage.setItem('signet_github_user', urlUser)
+      }
 
       const urlError = searchParams.get('error')
       if (urlError) setError(urlError)
@@ -56,6 +59,9 @@ export default function LinkWallet() {
         const status = await api.getWalletStatus()
         if (status.authenticated) {
           setGithubUser(status.githubUsername ?? null)
+          if (status.githubUsername) {
+            localStorage.setItem('signet_github_user', status.githubUsername)
+          }
           if (status.linked && status.walletAddress) {
             setWallet(status.walletAddress)
             setLinked(true)
@@ -73,7 +79,8 @@ export default function LinkWallet() {
 
   function signInWithGithub() {
     const backendUrl = import.meta.env.VITE_BACKEND_URL ?? 'http://localhost:3001'
-    window.location.href = `${backendUrl}/auth/github`
+    const origin = window.location.origin
+    window.location.href = `${backendUrl}/auth/github?origin=${encodeURIComponent(origin)}&return_to=/link-wallet`
   }
 
   // NEAR Connection Methods

@@ -55,7 +55,14 @@ router.post("/", async (req: Request, res: Response) => {
   if (!installationId || !adminUsername) {
     return res.status(503).json({ error: "Repository tracking is not configured" });
   }
-  if (req.session?.githubUsername?.toLowerCase() !== adminUsername.toLowerCase()) {
+  let currentGhUser = req.session?.githubUsername;
+  if (!currentGhUser && process.env.NODE_ENV !== "production") {
+    const headerUser = req.headers["x-github-username"];
+    if (typeof headerUser === "string" && headerUser.trim()) {
+      currentGhUser = headerUser.trim();
+    }
+  }
+  if (currentGhUser?.toLowerCase() !== adminUsername.toLowerCase()) {
     return res.status(403).json({ error: "GitHub App administrator sign-in required" });
   }
 

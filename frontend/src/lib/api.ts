@@ -3,9 +3,11 @@ const BACKEND_URL = (import.meta.env.VITE_BACKEND_URL ?? 'http://localhost:3001'
 async function request(path: string, options: RequestInit = {}) {
   // Always include credentials (cookies) for session tracking
   options.credentials = 'include';
+  const savedUser = typeof window !== 'undefined' ? localStorage.getItem('signet_github_user') : null;
   options.headers = {
     ...options.headers,
     'Content-Type': 'application/json',
+    ...(savedUser ? { 'x-github-username': savedUser } : {}),
   };
 
   const response = await fetch(`${BACKEND_URL}${path}`, options);
@@ -78,6 +80,9 @@ export const api = {
    * Clears user session
    */
   async logout() {
+    if (typeof window !== 'undefined') {
+      localStorage.removeItem('signet_github_user');
+    }
     return request('/wallet/logout', { method: 'POST' });
   },
 

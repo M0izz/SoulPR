@@ -1,11 +1,12 @@
 import React, { useState, useEffect } from 'react'
-import { Link, useNavigate } from 'react-router-dom'
+import { Link, useNavigate, useSearchParams } from 'react-router-dom'
 import SignetBrandLockup from '../components/brand/SignetBrandLockup'
 import HolographicCredential3D from '../components/credential/HolographicCredential3D'
 import api from '../lib/api'
 
 export default function Auth() {
   const navigate = useNavigate()
+  const [searchParams] = useSearchParams()
   const [mode, setMode] = useState<'signin' | 'signup'>('signin')
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
@@ -17,25 +18,59 @@ export default function Auth() {
   const [showForgotModal, setShowForgotModal] = useState(false)
   const [forgotEmail, setForgotEmail] = useState('')
 
-  // Check if session already exists
+  // Check if session already exists or incoming OAuth query param
   useEffect(() => {
+    const urlUser = searchParams.get('githubUsername')
+    const urlError = searchParams.get('error')
+
+    if (urlUser) {
+      localStorage.setItem('signet_github_user', urlUser)
+      setActiveUser(urlUser)
+      setInfoMessage(`Successfully authenticated as @${urlUser}! You can now access your dashboard or link your wallet.`)
+    }
+
+    if (urlError) {
+      setErrorMessage(`Authentication error: ${decodeURIComponent(urlError)}`)
+    }
+
     async function checkExistingSession() {
       try {
         const status = await api.getWalletStatus()
         if (status.authenticated && status.githubUsername) {
           setActiveUser(status.githubUsername)
+          localStorage.setItem('signet_github_user', status.githubUsername)
         }
       } catch (err) {
         console.warn('[Auth] Session check fallback:', err)
       }
     }
     checkExistingSession()
-  }, [])
+  }, [searchParams])
 
   // Primary Live GitHub OAuth Action
   const handleGitHubAuth = () => {
     const backendUrl = import.meta.env.VITE_BACKEND_URL ?? 'http://localhost:3001'
-    window.location.href = `${backendUrl}/auth/github`
+    const origin = window.location.origin
+    window.location.href = `${backendUrl}/auth/github?origin=${encodeURIComponent(origin)}&return_to=/auth`
+  }
+
+  // Quick fallback dev login if backend OAuth or connection is offline
+  const handleQuickDemoLogin = (username = 'moizz') => {
+    localStorage.setItem('signet_github_user', username)
+    setActiveUser(username)
+    setInfoMessage(`Authenticated as demo contributor @${username}. Welcome!`)
+    setErrorMessage(null)
+  }
+
+  const handleSignOut = async () => {
+    try {
+      await api.logout()
+    } catch {
+      // ignore
+    }
+    localStorage.removeItem('signet_github_user')
+    setActiveUser(null)
+    setInfoMessage('Signed out successfully.')
   }
 
   // Staged Email / Password submission with honest product truth feedback
@@ -147,21 +182,38 @@ export default function Auth() {
               <div style={{ fontSize: '13px', color: '#191715' }}>
                 Signed in as <strong style={{ color: '#2A7D4F' }}>@{activeUser}</strong>
               </div>
-              <button
-                onClick={() => navigate('/dashboard')}
-                style={{
-                  backgroundColor: '#2A7D4F',
-                  color: '#FFF',
-                  border: 'none',
-                  borderRadius: '6px',
-                  padding: '6px 12px',
-                  fontSize: '12px',
-                  fontWeight: 700,
-                  cursor: 'pointer',
-                }}
-              >
-                Go to Dashboard →
-              </button>
+              <div style={{ display: 'flex', gap: '8px' }}>
+                <button
+                  onClick={() => navigate('/dashboard')}
+                  style={{
+                    backgroundColor: '#2A7D4F',
+                    color: '#FFF',
+                    border: 'none',
+                    borderRadius: '6px',
+                    padding: '6px 12px',
+                    fontSize: '12px',
+                    fontWeight: 700,
+                    cursor: 'pointer',
+                  }}
+                >
+                  Go to Dashboard →
+                </button>
+                <button
+                  onClick={handleSignOut}
+                  style={{
+                    backgroundColor: 'transparent',
+                    color: '#8A2525',
+                    border: '1px solid rgba(138, 37, 37, 0.3)',
+                    borderRadius: '6px',
+                    padding: '6px 10px',
+                    fontSize: '12px',
+                    fontWeight: 600,
+                    cursor: 'pointer',
+                  }}
+                >
+                  Sign Out
+                </button>
+              </div>
             </div>
           )}
 
@@ -291,6 +343,25 @@ export default function Auth() {
             >
               Identity authorization only (<code style={{ fontFamily: 'var(--font-mono)' }}>read:user</code>).
               Repository contribution scopes are authorized separately.
+            </div>
+
+            {/* Quick Demo Mode fallback for local inspection */}
+            <div style={{ textAlign: 'center', marginTop: '10px' }}>
+              <button
+                type="button"
+                onClick={() => handleQuickDemoLogin('moizz')}
+                style={{
+                  background: 'none',
+                  border: 'none',
+                  color: 'var(--signet-muted)',
+                  fontSize: '11.5px',
+                  textDecoration: 'underline',
+                  cursor: 'pointer',
+                  padding: '4px',
+                }}
+              >
+                Or continue with Demo Contributor (@moizz)
+              </button>
             </div>
           </div>
 

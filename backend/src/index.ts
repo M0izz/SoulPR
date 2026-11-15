@@ -7,6 +7,7 @@ import authRouter from "./routes/auth";
 import walletRouter from "./routes/wallet";
 import reposRouter from "./routes/repos";
 import mintService from "./services/MintService";
+import { isAllowedOrigin } from "./utils/cors";
 
 const app = express();
 const PORT = process.env.PORT ?? 3001;
@@ -28,30 +29,16 @@ if (isProduction) {
 // CORS middleware to support credentials-based requests from frontend
 app.use((req, res, next) => {
   const origin = req.headers.origin;
-  const allowedOrigins = [
-    process.env.FRONTEND_URL,
-    ...(process.env.CORS_ALLOWED_ORIGINS ?? "").split(",").map((value) => value.trim()),
-    ...(isDevelopment
-      ? [
-          "http://localhost:5173",
-          "http://127.0.0.1:5173",
-          "http://localhost:4173",
-          "http://127.0.0.1:4173",
-          "http://localhost:3000",
-          "http://127.0.0.1:3000",
-        ]
-      : []),
-  ].filter((value): value is string => Boolean(value)).map((value) => value.replace(/\/+$/, ""));
   res.setHeader("Vary", "Origin");
-  if (origin && allowedOrigins.includes(origin)) {
+  if (origin && isAllowedOrigin(origin)) {
     res.setHeader("Access-Control-Allow-Origin", origin);
     res.setHeader("Access-Control-Allow-Credentials", "true");
     res.setHeader("Access-Control-Allow-Methods", "GET,POST,OPTIONS");
-    res.setHeader("Access-Control-Allow-Headers", "Content-Type,Authorization");
+    res.setHeader("Access-Control-Allow-Headers", "Content-Type,Authorization,x-github-username");
   }
 
   if (req.method === "OPTIONS") {
-    return origin && allowedOrigins.includes(origin) ? res.sendStatus(204) : res.sendStatus(403);
+    return origin && isAllowedOrigin(origin) ? res.sendStatus(204) : res.sendStatus(403);
   }
   next();
 });

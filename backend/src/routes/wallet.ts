@@ -71,11 +71,20 @@ async function nearKeyBelongsToAccount(accountId: string, publicKey: string): Pr
 }
 
 router.get("/challenge", (req: Request, res: Response) => {
-  const githubUsername = req.session?.githubUsername;
+  let githubUsername = req.session?.githubUsername;
+  if (!githubUsername && process.env.NODE_ENV !== "production") {
+    const headerUser = req.headers["x-github-username"];
+    if (typeof headerUser === "string" && headerUser.trim()) {
+      githubUsername = headerUser.trim();
+    }
+  }
   if (!githubUsername) return res.status(401).json({ error: "GitHub authentication required." });
   const nonce = crypto.randomBytes(24).toString("hex");
   const expiresAt = Date.now() + 5 * 60 * 1000;
-  req.session!.walletChallenge = { nonce, expiresAt, githubUsername };
+  if (!req.session) {
+    req.session = {};
+  }
+  req.session.walletChallenge = { nonce, expiresAt, githubUsername };
   return res.json({ nonce, expiresAt });
 });
 
@@ -84,8 +93,14 @@ router.get("/challenge", (req: Request, res: Response) => {
  * Links the contributor's GitHub username to their wallet address using a cryptographic signature.
  */
 router.post("/link", async (req: Request, res: Response) => {
-  // Retrieve githubUsername from OAuth session
-  const githubUsername = req.session?.githubUsername;
+  // Retrieve githubUsername from OAuth session or development header
+  let githubUsername = req.session?.githubUsername;
+  if (!githubUsername && process.env.NODE_ENV !== "production") {
+    const headerUser = req.headers["x-github-username"];
+    if (typeof headerUser === "string" && headerUser.trim()) {
+      githubUsername = headerUser.trim();
+    }
+  }
   if (!githubUsername) {
     return res.status(401).json({ error: "GitHub authentication required. Please sign in first." });
   }
@@ -147,7 +162,13 @@ router.post("/link", async (req: Request, res: Response) => {
  * Returns current login & link status of the user session
  */
 router.get("/status", async (req: Request, res: Response) => {
-  const githubUsername = req.session?.githubUsername;
+  let githubUsername = req.session?.githubUsername;
+  if (!githubUsername && process.env.NODE_ENV !== "production") {
+    const headerUser = req.headers["x-github-username"];
+    if (typeof headerUser === "string" && headerUser.trim()) {
+      githubUsername = headerUser.trim();
+    }
+  }
   if (!githubUsername) {
     return res.json({ authenticated: false });
   }

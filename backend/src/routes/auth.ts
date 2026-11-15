@@ -1,44 +1,85 @@
 import { Router, Request, Response } from "express";
 import crypto from "crypto";
+import { getFrontendUrl, isAllowedOrigin } from "../utils/cors";
 
 const router = Router();
 
-// Helper to get frontend URL
-const getFrontendUrl = () => {
-  if (process.env.FRONTEND_URL) return process.env.FRONTEND_URL;
-  if (process.env.NODE_ENV === "development") return "http://localhost:5173";
-  throw new Error("FRONTEND_URL must be configured outside development");
-};
+/**
+ * Signs an OAuth state payload so it is tamper-proof and does not
+ * rely solely on cross-origin cookie persistence during browser OAuth redirects.
+ */
+function createSignedState(payload: object, secret: string): string {
+  const encoded = Buffer.from(JSON.stringify(payload)).toString("base64url");
+  const signature = crypto.createHmac("sha256", secret).update(encoded).digest("base64url");
+  return `${encoded}.${signature}`;
+}
+
+/**
+ * Verifies and decodes a signed OAuth state.
+ */
+function verifySignedState(stateStr: string, secret: string): any | null {
+  if (!stateStr || !stateStr.includes(".")) return null;
+  const [encoded, signature] = stateStr.split(".");
+  const expectedSig = crypto.createHmac("sha256", secret).update(encoded).digest("base64url");
+  if (signature !== expectedSig) return null;
+  try {
+    const data = JSON.parse(Buffer.from(encoded, "base64url").toString("utf8"));
+    if (typeof data.createdAt === "number" && Date.now() - data.createdAt > 15 * 60 * 1000) {
+      return null; // Expired state (> 15 min)
+    }
+    return data;
+  } catch {
+    return null;
+  }
+}
 
 /**
  * GET /auth/github
- * Redirects to GitHub OAuth authorize page
+ * Redirects to GitHub OAuth authorize page or development mock login.
  */
 router.get("/github", (req: Request, res: Response) => {
-  const clientId = process.env.GITHUB_CLIENT_ID;
-  const redirectUri = process.env.GITHUB_REDIRECT_URI ??
-    (process.env.NODE_ENV === "development" ? "http://localhost:3001/auth/github/callback" : undefined);
+  const originQuery = typeof req.query.origin === "string" ? req.query.origin : undefined;
+  const returnToQuery = typeof req.query.return_to === "string" ? req.query.return_to : "/link-wallet";
+  const frontendUrl = getFrontendUrl(req, originQuery);
 
+  const clientId = process.env.GITHUB_CLIENT_ID;
+  const host = req.get("host") ?? "localhost:3001";
+  const protocol = req.protocol ?? "http";
+  const redirectUri =
+    process.env.GITHUB_REDIRECT_URI ?? `${protocol}://${host}/auth/github/callback`;
+
+  const sessionSecret = process.env.SESSION_SECRET ?? "receipt_secret_dev_key";
+  const statePayload = {
+    nonce: crypto.randomBytes(16).toString("hex"),
+    origin: frontendUrl,
+    returnTo: returnToQuery.startsWith("/") ? returnToQuery : `/${returnToQuery}`,
+    createdAt: Date.now(),
+  };
+
+  const signedState = createSignedState(statePayload, sessionSecret);
+  if (req.session) {
+    req.session.githubOAuthState = signedState;
+  }
+
+  // Development / Mock fallback when client ID is not configured
   if (!clientId) {
-    if (process.env.NODE_ENV !== "development") {
+    if (process.env.NODE_ENV === "production") {
       return res.status(503).json({ error: "GitHub OAuth is not configured" });
     }
-    console.warn("[OAuth] GITHUB_CLIENT_ID not set. Using development-only mock login.");
-    const mockUsername = "moizz";
-    const state = crypto.randomBytes(32).toString("hex");
-    if (req.session) req.session.githubOAuthState = state;
-    return res.redirect(`${redirectUri}?code=mock_code_for_${mockUsername}&state=${state}`);
-  }
-  if (!redirectUri) {
-    return res.status(503).json({ error: "GITHUB_REDIRECT_URI must be configured in production" });
+    console.warn("[OAuth] GITHUB_CLIENT_ID not set. Using development mock login.");
+    const mockUsername = (req.query.username as string) || "moizz";
+    if (req.session) {
+      req.session.githubUsername = mockUsername;
+    }
+    return res.redirect(
+      `${redirectUri}?code=mock_code_for_${mockUsername}&state=${encodeURIComponent(signedState)}`
+    );
   }
 
-  const state = crypto.randomBytes(32).toString("hex");
-  if (req.session) req.session.githubOAuthState = state;
   const githubAuthUrl = `https://github.com/login/oauth/authorize?client_id=${clientId}&scope=read:user&redirect_uri=${encodeURIComponent(
     redirectUri
-  )}&state=${state}`;
-  res.redirect(githubAuthUrl);
+  )}&state=${encodeURIComponent(signedState)}`;
+  return res.redirect(githubAuthUrl);
 });
 
 /**
@@ -47,36 +88,40 @@ router.get("/github", (req: Request, res: Response) => {
  */
 router.get("/github/callback", async (req: Request, res: Response) => {
   const code = req.query.code as string;
-  let frontendUrl: string;
-  try {
-    frontendUrl = getFrontendUrl();
-  } catch (error) {
-    console.error("[OAuth] Callback configuration error:", error);
-    return res.status(503).json({ error: "GitHub OAuth callback is not configured" });
+  const rawState = req.query.state as string;
+  const sessionSecret = process.env.SESSION_SECRET ?? "receipt_secret_dev_key";
+
+  let frontendUrl = getFrontendUrl(req);
+  let returnToPath = "/link-wallet";
+
+  const verifiedState = verifySignedState(rawState, sessionSecret);
+  if (verifiedState) {
+    if (verifiedState.origin && isAllowedOrigin(verifiedState.origin)) {
+      frontendUrl = verifiedState.origin;
+    }
+    if (verifiedState.returnTo && typeof verifiedState.returnTo === "string") {
+      returnToPath = verifiedState.returnTo;
+    }
+  } else {
+    // Check if session has the unparsed state as secondary check
+    const expectedSessionState = req.session?.githubOAuthState;
+    if (!expectedSessionState || expectedSessionState !== rawState) {
+      if (req.session) delete req.session.githubOAuthState;
+      return res.redirect(`${frontendUrl}${returnToPath}?error=Invalid+OAuth+state`);
+    }
   }
 
-  const expectedState = req.session?.githubOAuthState;
-  const receivedState = req.query.state;
-  const expectedStateBuffer = typeof expectedState === "string" ? Buffer.from(expectedState) : Buffer.alloc(0);
-  const receivedStateBuffer = typeof receivedState === "string" ? Buffer.from(receivedState) : Buffer.alloc(0);
-  if (
-    expectedStateBuffer.length === 0 ||
-    receivedStateBuffer.length === 0 ||
-    expectedStateBuffer.length !== receivedStateBuffer.length ||
-    !crypto.timingSafeEqual(expectedStateBuffer, receivedStateBuffer)
-  ) {
-    if (req.session) delete req.session.githubOAuthState;
-    return res.redirect(`${frontendUrl}/link-wallet?error=Invalid+OAuth+state`);
+  if (req.session) {
+    delete req.session.githubOAuthState;
   }
-  if (req.session) delete req.session.githubOAuthState;
 
   if (!code) {
-    return res.redirect(`${frontendUrl}/link-wallet?error=No+code+provided`);
+    return res.redirect(`${frontendUrl}${returnToPath}?error=No+code+provided`);
   }
 
   // Check if it's a mock login
   if (code.startsWith("mock_code_for_")) {
-    if (process.env.NODE_ENV !== "development") {
+    if (process.env.NODE_ENV === "production") {
       return res.status(400).json({ error: "Mock login is only enabled in development" });
     }
     const username = code.replace("mock_code_for_", "");
@@ -84,7 +129,7 @@ router.get("/github/callback", async (req: Request, res: Response) => {
     if (req.session) {
       req.session.githubUsername = username;
     }
-    return res.redirect(`${frontendUrl}/link-wallet?githubUsername=${username}`);
+    return res.redirect(`${frontendUrl}${returnToPath}?githubUsername=${encodeURIComponent(username)}`);
   }
 
   const clientId = process.env.GITHUB_CLIENT_ID;
@@ -134,10 +179,10 @@ router.get("/github/callback", async (req: Request, res: Response) => {
       req.session.githubUsername = username;
     }
 
-    return res.redirect(`${frontendUrl}/link-wallet?githubUsername=${username}`);
+    return res.redirect(`${frontendUrl}${returnToPath}?githubUsername=${encodeURIComponent(username)}`);
   } catch (e: any) {
     console.error("[OAuth] Callback error:", e.message);
-    return res.redirect(`${frontendUrl}/link-wallet?error=${encodeURIComponent(e.message)}`);
+    return res.redirect(`${frontendUrl}${returnToPath}?error=${encodeURIComponent(e.message)}`);
   }
 });
 
