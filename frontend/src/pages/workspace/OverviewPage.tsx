@@ -147,14 +147,29 @@ export default function OverviewPage() {
           </div>
 
           <div>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '2px' }}>
-              <span style={{ fontSize: '11px', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.1em', color: '#B9572B' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '4px', flexWrap: 'wrap' }}>
+              <span style={{ fontSize: '11px', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.1em', color: '#B9572B', whiteSpace: 'nowrap' }}>
                 Universal Contribution Terminal
               </span>
-              <span className="pulse-live-indicator" style={{ display: 'inline-flex', alignItems: 'center', gap: '5px', fontSize: '11px', color: '#10B981' }}>
-                <span style={{ width: '6px', height: '6px', borderRadius: '50%', backgroundColor: '#10B981', display: 'inline-block' }} />
-                Network Synchronized
-              </span>
+              <div
+                style={{
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: '6px',
+                  fontSize: '11px',
+                  color: '#10B981',
+                  backgroundColor: 'rgba(16, 185, 129, 0.1)',
+                  border: '1px solid rgba(16, 185, 129, 0.25)',
+                  padding: '2px 8px',
+                  borderRadius: '99px',
+                  whiteSpace: 'nowrap',
+                  fontWeight: 600,
+                  lineHeight: '1.2',
+                }}
+              >
+                <span className="pulse-live-indicator" style={{ width: '6px', height: '6px', backgroundColor: '#10B981' }} />
+                <span>Network Synchronized</span>
+              </div>
             </div>
             <h1
               style={{
