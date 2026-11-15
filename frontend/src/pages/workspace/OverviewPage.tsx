@@ -1,6 +1,6 @@
 import { useState, type FormEvent } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
-import { useWorkspace, type ContributionRecord } from '../../context/WorkspaceContext'
+import { useWorkspace, type ContributionType, type EvidenceClassification } from '../../context/WorkspaceContext'
 import CredentialSeal from '../../components/credential/CredentialSeal'
 import {
   IconGitHub,
@@ -13,6 +13,7 @@ import {
   IconRefresh,
   IconSearch,
   IconZap,
+  IconGlobe,
 } from '../../components/Icons'
 
 export default function OverviewPage() {
@@ -25,42 +26,73 @@ export default function OverviewPage() {
     triggerSync,
     contributions,
     importPullRequest,
+    importProjectOwnership,
+    importCommunityContribution,
   } = useWorkspace()
 
   const navigate = useNavigate()
-  const [prUrlInput, setPrUrlInput] = useState('')
-  const [importError, setImportError] = useState<string | null>(null)
-  const [importSuccess, setImportSuccess] = useState<string | null>(null)
-  const [isImporting, setIsImporting] = useState(false)
 
-  const handleManualImport = async (e: FormEvent) => {
+  // Active contribution registration tab: 1 (External), 2 (Maintainer), 3 (Community)
+  const [activeTab, setActiveTab] = useState<ContributionType>('external')
+  const [filterType, setFilterType] = useState<'all' | ContributionType>('all')
+
+  // Form input states
+  const [inputUrl, setInputUrl] = useState('')
+  const [communityType, setCommunityType] = useState<'code_review' | 'issue_triage' | 'documentation'>('code_review')
+  const [isSubmitting, setIsSubmitting] = useState(false)
+  const [actionError, setActionError] = useState<string | null>(null)
+  const [actionSuccess, setActionSuccess] = useState<string | null>(null)
+
+  const handleSubmit = async (e: FormEvent) => {
     e.preventDefault()
-    setImportError(null)
-    setImportSuccess(null)
-
-    const url = prUrlInput.trim()
-    const match = url.match(/^https?:\/\/github\.com\/([^/]+)\/([^/]+)\/pull\/(\d+)/i)
-    if (!match) {
-      setImportError('Please enter a valid GitHub pull request URL (e.g., https://github.com/facebook/react/pull/28000)')
-      return
-    }
+    setActionError(null)
+    setActionSuccess(null)
+    const val = inputUrl.trim()
+    if (!val) return
 
     try {
-      setIsImporting(true)
-      const record = await importPullRequest(url)
-      setImportSuccess(`Successfully imported & verified merged PR #${record.prNumber} from ${record.repo}!`)
-      setPrUrlInput('')
-      setTimeout(() => {
-        navigate(`/contributions/${record.id}`)
-      }, 1200)
+      setIsSubmitting(true)
+      if (activeTab === 'external') {
+        const record = await importPullRequest(val)
+        setActionSuccess(`Verified merged PR #${record.prNumber} from ${record.repo}!`)
+        setInputUrl('')
+        setTimeout(() => navigate(`/contributions/${record.id}`), 1000)
+      } else if (activeTab === 'maintainer') {
+        const record = await importProjectOwnership(val)
+        setActionSuccess(`Verified repository ownership & maintenance signals for ${record.repo}!`)
+        setInputUrl('')
+        setTimeout(() => navigate(`/contributions/${record.id}`), 1000)
+      } else {
+        const record = await importCommunityContribution(val, communityType)
+        setActionSuccess(`Verified collaborative ${communityType.replace('_', ' ')} on ${record.repo}!`)
+        setInputUrl('')
+        setTimeout(() => navigate(`/contributions/${record.id}`), 1000)
+      }
     } catch (err: unknown) {
-      setImportError((err as Error).message || 'Failed to import pull request. Ensure it is merged.')
+      setActionError((err as Error).message || 'Verification failed. Please verify input URL.')
     } finally {
-      setIsImporting(false)
+      setIsSubmitting(false)
     }
   }
 
-  const latestContribution: ContributionRecord | undefined = contributions[0]
+  const filteredContributions =
+    filterType === 'all' ? contributions : contributions.filter((c) => c.contributionType === filterType)
+
+  const getClassificationBadge = (classification: EvidenceClassification) => {
+    switch (classification) {
+      case 'independently_merged':
+        return { label: 'INDEPENDENTLY MERGED', color: '#10B981', bg: 'rgba(16, 185, 129, 0.12)', border: 'rgba(16, 185, 129, 0.3)' }
+      case 'self_maintained':
+        return { label: 'SELF-MAINTAINED', color: '#38BDF8', bg: 'rgba(56, 189, 248, 0.12)', border: 'rgba(56, 189, 248, 0.3)' }
+      case 'community_verified':
+        return { label: 'COMMUNITY VERIFIED', color: '#A855F7', bg: 'rgba(168, 85, 247, 0.12)', border: 'rgba(168, 85, 247, 0.3)' }
+      case 'maintainer_verified':
+        return { label: 'MAINTAINER VERIFIED', color: '#F59E0B', bg: 'rgba(245, 158, 11, 0.12)', border: 'rgba(245, 158, 11, 0.3)' }
+      case 'github_verified':
+      default:
+        return { label: 'GITHUB VERIFIED', color: '#B9572B', bg: 'rgba(185, 87, 43, 0.12)', border: 'rgba(185, 87, 43, 0.3)' }
+    }
+  }
 
   return (
     <div style={{ maxWidth: '1360px', margin: '0 auto', display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
@@ -90,7 +122,7 @@ export default function OverviewPage() {
             left: 0,
             right: 0,
             height: '2px',
-            background: 'linear-gradient(90deg, transparent, #B9572B, #38BDF8, #10B981, transparent)',
+            background: 'linear-gradient(90deg, transparent, #B9572B, #38BDF8, #A855F7, transparent)',
             opacity: 0.8,
           }}
         />
@@ -117,7 +149,7 @@ export default function OverviewPage() {
           <div>
             <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '2px' }}>
               <span style={{ fontSize: '11px', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.1em', color: '#B9572B' }}>
-                Contribution Terminal
+                Universal Contribution Terminal
               </span>
               <span className="pulse-live-indicator" style={{ display: 'inline-flex', alignItems: 'center', gap: '5px', fontSize: '11px', color: '#10B981' }}>
                 <span style={{ width: '6px', height: '6px', borderRadius: '50%', backgroundColor: '#10B981', display: 'inline-block' }} />
@@ -217,42 +249,42 @@ export default function OverviewPage() {
         </div>
       </section>
 
-      {/* ── METRIC TILES / COMPACT PROTOCOL METRICS ── */}
+      {/* ── 4 KPI TILES ACROSS THE THREE CONTRIBUTION TYPES ── */}
       <section
         style={{
           display: 'grid',
-          gridTemplateColumns: 'repeat(auto-fit, minmax(210px, 1fr))',
+          gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))',
           gap: '0.85rem',
         }}
       >
         {[
           {
-            label: 'DISCOVERED CONTRIBUTIONS',
+            label: 'TOTAL VERIFIED WORK',
             val: contributions.length,
-            sub: 'From GitHub API & verified imports',
+            sub: 'Across all 3 contribution pillars',
             accent: '#B9572B',
-            icon: <IconCode size={16} color="#B9572B" />,
+            icon: <IconZap size={16} color="#B9572B" />,
           },
           {
-            label: 'ELIGIBLE FOR PROVENANCE',
-            val: contributions.filter((c) => c.assessmentStatus === 'eligible' || c.evidenceStatus === 'ready').length,
-            sub: 'Merged commits with SHA-256 seal',
-            accent: '#00EC97',
-            icon: <IconCheckCircle size={16} color="#00EC97" />,
+            label: '01. EXTERNAL CONTRIBUTIONS',
+            val: contributions.filter((c) => c.contributionType === 'external').length,
+            sub: 'Strongest independent merged code',
+            accent: '#10B981',
+            icon: <IconCode size={16} color="#10B981" />,
           },
           {
-            label: 'CREDENTIALS MINTED',
-            val: contributions.filter((c) => c.credentialStatus === 'confirmed').length,
-            sub: 'Soulbound on NEAR testnet contract',
+            label: '02. MAINTAINED PROJECTS',
+            val: contributions.filter((c) => c.contributionType === 'maintainer').length,
+            sub: 'Owned repos, licenses & releases',
             accent: '#38BDF8',
-            icon: <IconAward size={16} color="#38BDF8" />,
+            icon: <IconGlobe size={16} color="#38BDF8" />,
           },
           {
-            label: 'ACTIVE DEVELOPER REACH',
-            val: contributions.reduce((acc, curr) => acc + (curr.additions || 0) + (curr.deletions || 0), 0).toLocaleString(),
-            sub: 'Net line diffs cryptographically validated',
+            label: '03. COMMUNITY & REVIEWS',
+            val: contributions.filter((c) => c.contributionType === 'community').length,
+            sub: 'Collaborative code reviews & triage',
             accent: '#A855F7',
-            icon: <IconZap size={16} color="#A855F7" />,
+            icon: <IconAward size={16} color="#A855F7" />,
           },
         ].map((card, idx) => (
           <div
@@ -263,12 +295,10 @@ export default function OverviewPage() {
               border: '1px solid var(--rule)',
               borderRadius: '12px',
               padding: '1rem 1.25rem',
-              position: 'relative',
-              overflow: 'hidden',
               display: 'flex',
               flexDirection: 'column',
               justifyContent: 'space-between',
-              transition: 'transform 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease',
+              transition: 'transform 0.2s ease, border-color 0.2s ease',
             }}
           >
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
@@ -308,78 +338,245 @@ export default function OverviewPage() {
         ))}
       </section>
 
-      {/* ── FAST IMPORT & VERIFICATION HERO STRIP ── */}
+      {/* ── THREE-PILLAR CONTRIBUTION VERIFICATION ENGINE ── */}
       <section
         className="app-glass-card"
         style={{
           background: 'linear-gradient(135deg, rgba(25, 23, 21, 0.98) 0%, rgba(20, 18, 16, 0.95) 100%)',
           borderRadius: '14px',
-          padding: '1.25rem 1.5rem',
+          padding: '1.4rem 1.6rem',
           border: '1px solid rgba(185, 87, 43, 0.25)',
-          position: 'relative',
         }}
       >
-        <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', justifyContent: 'space-between', gap: '1rem', marginBottom: '0.75rem' }}>
+        <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', justifyContent: 'space-between', gap: '1rem', marginBottom: '1.2rem' }}>
           <div>
-            <h2 style={{ fontSize: '15px', fontWeight: 600, color: '#EDE2D0', margin: '0 0 2px 0', display: 'flex', alignItems: 'center', gap: '8px' }}>
-              <IconCode size={16} color="#B9572B" />
-              Import Merged Pull Request
+            <div style={{ fontSize: '11px', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.1em', color: '#B9572B', marginBottom: '4px' }}>
+              Multi-Pillar Evidence Engine
+            </div>
+            <h2 style={{ fontSize: '17px', fontWeight: 600, color: '#EDE2D0', margin: 0 }}>
+              Establish Your Work According to its Verifiable Source
             </h2>
-            <p style={{ fontSize: '12px', color: '#B3A69A', margin: 0 }}>
-              Paste any public merged GitHub PR URL to verify merge status and generate an evidence dossier.
-            </p>
           </div>
 
-          <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap' }}>
-            <button
-              type="button"
-              onClick={() => setPrUrlInput('https://github.com/facebook/react/pull/28000')}
-              style={{
-                fontSize: '11px',
-                fontFamily: 'var(--font-mono)',
-                padding: '4px 8px',
-                borderRadius: '6px',
-                background: 'rgba(255, 255, 255, 0.05)',
-                border: '1px solid rgba(255, 255, 255, 0.1)',
-                color: '#B3A69A',
-                cursor: 'pointer',
-              }}
-            >
-              Test: React #28000
-            </button>
-            <button
-              type="button"
-              onClick={() => setPrUrlInput('https://github.com/near/nearcore/pull/10000')}
-              style={{
-                fontSize: '11px',
-                fontFamily: 'var(--font-mono)',
-                padding: '4px 8px',
-                borderRadius: '6px',
-                background: 'rgba(255, 255, 255, 0.05)',
-                border: '1px solid rgba(255, 255, 255, 0.1)',
-                color: '#B3A69A',
-                cursor: 'pointer',
-              }}
-            >
-              Test: nearcore #10000
-            </button>
+          {/* 3 Pillar Mode Selector Tabs */}
+          <div
+            style={{
+              display: 'flex',
+              background: 'rgba(0, 0, 0, 0.4)',
+              borderRadius: '8px',
+              padding: '3px',
+              border: '1px solid rgba(255, 255, 255, 0.08)',
+            }}
+          >
+            {[
+              { id: 'external', label: '01. External PRs', color: '#10B981' },
+              { id: 'maintainer', label: '02. Project Ownership', color: '#38BDF8' },
+              { id: 'community', label: '03. Community & Reviews', color: '#A855F7' },
+            ].map((tab) => (
+              <button
+                key={tab.id}
+                type="button"
+                onClick={() => {
+                  setActiveTab(tab.id as ContributionType)
+                  setActionError(null)
+                  setActionSuccess(null)
+                  setInputUrl('')
+                }}
+                style={{
+                  padding: '6px 14px',
+                  borderRadius: '6px',
+                  border: 'none',
+                  fontSize: '12px',
+                  fontWeight: 600,
+                  cursor: 'pointer',
+                  background: activeTab === tab.id ? 'rgba(255, 255, 255, 0.12)' : 'transparent',
+                  color: activeTab === tab.id ? tab.color : '#B3A69A',
+                  transition: 'all 0.15s ease',
+                }}
+              >
+                {tab.label}
+              </button>
+            ))}
           </div>
         </div>
 
-        <form onSubmit={handleManualImport} style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
-          <div style={{ flex: '1 1 400px', position: 'relative' }}>
+        {/* Dynamic Verification Details & Context */}
+        <div
+          style={{
+            padding: '10px 14px',
+            borderRadius: '8px',
+            background: 'rgba(255, 255, 255, 0.03)',
+            border: '1px solid rgba(255, 255, 255, 0.06)',
+            marginBottom: '1rem',
+            fontSize: '12px',
+            color: '#B3A69A',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            flexWrap: 'wrap',
+            gap: '8px',
+          }}
+        >
+          {activeTab === 'external' && (
+            <div>
+              <strong style={{ color: '#10B981' }}>Strongest Independent Evidence:</strong> Checks PR author, target repository, merge status, commit association, and maintainer reviewer checks.
+            </div>
+          )}
+          {activeTab === 'maintainer' && (
+            <div>
+              <strong style={{ color: '#38BDF8' }}>Maintainer Contribution:</strong> Verifies account control, repository ownership, open-source license, commit history cadence, releases, and community activity.
+            </div>
+          )}
+          {activeTab === 'community' && (
+            <div>
+              <strong style={{ color: '#A855F7' }}>Collaborative Evidence:</strong> Verifies PR code reviews, approved sign-offs, issue resolution triage, documentation, and release management.
+            </div>
+          )}
+
+          {/* Quick Test Chips for Active Tab */}
+          <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap' }}>
+            {activeTab === 'external' && (
+              <>
+                <button
+                  type="button"
+                  onClick={() => setInputUrl('https://github.com/facebook/react/pull/28000')}
+                  style={{
+                    fontSize: '11px',
+                    fontFamily: 'var(--font-mono)',
+                    padding: '3px 8px',
+                    borderRadius: '4px',
+                    background: 'rgba(255, 255, 255, 0.05)',
+                    border: '1px solid rgba(255, 255, 255, 0.1)',
+                    color: '#B3A69A',
+                    cursor: 'pointer',
+                  }}
+                >
+                  Test: React #28000
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setInputUrl('https://github.com/near/nearcore/pull/10000')}
+                  style={{
+                    fontSize: '11px',
+                    fontFamily: 'var(--font-mono)',
+                    padding: '3px 8px',
+                    borderRadius: '4px',
+                    background: 'rgba(255, 255, 255, 0.05)',
+                    border: '1px solid rgba(255, 255, 255, 0.1)',
+                    color: '#B3A69A',
+                    cursor: 'pointer',
+                  }}
+                >
+                  Test: nearcore #10000
+                </button>
+              </>
+            )}
+
+            {activeTab === 'maintainer' && (
+              <>
+                <button
+                  type="button"
+                  onClick={() => setInputUrl('https://github.com/M0izz/SoulPR')}
+                  style={{
+                    fontSize: '11px',
+                    fontFamily: 'var(--font-mono)',
+                    padding: '3px 8px',
+                    borderRadius: '4px',
+                    background: 'rgba(255, 255, 255, 0.05)',
+                    border: '1px solid rgba(255, 255, 255, 0.1)',
+                    color: '#B3A69A',
+                    cursor: 'pointer',
+                  }}
+                >
+                  Test: M0izz/SoulPR
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setInputUrl('https://github.com/pallets/flask')}
+                  style={{
+                    fontSize: '11px',
+                    fontFamily: 'var(--font-mono)',
+                    padding: '3px 8px',
+                    borderRadius: '4px',
+                    background: 'rgba(255, 255, 255, 0.05)',
+                    border: '1px solid rgba(255, 255, 255, 0.1)',
+                    color: '#B3A69A',
+                    cursor: 'pointer',
+                  }}
+                >
+                  Test: pallets/flask
+                </button>
+              </>
+            )}
+
+            {activeTab === 'community' && (
+              <>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setCommunityType('code_review')
+                    setInputUrl('https://github.com/facebook/react/pull/28014')
+                  }}
+                  style={{
+                    fontSize: '11px',
+                    fontFamily: 'var(--font-mono)',
+                    padding: '3px 8px',
+                    borderRadius: '4px',
+                    background: 'rgba(255, 255, 255, 0.05)',
+                    border: '1px solid rgba(255, 255, 255, 0.1)',
+                    color: '#B3A69A',
+                    cursor: 'pointer',
+                  }}
+                >
+                  Test: React #28014 Review
+                </button>
+              </>
+            )}
+          </div>
+        </div>
+
+        {/* Verification Form */}
+        <form onSubmit={handleSubmit} style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+          {activeTab === 'community' && (
+            <select
+              value={communityType}
+              onChange={(e) => setCommunityType(e.target.value as any)}
+              style={{
+                padding: '10px 12px',
+                borderRadius: '8px',
+                background: '#141210',
+                border: '1px solid rgba(185, 87, 43, 0.4)',
+                color: '#EDE2D0',
+                fontSize: '13px',
+                outline: 'none',
+              }}
+            >
+              <option value="code_review">Code Review & Approval</option>
+              <option value="issue_triage">Issue Triage & Resolution</option>
+              <option value="documentation">Documentation Improvement</option>
+              <option value="release_management">Release Management</option>
+            </select>
+          )}
+
+          <div style={{ flex: '1 1 360px' }}>
             <input
-              type="url"
+              type="text"
               required
-              placeholder="https://github.com/owner/repository/pull/123"
-              value={prUrlInput}
-              onChange={(e) => setPrUrlInput(e.target.value)}
+              placeholder={
+                activeTab === 'external'
+                  ? 'https://github.com/owner/repository/pull/123'
+                  : activeTab === 'maintainer'
+                  ? 'https://github.com/owner/repository or owner/repository'
+                  : 'https://github.com/owner/repository/pull/123 or issue URL'
+              }
+              value={inputUrl}
+              onChange={(e) => setInputUrl(e.target.value)}
               style={{
                 width: '100%',
                 padding: '10px 14px',
                 borderRadius: '8px',
                 background: '#141210',
-                border: importError ? '1px solid #EF4444' : '1px solid rgba(185, 87, 43, 0.4)',
+                border: actionError ? '1px solid #EF4444' : '1px solid rgba(185, 87, 43, 0.4)',
                 color: '#EDE2D0',
                 fontSize: '13px',
                 fontFamily: 'var(--font-mono)',
@@ -391,16 +588,16 @@ export default function OverviewPage() {
 
           <button
             type="submit"
-            disabled={isImporting || !prUrlInput.trim()}
+            disabled={isSubmitting || !inputUrl.trim()}
             style={{
-              padding: '10px 20px',
+              padding: '10px 22px',
               borderRadius: '8px',
-              background: isImporting ? '#7A3516' : '#B9572B',
+              background: isSubmitting ? '#7A3516' : '#B9572B',
               color: '#FFFFFF',
               border: 'none',
               fontSize: '13px',
               fontWeight: 600,
-              cursor: isImporting ? 'not-allowed' : 'pointer',
+              cursor: isSubmitting ? 'not-allowed' : 'pointer',
               display: 'inline-flex',
               alignItems: 'center',
               gap: '6px',
@@ -408,21 +605,27 @@ export default function OverviewPage() {
               transition: 'all 0.15s ease',
             }}
           >
-            {isImporting ? (
+            {isSubmitting ? (
               <>
                 <IconRefresh size={14} className="spin-animation" />
-                <span>Verifying on GitHub...</span>
+                <span>Verifying Source...</span>
               </>
             ) : (
               <>
-                <span>Import & Verify</span>
+                <span>
+                  {activeTab === 'external'
+                    ? 'Verify External PR'
+                    : activeTab === 'maintainer'
+                    ? 'Verify Project Ownership'
+                    : 'Verify Community Evidence'}
+                </span>
                 <IconArrowRight size={14} />
               </>
             )}
           </button>
         </form>
 
-        {importError && (
+        {actionError && (
           <div
             style={{
               marginTop: '10px',
@@ -438,11 +641,11 @@ export default function OverviewPage() {
             }}
           >
             <IconAlertCircle size={14} color="#F87171" />
-            <span>{importError}</span>
+            <span>{actionError}</span>
           </div>
         )}
 
-        {importSuccess && (
+        {actionSuccess && (
           <div
             style={{
               marginTop: '10px',
@@ -458,126 +661,122 @@ export default function OverviewPage() {
             }}
           >
             <IconCheckCircle size={14} color="#34D399" />
-            <span>{importSuccess}</span>
+            <span>{actionSuccess}</span>
           </div>
         )}
       </section>
 
-      {/* ── TWO-COLUMN CORE WORKSPACE ── */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'minmax(0, 1.6fr) minmax(320px, 1fr)', gap: '1.25rem' }}>
-        {/* LEFT COLUMN: ACTIVE CONTRIBUTIONS DOSSIER FEED */}
-        <section
-          className="app-glass-card"
-          style={{
-            background: 'var(--paper-raised)',
-            border: '1px solid var(--rule)',
-            borderRadius: '14px',
-            padding: '1.25rem',
-            display: 'flex',
-            flexDirection: 'column',
-            gap: '1rem',
-          }}
-        >
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-            <div>
-              <h2 style={{ fontSize: '15px', fontWeight: 600, margin: '0 0 2px 0', color: 'var(--ink)' }}>
-                Active Contribution Records
-              </h2>
-              <p style={{ fontSize: '12px', color: 'var(--ink-muted)', margin: 0 }}>
-                {contributions.length} verified pull request{contributions.length === 1 ? '' : 's'} registered
-              </p>
-            </div>
-
-            <div style={{ display: 'flex', gap: '8px' }}>
-              <Link
-                to="/contributors"
-                style={{
-                  fontSize: '12px',
-                  fontWeight: 600,
-                  color: 'var(--clay)',
-                  display: 'inline-flex',
-                  alignItems: 'center',
-                  gap: '4px',
-                  padding: '4px 10px',
-                  borderRadius: '6px',
-                  border: '1px solid var(--rule)',
-                  background: 'var(--paper)',
-                  textDecoration: 'none',
-                }}
-              >
-                <IconSearch size={12} />
-                <span>Search Contributor</span>
-              </Link>
-
-              <Link
-                to="/contributions"
-                style={{
-                  fontSize: '12px',
-                  fontWeight: 600,
-                  color: 'var(--clay)',
-                  display: 'inline-flex',
-                  alignItems: 'center',
-                  gap: '4px',
-                  textDecoration: 'none',
-                }}
-              >
-                <span>View Full Registry</span>
-                <IconArrowRight size={12} />
-              </Link>
-            </div>
+      {/* ── FULL-WIDTH VERIFIED CONTRIBUTION REGISTRY ── */}
+      <section
+        className="app-glass-card"
+        style={{
+          background: 'var(--paper-raised)',
+          border: '1px solid var(--rule)',
+          borderRadius: '14px',
+          padding: '1.4rem',
+          display: 'flex',
+          flexDirection: 'column',
+          gap: '1rem',
+        }}
+      >
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '1rem' }}>
+          <div>
+            <h2 style={{ fontSize: '16px', fontWeight: 600, margin: '0 0 2px 0', color: 'var(--ink)' }}>
+              Verified Contribution Records
+            </h2>
+            <p style={{ fontSize: '12px', color: 'var(--ink-muted)', margin: 0 }}>
+              Evidence-backed credentials across external repositories, maintained tools, and collaborative reviews
+            </p>
           </div>
 
-          {contributions.length === 0 ? (
-            <div
+          {/* Filter Pills */}
+          <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap' }}>
+            {[
+              { id: 'all', label: `All (${contributions.length})` },
+              { id: 'external', label: `External PRs (${contributions.filter((c) => c.contributionType === 'external').length})` },
+              { id: 'maintainer', label: `Maintained (${contributions.filter((c) => c.contributionType === 'maintainer').length})` },
+              { id: 'community', label: `Community (${contributions.filter((c) => c.contributionType === 'community').length})` },
+            ].map((f) => (
+              <button
+                key={f.id}
+                type="button"
+                onClick={() => setFilterType(f.id as any)}
+                style={{
+                  fontSize: '11.5px',
+                  fontWeight: 600,
+                  padding: '4px 10px',
+                  borderRadius: '6px',
+                  cursor: 'pointer',
+                  border: filterType === f.id ? '1px solid var(--clay)' : '1px solid var(--rule)',
+                  background: filterType === f.id ? 'var(--clay)' : 'var(--paper)',
+                  color: filterType === f.id ? '#FFFFFF' : 'var(--ink-muted)',
+                  transition: 'all 0.15s ease',
+                }}
+              >
+                {f.label}
+              </button>
+            ))}
+
+            <Link
+              to="/contributors"
               style={{
-                border: '1px dashed var(--rule)',
-                borderRadius: '10px',
-                padding: '2.5rem 1.5rem',
-                textAlign: 'center',
-                backgroundColor: 'rgba(0,0,0,0.02)',
+                fontSize: '11.5px',
+                fontWeight: 600,
+                color: 'var(--clay)',
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '4px',
+                padding: '4px 10px',
+                borderRadius: '6px',
+                border: '1px solid var(--rule)',
+                background: 'var(--paper)',
+                textDecoration: 'none',
               }}
             >
-              <div
-                style={{
-                  width: '44px',
-                  height: '44px',
-                  borderRadius: '50%',
-                  background: 'rgba(185, 87, 43, 0.1)',
-                  color: '#B9572B',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  margin: '0 auto 12px auto',
-                }}
-              >
-                <IconCode size={20} />
-              </div>
-              <h3 style={{ fontSize: '15px', fontWeight: 600, margin: '0 0 6px 0', color: 'var(--ink)' }}>
-                No PRs Imported Yet
-              </h3>
-              <p style={{ fontSize: '12px', color: 'var(--ink-muted)', maxWidth: '380px', margin: '0 auto 16px auto' }}>
-                Paste any merged GitHub pull request URL above, or click Sync GitHub to pull your public repositories.
-              </p>
-              <button
-                type="button"
-                onClick={() => setPrUrlInput('https://github.com/facebook/react/pull/28000')}
-                style={{
-                  padding: '8px 16px',
-                  borderRadius: '6px',
-                  background: 'var(--clay)',
-                  color: '#FFFFFF',
-                  border: 'none',
-                  fontSize: '12px',
-                  fontWeight: 600,
-                  cursor: 'pointer',
-                }}
-              >
-                Import Sample PR (React #28000)
-              </button>
+              <IconSearch size={12} />
+              <span>Lookup Contributor</span>
+            </Link>
+          </div>
+        </div>
+
+        {/* Contributions List */}
+        {filteredContributions.length === 0 ? (
+          <div
+            style={{
+              border: '1px dashed var(--rule)',
+              borderRadius: '10px',
+              padding: '2.5rem 1.5rem',
+              textAlign: 'center',
+              backgroundColor: 'rgba(0,0,0,0.02)',
+            }}
+          >
+            <div
+              style={{
+                width: '44px',
+                height: '44px',
+                borderRadius: '50%',
+                background: 'rgba(185, 87, 43, 0.1)',
+                color: '#B9572B',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                margin: '0 auto 12px auto',
+              }}
+            >
+              <IconCode size={20} />
             </div>
-          ) : (
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-              {contributions.slice(0, 5).map((record) => (
+            <h3 style={{ fontSize: '15px', fontWeight: 600, margin: '0 0 6px 0', color: 'var(--ink)' }}>
+              No records under this filter
+            </h3>
+            <p style={{ fontSize: '12px', color: 'var(--ink-muted)', maxWidth: '400px', margin: '0 auto 16px auto' }}>
+              Use the verification engine above to register external pull requests, open-source repositories you maintain, or collaborative reviews.
+            </p>
+          </div>
+        ) : (
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+            {filteredContributions.map((record) => {
+              const badge = getClassificationBadge(record.evidenceClassification)
+              return (
                 <div
                   key={record.id}
                   onClick={() => navigate(`/contributions/${record.id}`)}
@@ -585,8 +784,8 @@ export default function OverviewPage() {
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'space-between',
-                    padding: '10px 14px',
-                    borderRadius: '8px',
+                    padding: '12px 16px',
+                    borderRadius: '10px',
                     background: 'var(--paper)',
                     border: '1px solid var(--rule)',
                     cursor: 'pointer',
@@ -601,40 +800,64 @@ export default function OverviewPage() {
                     e.currentTarget.style.transform = 'none'
                   }}
                 >
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '10px', minWidth: 0 }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '12px', minWidth: 0 }}>
                     <div
                       style={{
-                        width: '32px',
-                        height: '32px',
-                        borderRadius: '6px',
-                        background: 'rgba(185, 87, 43, 0.1)',
+                        width: '36px',
+                        height: '36px',
+                        borderRadius: '8px',
+                        background:
+                          record.contributionType === 'external'
+                            ? 'rgba(16, 185, 129, 0.1)'
+                            : record.contributionType === 'maintainer'
+                            ? 'rgba(56, 189, 248, 0.1)'
+                            : 'rgba(168, 85, 247, 0.1)',
                         display: 'flex',
                         alignItems: 'center',
                         justifyContent: 'center',
                         flexShrink: 0,
                       }}
                     >
-                      <IconGitHub size={16} color="var(--clay)" />
+                      {record.contributionType === 'external' && <IconCode size={18} color="#10B981" />}
+                      {record.contributionType === 'maintainer' && <IconGlobe size={18} color="#38BDF8" />}
+                      {record.contributionType === 'community' && <IconAward size={18} color="#A855F7" />}
                     </div>
 
                     <div style={{ minWidth: 0 }}>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '2px' }}>
-                        <span style={{ fontSize: '12px', fontWeight: 700, fontFamily: 'var(--font-mono)', color: 'var(--ink)' }}>
-                          {record.repo} #{record.prNumber}
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '3px', flexWrap: 'wrap' }}>
+                        <span style={{ fontSize: '13px', fontWeight: 700, fontFamily: 'var(--font-mono)', color: 'var(--ink)' }}>
+                          {record.repo} {record.prNumber ? `#${record.prNumber}` : ''}
                         </span>
+
                         <span
                           style={{
                             fontSize: '10px',
-                            fontWeight: 600,
-                            padding: '1px 6px',
+                            fontWeight: 700,
+                            padding: '2px 7px',
                             borderRadius: '4px',
-                            background: 'rgba(16, 185, 129, 0.12)',
-                            color: '#10B981',
+                            background: badge.bg,
+                            color: badge.color,
+                            border: `1px solid ${badge.border}`,
+                            letterSpacing: '0.04em',
                           }}
                         >
-                          MERGED
+                          {badge.label}
+                        </span>
+
+                        <span
+                          style={{
+                            fontSize: '10px',
+                            color: 'var(--ink-muted)',
+                            textTransform: 'uppercase',
+                            fontWeight: 600,
+                          }}
+                        >
+                          {record.contributionType === 'external' && '01. External PR'}
+                          {record.contributionType === 'maintainer' && '02. Project Maintainer'}
+                          {record.contributionType === 'community' && '03. Community & Review'}
                         </span>
                       </div>
+
                       <div
                         style={{
                           fontSize: '12px',
@@ -642,7 +865,7 @@ export default function OverviewPage() {
                           overflow: 'hidden',
                           textOverflow: 'ellipsis',
                           whiteSpace: 'nowrap',
-                          maxWidth: '420px',
+                          maxWidth: '560px',
                         }}
                       >
                         {record.prTitle}
@@ -650,11 +873,18 @@ export default function OverviewPage() {
                     </div>
                   </div>
 
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '12px', flexShrink: 0 }}>
-                    <div style={{ textAlign: 'right', fontSize: '11px', fontFamily: 'var(--font-mono)' }}>
-                      <span style={{ color: '#10B981' }}>+{record.additions}</span>{' '}
-                      <span style={{ color: '#EF4444' }}>-{record.deletions}</span>
-                    </div>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '14px', flexShrink: 0 }}>
+                    {record.maintainerEvidence ? (
+                      <div style={{ textAlign: 'right', fontSize: '11.5px', fontFamily: 'var(--font-mono)' }}>
+                        <span style={{ color: '#F59E0B' }}>★ {record.maintainerEvidence.stars}</span>{' '}
+                        <span style={{ color: '#38BDF8' }}>⎇ {record.maintainerEvidence.releasesCount} rel</span>
+                      </div>
+                    ) : (
+                      <div style={{ textAlign: 'right', fontSize: '11.5px', fontFamily: 'var(--font-mono)' }}>
+                        <span style={{ color: '#10B981' }}>+{record.additions}</span>{' '}
+                        <span style={{ color: '#EF4444' }}>-{record.deletions}</span>
+                      </div>
+                    )}
 
                     <div
                       style={{
@@ -673,181 +903,11 @@ export default function OverviewPage() {
                     <IconArrowRight size={14} color="var(--ink-faint)" />
                   </div>
                 </div>
-              ))}
-            </div>
-          )}
-        </section>
-
-        {/* RIGHT COLUMN: HOLOGRAPHIC SEAL PREVIEW & IDENTITY RESOLVER */}
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
-          {/* Hologram Card Preview */}
-          <section
-            className="app-glass-card"
-            style={{
-              background: 'linear-gradient(145deg, #181513 0%, #110F0E 100%)',
-              border: '1px solid rgba(185, 87, 43, 0.3)',
-              borderRadius: '14px',
-              padding: '1.25rem',
-              color: '#EDE2D0',
-              position: 'relative',
-              overflow: 'hidden',
-            }}
-          >
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '12px' }}>
-              <div style={{ fontSize: '11px', fontWeight: 700, letterSpacing: '0.08em', color: '#B9572B', textTransform: 'uppercase' }}>
-                Holographic Credential Preview
-              </div>
-              <span
-                className="shimmer-badge"
-                style={{
-                  fontSize: '10px',
-                  fontWeight: 600,
-                  padding: '2px 6px',
-                  borderRadius: '4px',
-                  background: 'rgba(185, 87, 43, 0.2)',
-                  color: '#B9572B',
-                }}
-              >
-                NEAR Protocol
-              </span>
-            </div>
-
-            <div
-              style={{
-                borderRadius: '10px',
-                background: 'rgba(0, 0, 0, 0.4)',
-                border: '1px solid rgba(255, 255, 255, 0.06)',
-                padding: '1rem',
-                position: 'relative',
-              }}
-            >
-              <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '12px' }}>
-                <div
-                  style={{
-                    width: '42px',
-                    height: '42px',
-                    borderRadius: '8px',
-                    background: 'linear-gradient(135deg, rgba(185, 87, 43, 0.3), rgba(0, 236, 151, 0.2))',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                  }}
-                >
-                  <CredentialSeal size={28} glow={true} />
-                </div>
-                <div>
-                  <div style={{ fontSize: '13px', fontWeight: 700, color: '#EDE2D0' }}>
-                    {latestContribution ? `${latestContribution.repo} #${latestContribution.prNumber}` : 'Universal Contribution'}
-                  </div>
-                  <div style={{ fontSize: '11px', color: '#9CA3AF', fontFamily: 'var(--font-mono)' }}>
-                    {latestContribution?.mergeCommitSha ? `SHA: ${latestContribution.mergeCommitSha.slice(0, 10)}...` : 'SHA-256 Provenance Verified'}
-                  </div>
-                </div>
-              </div>
-
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '6px', fontSize: '11.5px', color: '#D1D5DB' }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                  <span style={{ color: '#9CA3AF' }}>Developer:</span>
-                  <span style={{ fontFamily: 'var(--font-mono)', color: '#EDE2D0' }}>
-                    {userGithub ? `@${userGithub}` : 'Unauthenticated'}
-                  </span>
-                </div>
-                <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                  <span style={{ color: '#9CA3AF' }}>Settlement:</span>
-                  <span style={{ fontFamily: 'var(--font-mono)', color: '#00EC97' }}>
-                    {nearAccount || 'soulpr.testnet'}
-                  </span>
-                </div>
-                <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                  <span style={{ color: '#9CA3AF' }}>Audit Scheme:</span>
-                  <span style={{ fontFamily: 'var(--font-mono)', color: '#38BDF8' }}>signet.evidence.v1.0</span>
-                </div>
-              </div>
-            </div>
-
-            <div style={{ display: 'flex', gap: '8px', marginTop: '12px' }}>
-              <Link
-                to="/verify/sample"
-                style={{
-                  flex: 1,
-                  textAlign: 'center',
-                  padding: '7px 12px',
-                  borderRadius: '6px',
-                  background: 'rgba(255, 255, 255, 0.06)',
-                  border: '1px solid rgba(255, 255, 255, 0.1)',
-                  color: '#EDE2D0',
-                  fontSize: '11.5px',
-                  fontWeight: 600,
-                  textDecoration: 'none',
-                }}
-              >
-                Inspect 3D Card
-              </Link>
-              <Link
-                to="/credentials"
-                style={{
-                  flex: 1,
-                  textAlign: 'center',
-                  padding: '7px 12px',
-                  borderRadius: '6px',
-                  background: 'linear-gradient(135deg, #B9572B, #A04A23)',
-                  color: '#FFFFFF',
-                  fontSize: '11.5px',
-                  fontWeight: 600,
-                  textDecoration: 'none',
-                }}
-              >
-                Manage Credentials
-              </Link>
-            </div>
-          </section>
-
-          {/* Contributor Lookup Banner */}
-          <section
-            className="app-glass-card"
-            style={{
-              background: 'var(--paper-raised)',
-              border: '1px solid var(--rule)',
-              borderRadius: '14px',
-              padding: '1.25rem',
-              display: 'flex',
-              flexDirection: 'column',
-              gap: '0.75rem',
-            }}
-          >
-            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-              <IconSearch size={16} color="var(--clay)" />
-              <h3 style={{ fontSize: '14px', fontWeight: 600, margin: 0, color: 'var(--ink)' }}>
-                Contributor Intelligence
-              </h3>
-            </div>
-            <p style={{ fontSize: '12px', color: 'var(--ink-muted)', margin: 0 }}>
-              Look up any developer by GitHub username or NEAR wallet. Fetches live public contributions and verified credentials with zero fake data.
-            </p>
-            <Link
-              to="/contributors"
-              style={{
-                display: 'inline-flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                gap: '6px',
-                padding: '8px 14px',
-                borderRadius: '8px',
-                background: 'var(--paper)',
-                border: '1px solid var(--rule)',
-                color: 'var(--ink)',
-                fontSize: '12px',
-                fontWeight: 600,
-                textDecoration: 'none',
-                transition: 'all 0.15s ease',
-              }}
-            >
-              <span>Open Contributor Explorer</span>
-              <IconArrowRight size={13} />
-            </Link>
-          </section>
-        </div>
-      </div>
+              )
+            })}
+          </div>
+        )}
+      </section>
     </div>
   )
 }
