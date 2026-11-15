@@ -2539,6 +2539,118 @@ button:disabled {
   }
 }
 
+/* ── Fluid Drift & Modern Eye-Catching Luxury Keyframes ── */
+@keyframes fluidDriftA {
+  0% {
+    transform: translateY(0px) translateX(0px) rotate(0deg);
+  }
+  33% {
+    transform: translateY(-8px) translateX(4px) rotate(0.8deg);
+  }
+  66% {
+    transform: translateY(5px) translateX(-5px) rotate(-0.6deg);
+  }
+  100% {
+    transform: translateY(0px) translateX(0px) rotate(0deg);
+  }
+}
+
+@keyframes fluidDriftB {
+  0% {
+    transform: translateY(0px) translateX(0px) rotate(0deg);
+  }
+  33% {
+    transform: translateY(7px) translateX(-6px) rotate(-0.8deg);
+  }
+  66% {
+    transform: translateY(-6px) translateX(5px) rotate(0.6deg);
+  }
+  100% {
+    transform: translateY(0px) translateX(0px) rotate(0deg);
+  }
+}
+
+@keyframes fluidDriftC {
+  0% {
+    transform: translateY(0px) translateX(0px);
+  }
+  50% {
+    transform: translateY(-12px) translateX(6px);
+  }
+  100% {
+    transform: translateY(0px) translateX(0px);
+  }
+}
+
+@keyframes fluidGlowPulse {
+  0%, 100% {
+    opacity: 0.35;
+    transform: scale(1);
+    filter: blur(60px);
+  }
+  50% {
+    opacity: 0.65;
+    transform: scale(1.12);
+    filter: blur(75px);
+  }
+}
+
+@keyframes liquidBorderSheen {
+  0% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+  100% {
+    background-position: 0% 50%;
+  }
+}
+
+@keyframes pulseBeam {
+  0% {
+    transform: translateX(-100%);
+    opacity: 0;
+  }
+  50% {
+    opacity: 1;
+  }
+  100% {
+    transform: translateX(100%);
+    opacity: 0;
+  }
+}
+
+.signet-fluid-drift-a {
+  animation: fluidDriftA 9s ease-in-out infinite;
+}
+
+.signet-fluid-drift-b {
+  animation: fluidDriftB 11s ease-in-out infinite;
+}
+
+.signet-fluid-drift-c {
+  animation: fluidDriftC 7s ease-in-out infinite;
+}
+
+.signet-glow-pulse {
+  animation: fluidGlowPulse 8s ease-in-out infinite;
+}
+
+.signet-luxury-card {
+  background: rgba(22, 19, 16, 0.7);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(237, 226, 208, 0.09);
+  transition: all 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.signet-luxury-card:hover {
+  transform: translateY(-3px);
+  border-color: rgba(224, 109, 56, 0.35);
+  box-shadow: 0 16px 36px -10px rgba(0, 0, 0, 0.7), 0 0 25px rgba(224, 109, 56, 0.15);
+}
+
 @media (prefers-reduced-motion: reduce) {
   *,
   *::before,

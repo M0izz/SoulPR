@@ -41,10 +41,11 @@ export const LandingNav: React.FC<LandingNavProps> = ({ onScrollTo }) => {
           left: 0,
           right: 0,
           zIndex: 100,
-          padding: scrolled ? '14px 2rem' : '22px 2.5rem',
-          backgroundColor: scrolled ? 'rgba(25, 23, 21, 0.92)' : 'transparent',
-          backdropFilter: scrolled ? 'blur(16px)' : 'none',
-          borderBottom: scrolled ? '1px solid rgba(237, 226, 208, 0.08)' : '1px solid transparent',
+          padding: scrolled ? '12px 2rem' : '18px 2.5rem',
+          backgroundColor: scrolled ? 'rgba(12, 11, 10, 0.88)' : 'rgba(10, 9, 8, 0.45)',
+          backdropFilter: 'blur(20px)',
+          WebkitBackdropFilter: 'blur(20px)',
+          borderBottom: scrolled ? '1px solid rgba(237, 226, 208, 0.1)' : '1px solid rgba(237, 226, 208, 0.04)',
           transition: 'all 0.3s cubic-bezier(0.16, 1, 0.3, 1)',
         }}
         role="banner"

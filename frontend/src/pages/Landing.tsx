@@ -25,23 +25,39 @@ export default function Landing() {
         {/* ── SECTION 1: Cinematic Hero ── */}
         <SignetHero />
 
-        {/* ── SECTION 2: The Problem (Warm Cream #F3E8D5) ── */}
+        {/* ── SECTION 2: The Problem (Luxury Obsidian #0F0E0D) ── */}
         <section
           id="problem"
           style={{
-            backgroundColor: '#F3E8D5',
-            color: '#191715',
-            padding: '6rem 2rem 6.5rem',
-            borderTop: '1px solid rgba(118, 103, 91, 0.25)',
+            backgroundColor: '#0F0E0D',
+            color: '#EDE2D0',
+            padding: '7rem 2rem 7.5rem',
+            borderTop: '1px solid rgba(237, 226, 208, 0.08)',
+            position: 'relative',
+            overflow: 'hidden',
           }}
           aria-labelledby="problem-headline"
         >
-          <div style={{ maxWidth: '1240px', margin: '0 auto' }}>
+          {/* Ambient Glow */}
+          <div
+            style={{
+              position: 'absolute',
+              top: '40%',
+              left: '10%',
+              width: '450px',
+              height: '350px',
+              background: 'radial-gradient(circle, rgba(224, 109, 56, 0.07) 0%, transparent 70%)',
+              filter: 'blur(70px)',
+              pointerEvents: 'none',
+            }}
+          />
+
+          <div style={{ maxWidth: '1260px', margin: '0 auto', position: 'relative', zIndex: 1 }}>
             <div
               style={{
                 display: 'grid',
                 gridTemplateColumns: '1.05fr 0.95fr',
-                gap: '4rem',
+                gap: '4.5rem',
                 alignItems: 'center',
               }}
               className="editorial-split-grid"
@@ -53,8 +69,8 @@ export default function Landing() {
                     fontSize: '11px',
                     fontWeight: 800,
                     textTransform: 'uppercase',
-                    letterSpacing: '0.12em',
-                    color: '#B9572B',
+                    letterSpacing: '0.14em',
+                    color: '#E06D38',
                     display: 'block',
                     marginBottom: '10px',
                   }}
@@ -69,7 +85,7 @@ export default function Landing() {
                     fontWeight: 500,
                     lineHeight: 1.15,
                     marginBottom: '1.4rem',
-                    color: '#191715',
+                    color: '#FBF8F3',
                   }}
                 >
                   Your work deserves to outlive the moment.
@@ -91,7 +107,7 @@ export default function Landing() {
                   style={{
                     fontSize: '15.5px',
                     lineHeight: 1.7,
-                    color: '#191715',
+                    color: '#EDE2D0',
                     fontWeight: 500,
                   }}
                 >
@@ -100,11 +116,11 @@ export default function Landing() {
                 </p>
               </div>
 
-              {/* Fragmented Contribution Archive Visual */}
+              {/* Fragmented Contribution Archive Visual with Fluid Drift */}
               <div
                 style={{
                   position: 'relative',
-                  minHeight: '340px',
+                  minHeight: '380px',
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'center',
@@ -113,104 +129,110 @@ export default function Landing() {
               >
                 {/* Fragment 1: PR Record Card */}
                 <div
+                  className="signet-fluid-drift-a"
                   style={{
                     position: 'absolute',
-                    top: '10px',
-                    left: '20px',
-                    width: '280px',
-                    backgroundColor: '#FFF',
-                    borderRadius: '10px',
-                    padding: '14px 16px',
-                    boxShadow: '0 8px 24px rgba(0,0,0,0.08)',
-                    border: '1px solid rgba(118, 103, 91, 0.22)',
-                    transform: 'rotate(-4deg)',
+                    top: '20px',
+                    left: '10px',
+                    width: '300px',
+                    backgroundColor: 'rgba(24, 21, 18, 0.85)',
+                    backdropFilter: 'blur(16px)',
+                    borderRadius: '14px',
+                    padding: '16px 18px',
+                    boxShadow: '0 16px 36px rgba(0,0,0,0.6)',
+                    border: '1px solid rgba(224, 109, 56, 0.25)',
                     textAlign: 'left',
+                    zIndex: 1,
                   }}
                 >
-                  <div style={{ fontSize: '10px', fontFamily: 'var(--font-mono)', color: 'var(--signet-muted)', marginBottom: '4px' }}>
+                  <div style={{ fontSize: '10.5px', fontFamily: 'var(--font-mono)', color: '#F59E0B', marginBottom: '6px', fontWeight: 600 }}>
                     github.com/rust-lang/cargo · PR #11402
                   </div>
-                  <div style={{ fontWeight: 700, fontSize: '12.5px', color: '#191715' }}>
+                  <div style={{ fontWeight: 700, fontSize: '13.5px', color: '#FBF8F3', marginBottom: '6px' }}>
                     Fix resolver lockfile backtracking logic
                   </div>
-                  <div style={{ fontSize: '10px', color: '#2A7D4F', fontWeight: 600, marginTop: '6px' }}>
+                  <div style={{ fontSize: '10.5px', color: '#4ADE80', fontWeight: 600 }}>
                     Merged into master · 3 comments
                   </div>
                 </div>
 
                 {/* Fragment 2: Orphaned Commit Object */}
                 <div
+                  className="signet-fluid-drift-b"
                   style={{
                     position: 'absolute',
-                    bottom: '20px',
-                    right: '15px',
-                    width: '260px',
-                    backgroundColor: '#FFF',
-                    borderRadius: '10px',
-                    padding: '14px 16px',
-                    boxShadow: '0 12px 28px rgba(0,0,0,0.1)',
-                    border: '1px solid rgba(118, 103, 91, 0.22)',
-                    transform: 'rotate(3.5deg)',
+                    bottom: '25px',
+                    right: '10px',
+                    width: '280px',
+                    backgroundColor: 'rgba(24, 21, 18, 0.85)',
+                    backdropFilter: 'blur(16px)',
+                    borderRadius: '14px',
+                    padding: '16px 18px',
+                    boxShadow: '0 18px 40px rgba(0,0,0,0.65)',
+                    border: '1px solid rgba(56, 189, 248, 0.25)',
                     textAlign: 'left',
+                    zIndex: 2,
                   }}
                 >
-                  <div style={{ fontSize: '10px', fontFamily: 'var(--font-mono)', color: '#B9572B', fontWeight: 700, marginBottom: '4px' }}>
+                  <div style={{ fontSize: '10px', fontFamily: 'var(--font-mono)', color: '#38BDF8', fontWeight: 700, marginBottom: '6px' }}>
                     COMMIT 9c8f1e2a
                   </div>
-                  <div style={{ fontWeight: 600, fontSize: '12px', color: '#191715' }}>
+                  <div style={{ fontWeight: 600, fontSize: '13px', color: '#FBF8F3', marginBottom: '4px' }}>
                     Refactor peer connection retry loop
                   </div>
-                  <div style={{ fontSize: '10.5px', color: 'var(--signet-muted)', marginTop: '4px' }}>
+                  <div style={{ fontSize: '11px', color: 'var(--signet-muted)' }}>
                     Disconnected from author profile
                   </div>
                 </div>
 
                 {/* Fragment 3: Central scattered git diff badge */}
                 <div
+                  className="signet-fluid-drift-c"
                   style={{
-                    backgroundColor: '#191715',
+                    backgroundColor: '#161311',
                     color: '#EDE2D0',
-                    borderRadius: '8px',
-                    padding: '12px 18px',
+                    borderRadius: '12px',
+                    padding: '14px 22px',
                     fontFamily: 'var(--font-mono)',
-                    fontSize: '11px',
-                    boxShadow: '0 16px 36px rgba(0,0,0,0.25)',
-                    transform: 'translateY(-10px)',
-                    zIndex: 2,
+                    fontSize: '11.5px',
+                    boxShadow: '0 20px 45px rgba(0,0,0,0.7), 0 0 20px rgba(224, 109, 56, 0.2)',
+                    border: '1px solid rgba(224, 109, 56, 0.35)',
+                    zIndex: 3,
                     textAlign: 'left',
                   }}
                 >
-                  <div style={{ color: '#B9572B', fontWeight: 700, marginBottom: '2px' }}>
+                  <div style={{ color: '#E06D38', fontWeight: 800, marginBottom: '4px', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                    <span style={{ width: '6px', height: '6px', borderRadius: '50%', backgroundColor: '#E06D38' }} />
                     evidence_status: fragmented
                   </div>
                   <div>origin: 14 distinct repositories</div>
-                  <div style={{ color: 'rgba(237, 226, 208, 0.5)' }}>context: unpreserved</div>
+                  <div style={{ color: 'rgba(237, 226, 208, 0.55)', marginTop: '2px' }}>context: unpreserved</div>
                 </div>
               </div>
             </div>
           </div>
         </section>
 
-        {/* ── SECTION 3: The Solution (Charcoal #191715) ── */}
+        {/* ── SECTION 3: The Solution (Obsidian #0C0B0A) ── */}
         <section
           id="protocol"
           style={{
-            backgroundColor: '#191715',
+            backgroundColor: '#0C0B0A',
             color: '#EDE2D0',
-            padding: '6.5rem 2rem 7rem',
+            padding: '7rem 2rem 7.5rem',
             borderTop: '1px solid rgba(237, 226, 208, 0.08)',
           }}
           aria-labelledby="solution-headline"
         >
-          <div style={{ maxWidth: '1240px', margin: '0 auto' }}>
-            <div style={{ textAlign: 'center', marginBottom: '4rem' }}>
+          <div style={{ maxWidth: '1260px', margin: '0 auto' }}>
+            <div style={{ textAlign: 'center', marginBottom: '4.5rem' }}>
               <span
                 style={{
-                  fontSize: '10.5px',
+                  fontSize: '11px',
                   fontWeight: 800,
                   textTransform: 'uppercase',
                   letterSpacing: '0.14em',
-                  color: '#B9572B',
+                  color: '#E06D38',
                   display: 'block',
                   marginBottom: '10px',
                 }}
@@ -223,7 +245,7 @@ export default function Landing() {
                 style={{
                   fontSize: 'clamp(34px, 4vw, 50px)',
                   fontWeight: 500,
-                  color: '#EDE2D0',
+                  color: '#FBF8F3',
                   marginBottom: '1.2rem',
                 }}
               >
@@ -231,7 +253,7 @@ export default function Landing() {
               </h2>
               <p
                 style={{
-                  fontSize: '16px',
+                  fontSize: '16.5px',
                   color: 'var(--signet-muted)',
                   maxWidth: '640px',
                   margin: '0 auto',
@@ -254,60 +276,57 @@ export default function Landing() {
               className="three-pillar-grid"
             >
               <div
+                className="signet-luxury-card"
                 style={{
-                  backgroundColor: '#141312',
-                  border: '1px solid rgba(237, 226, 208, 0.1)',
-                  borderRadius: '14px',
-                  padding: '2.2rem 2rem',
+                  borderRadius: '16px',
+                  padding: '2.4rem 2.2rem',
                 }}
               >
-                <div style={{ color: '#B9572B', fontWeight: 800, fontSize: '13px', textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: '12px' }}>
+                <div style={{ color: '#38BDF8', fontWeight: 800, fontSize: '13px', textTransform: 'uppercase', letterSpacing: '0.12em', marginBottom: '14px' }}>
                   01. Evidence
                 </div>
-                <h3 style={{ fontFamily: 'var(--font-serif)', fontSize: '22px', fontWeight: 600, color: '#EDE2D0', marginBottom: '10px' }}>
+                <h3 style={{ fontFamily: 'var(--font-serif)', fontSize: '23px', fontWeight: 600, color: '#FBF8F3', marginBottom: '12px' }}>
                   Identifiable Source Records
                 </h3>
-                <p style={{ fontSize: '14px', color: 'var(--signet-muted)', lineHeight: 1.65 }}>
+                <p style={{ fontSize: '14.5px', color: 'var(--signet-muted)', lineHeight: 1.7 }}>
                   Every credential ties back to real, inspectable git evidence: commit hashes, pull request discussions,
                   code diff metrics, and maintainer signatures.
                 </p>
               </div>
 
               <div
+                className="signet-luxury-card"
                 style={{
-                  backgroundColor: '#141312',
-                  border: '1px solid rgba(237, 226, 208, 0.1)',
-                  borderRadius: '14px',
-                  padding: '2.2rem 2rem',
+                  borderRadius: '16px',
+                  padding: '2.4rem 2.2rem',
                 }}
               >
-                <div style={{ color: '#B9572B', fontWeight: 800, fontSize: '13px', textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: '12px' }}>
+                <div style={{ color: '#F59E0B', fontWeight: 800, fontSize: '13px', textTransform: 'uppercase', letterSpacing: '0.12em', marginBottom: '14px' }}>
                   02. Verification
                 </div>
-                <h3 style={{ fontFamily: 'var(--font-serif)', fontSize: '22px', fontWeight: 600, color: '#EDE2D0', marginBottom: '10px' }}>
+                <h3 style={{ fontFamily: 'var(--font-serif)', fontSize: '23px', fontWeight: 600, color: '#FBF8F3', marginBottom: '12px' }}>
                   Rigorous Inspection Process
                 </h3>
-                <p style={{ fontSize: '14px', color: 'var(--signet-muted)', lineHeight: 1.65 }}>
+                <p style={{ fontSize: '14.5px', color: 'var(--signet-muted)', lineHeight: 1.7 }}>
                   Evidence is audited according to implemented SIGNET requirements.
                   A merged pull request is not proof by itself; validation establishes authenticity before attestation.
                 </p>
               </div>
 
               <div
+                className="signet-luxury-card"
                 style={{
-                  backgroundColor: '#141312',
-                  border: '1px solid rgba(237, 226, 208, 0.1)',
-                  borderRadius: '14px',
-                  padding: '2.2rem 2rem',
+                  borderRadius: '16px',
+                  padding: '2.4rem 2.2rem',
                 }}
               >
-                <div style={{ color: '#B9572B', fontWeight: 800, fontSize: '13px', textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: '12px' }}>
+                <div style={{ color: '#E06D38', fontWeight: 800, fontSize: '13px', textTransform: 'uppercase', letterSpacing: '0.12em', marginBottom: '14px' }}>
                   03. Credential
                 </div>
-                <h3 style={{ fontFamily: 'var(--font-serif)', fontSize: '22px', fontWeight: 600, color: '#EDE2D0', marginBottom: '10px' }}>
+                <h3 style={{ fontFamily: 'var(--font-serif)', fontSize: '23px', fontWeight: 600, color: '#FBF8F3', marginBottom: '12px' }}>
                   Independently Inspectable
                 </h3>
-                <p style={{ fontSize: '14px', color: 'var(--signet-muted)', lineHeight: 1.65 }}>
+                <p style={{ fontSize: '14.5px', color: 'var(--signet-muted)', lineHeight: 1.7 }}>
                   An issued credential stands on its own. Anyone can inspect its evidence trail without trusting a centralised
                   platform, private database, or proprietary API key.
                 </p>
@@ -441,25 +460,26 @@ export default function Landing() {
           </div>
         </section>
 
-        {/* ── SECTION 6: Who SIGNET Serves (Warm Cream #F3E8D5) ── */}
+        {/* ── SECTION 6: Who SIGNET Serves (Luxury Obsidian #0E0D0C) ── */}
         <section
           id="audiences"
           style={{
-            backgroundColor: '#F3E8D5',
-            color: '#191715',
-            padding: '6rem 2rem 6.5rem',
+            backgroundColor: '#0E0D0C',
+            color: '#EDE2D0',
+            padding: '7rem 2rem 7.5rem',
+            borderTop: '1px solid rgba(237, 226, 208, 0.08)',
           }}
           aria-labelledby="audience-headline"
         >
-          <div style={{ maxWidth: '1240px', margin: '0 auto' }}>
-            <div style={{ textAlign: 'center', marginBottom: '4rem' }}>
+          <div style={{ maxWidth: '1260px', margin: '0 auto' }}>
+            <div style={{ textAlign: 'center', marginBottom: '4.5rem' }}>
               <span
                 style={{
-                  fontSize: '10.5px',
+                  fontSize: '11px',
                   fontWeight: 800,
                   textTransform: 'uppercase',
                   letterSpacing: '0.14em',
-                  color: '#B9572B',
+                  color: '#E06D38',
                   display: 'block',
                   marginBottom: '10px',
                 }}
@@ -472,7 +492,7 @@ export default function Landing() {
                 style={{
                   fontSize: 'clamp(34px, 4vw, 50px)',
                   fontWeight: 500,
-                  color: '#191715',
+                  color: '#FBF8F3',
                   marginBottom: '1rem',
                 }}
               >
@@ -480,11 +500,11 @@ export default function Landing() {
               </h2>
               <p
                 style={{
-                  fontSize: '16px',
+                  fontSize: '16.5px',
                   color: 'var(--signet-muted)',
                   maxWidth: '640px',
                   margin: '0 auto',
-                  lineHeight: 1.65,
+                  lineHeight: 1.7,
                 }}
               >
                 Developers remain the central focus of SIGNET. Communities, maintainers, organizations,
@@ -502,50 +522,78 @@ export default function Landing() {
               }}
               className="audience-four-grid"
             >
-              <div style={{ backgroundColor: '#FAF3E7', borderRadius: '12px', padding: '1.8rem 1.6rem', border: '1px solid rgba(118, 103, 91, 0.22)' }}>
-                <div style={{ fontSize: '11px', fontWeight: 800, color: '#B9572B', textTransform: 'uppercase', marginBottom: '8px' }}>
+              <div
+                className="signet-luxury-card"
+                style={{
+                  borderRadius: '16px',
+                  padding: '2rem 1.8rem',
+                  borderTop: '2px solid #E06D38',
+                }}
+              >
+                <div style={{ fontSize: '11px', fontWeight: 800, color: '#E06D38', textTransform: 'uppercase', marginBottom: '10px', letterSpacing: '0.08em' }}>
                   Developers · Primary
                 </div>
-                <h3 style={{ fontFamily: 'var(--font-serif)', fontSize: '20px', fontWeight: 600, color: '#191715', marginBottom: '8px' }}>
+                <h3 style={{ fontFamily: 'var(--font-serif)', fontSize: '21px', fontWeight: 600, color: '#FBF8F3', marginBottom: '10px' }}>
                   Preserve Your Legacy
                 </h3>
-                <p style={{ fontSize: '13px', color: 'var(--signet-muted)', lineHeight: 1.6 }}>
+                <p style={{ fontSize: '13.5px', color: 'var(--signet-muted)', lineHeight: 1.65 }}>
                   Preserve and share a credible, permanent record of meaningful contributions across any public or private repository.
                 </p>
               </div>
 
-              <div style={{ backgroundColor: '#FAF3E7', borderRadius: '12px', padding: '1.8rem 1.6rem', border: '1px solid rgba(118, 103, 91, 0.22)' }}>
-                <div style={{ fontSize: '11px', fontWeight: 800, color: 'var(--signet-muted)', textTransform: 'uppercase', marginBottom: '8px' }}>
+              <div
+                className="signet-luxury-card"
+                style={{
+                  borderRadius: '16px',
+                  padding: '2rem 1.8rem',
+                  borderTop: '2px solid #38BDF8',
+                }}
+              >
+                <div style={{ fontSize: '11px', fontWeight: 800, color: '#38BDF8', textTransform: 'uppercase', marginBottom: '10px', letterSpacing: '0.08em' }}>
                   Communities
                 </div>
-                <h3 style={{ fontFamily: 'var(--font-serif)', fontSize: '20px', fontWeight: 600, color: '#191715', marginBottom: '8px' }}>
+                <h3 style={{ fontFamily: 'var(--font-serif)', fontSize: '21px', fontWeight: 600, color: '#FBF8F3', marginBottom: '10px' }}>
                   Recognise Builders
                 </h3>
-                <p style={{ fontSize: '13px', color: 'var(--signet-muted)', lineHeight: 1.6 }}>
+                <p style={{ fontSize: '13.5px', color: 'var(--signet-muted)', lineHeight: 1.65 }}>
                   Strengthen your ecosystem by celebrating and attributing the actual contributors whose work powers your libraries.
                 </p>
               </div>
 
-              <div style={{ backgroundColor: '#FAF3E7', borderRadius: '12px', padding: '1.8rem 1.6rem', border: '1px solid rgba(118, 103, 91, 0.22)' }}>
-                <div style={{ fontSize: '11px', fontWeight: 800, color: 'var(--signet-muted)', textTransform: 'uppercase', marginBottom: '8px' }}>
+              <div
+                className="signet-luxury-card"
+                style={{
+                  borderRadius: '16px',
+                  padding: '2rem 1.8rem',
+                  borderTop: '2px solid #F59E0B',
+                }}
+              >
+                <div style={{ fontSize: '11px', fontWeight: 800, color: '#F59E0B', textTransform: 'uppercase', marginBottom: '10px', letterSpacing: '0.08em' }}>
                   Maintainers & Orgs
                 </div>
-                <h3 style={{ fontFamily: 'var(--font-serif)', fontSize: '20px', fontWeight: 600, color: '#191715', marginBottom: '8px' }}>
+                <h3 style={{ fontFamily: 'var(--font-serif)', fontSize: '21px', fontWeight: 600, color: '#FBF8F3', marginBottom: '10px' }}>
                   Structured Records
                 </h3>
-                <p style={{ fontSize: '13px', color: 'var(--signet-muted)', lineHeight: 1.6 }}>
+                <p style={{ fontSize: '13.5px', color: 'var(--signet-muted)', lineHeight: 1.65 }}>
                   Create clear, verifiable credentials for contributors without adding administrative burden to pull request reviews.
                 </p>
               </div>
 
-              <div style={{ backgroundColor: '#FAF3E7', borderRadius: '12px', padding: '1.8rem 1.6rem', border: '1px solid rgba(118, 103, 91, 0.22)' }}>
-                <div style={{ fontSize: '11px', fontWeight: 800, color: 'var(--signet-muted)', textTransform: 'uppercase', marginBottom: '8px' }}>
+              <div
+                className="signet-luxury-card"
+                style={{
+                  borderRadius: '16px',
+                  padding: '2rem 1.8rem',
+                  borderTop: '2px solid #2A7D4F',
+                }}
+              >
+                <div style={{ fontSize: '11px', fontWeight: 800, color: '#4ADE80', textTransform: 'uppercase', marginBottom: '10px', letterSpacing: '0.08em' }}>
                   Reviewers & Recruiters
                 </div>
-                <h3 style={{ fontFamily: 'var(--font-serif)', fontSize: '20px', fontWeight: 600, color: '#191715', marginBottom: '8px' }}>
+                <h3 style={{ fontFamily: 'var(--font-serif)', fontSize: '21px', fontWeight: 600, color: '#FBF8F3', marginBottom: '10px' }}>
                   Direct Source Proof
                 </h3>
-                <p style={{ fontSize: '13px', color: 'var(--signet-muted)', lineHeight: 1.6 }}>
+                <p style={{ fontSize: '13.5px', color: 'var(--signet-muted)', lineHeight: 1.65 }}>
                   Inspect real contribution evidence and commit diffs instead of relying only on unverifiable resume assertions.
                 </p>
               </div>
@@ -553,26 +601,26 @@ export default function Landing() {
           </div>
         </section>
 
-        {/* ── SECTION 7: Technical Credibility (Deep Charcoal #10100F) ── */}
+        {/* ── SECTION 7: Technical Credibility (Deep Charcoal #0A0908) ── */}
         <section
           id="technical"
           style={{
-            backgroundColor: '#10100F',
+            backgroundColor: '#0A0908',
             color: '#EDE2D0',
-            padding: '6.5rem 2rem 7rem',
+            padding: '7rem 2rem 7.5rem',
             borderTop: '1px solid rgba(237, 226, 208, 0.08)',
           }}
           aria-labelledby="tech-headline"
         >
-          <div style={{ maxWidth: '1240px', margin: '0 auto' }}>
-            <div style={{ textAlign: 'center', marginBottom: '4rem' }}>
+          <div style={{ maxWidth: '1260px', margin: '0 auto' }}>
+            <div style={{ textAlign: 'center', marginBottom: '4.5rem' }}>
               <span
                 style={{
-                  fontSize: '10.5px',
+                  fontSize: '11px',
                   fontWeight: 800,
                   textTransform: 'uppercase',
                   letterSpacing: '0.14em',
-                  color: '#B9572B',
+                  color: '#E06D38',
                   display: 'block',
                   marginBottom: '10px',
                 }}
@@ -585,7 +633,7 @@ export default function Landing() {
                 style={{
                   fontSize: 'clamp(34px, 4vw, 50px)',
                   fontWeight: 500,
-                  color: '#EDE2D0',
+                  color: '#FBF8F3',
                   marginBottom: '1.2rem',
                 }}
               >
@@ -593,7 +641,7 @@ export default function Landing() {
               </h2>
               <p
                 style={{
-                  fontSize: '16px',
+                  fontSize: '16.5px',
                   color: 'var(--signet-muted)',
                   maxWidth: '640px',
                   margin: '0 auto',
@@ -608,11 +656,13 @@ export default function Landing() {
             {/* Architecture Flow Diagram */}
             <div
               style={{
-                backgroundColor: '#141312',
-                border: '1px solid rgba(237, 226, 208, 0.1)',
-                borderRadius: '16px',
-                padding: '2.5rem',
-                marginBottom: '3rem',
+                backgroundColor: 'rgba(20, 17, 15, 0.75)',
+                backdropFilter: 'blur(16px)',
+                border: '1px solid rgba(237, 226, 208, 0.12)',
+                borderRadius: '18px',
+                padding: '2.8rem 2.2rem',
+                marginBottom: '3.5rem',
+                boxShadow: '0 20px 50px rgba(0, 0, 0, 0.6)',
               }}
             >
               <div
@@ -624,26 +674,30 @@ export default function Landing() {
                 }}
                 className="tech-flow-grid"
               >
-                <div style={{ textAlign: 'center', padding: '1rem' }}>
-                  <div style={{ fontSize: '10px', color: '#B9572B', fontWeight: 800, marginBottom: '4px' }}>STEP 1</div>
-                  <div style={{ fontSize: '14px', fontWeight: 700 }}>GitHub Contribution</div>
-                  <div style={{ fontSize: '11px', color: 'var(--signet-muted)', marginTop: '4px' }}>Merged PR webhook event</div>
+                <div style={{ textAlign: 'center', padding: '1.2rem', backgroundColor: 'rgba(255, 255, 255, 0.02)', borderRadius: '12px', border: '1px solid rgba(237, 226, 208, 0.07)' }}>
+                  <div style={{ fontSize: '10.5px', color: '#E06D38', fontWeight: 800, marginBottom: '6px', letterSpacing: '0.08em' }}>STEP 1</div>
+                  <div style={{ fontSize: '14.5px', fontWeight: 700, color: '#FBF8F3' }}>GitHub Contribution</div>
+                  <div style={{ fontSize: '11.5px', color: 'var(--signet-muted)', marginTop: '4px' }}>Merged PR webhook event</div>
                 </div>
 
-                <div style={{ textAlign: 'center', color: '#B9572B', fontSize: '18px' }}>→</div>
-
-                <div style={{ textAlign: 'center', padding: '1rem' }}>
-                  <div style={{ fontSize: '10px', color: '#B9572B', fontWeight: 800, marginBottom: '4px' }}>STEP 2</div>
-                  <div style={{ fontSize: '14px', fontWeight: 700 }}>Evidence Extraction</div>
-                  <div style={{ fontSize: '11px', color: 'var(--signet-muted)', marginTop: '4px' }}>Commit SHA, diffs & signatures</div>
+                <div style={{ textAlign: 'center', color: '#E06D38', fontSize: '22px', fontWeight: 700 }}>
+                  →
                 </div>
 
-                <div style={{ textAlign: 'center', color: '#B9572B', fontSize: '18px' }}>→</div>
+                <div style={{ textAlign: 'center', padding: '1.2rem', backgroundColor: 'rgba(255, 255, 255, 0.02)', borderRadius: '12px', border: '1px solid rgba(237, 226, 208, 0.07)' }}>
+                  <div style={{ fontSize: '10.5px', color: '#38BDF8', fontWeight: 800, marginBottom: '6px', letterSpacing: '0.08em' }}>STEP 2</div>
+                  <div style={{ fontSize: '14.5px', fontWeight: 700, color: '#FBF8F3' }}>Evidence Extraction</div>
+                  <div style={{ fontSize: '11.5px', color: 'var(--signet-muted)', marginTop: '4px' }}>Commit SHA, diffs & signatures</div>
+                </div>
 
-                <div style={{ textAlign: 'center', padding: '1rem' }}>
-                  <div style={{ fontSize: '10px', color: '#B9572B', fontWeight: 800, marginBottom: '4px' }}>STEP 3</div>
-                  <div style={{ fontSize: '14px', fontWeight: 700 }}>NEAR Attestation</div>
-                  <div style={{ fontSize: '11px', color: 'var(--signet-muted)', marginTop: '4px' }}>Non-transferable on-chain record</div>
+                <div style={{ textAlign: 'center', color: '#38BDF8', fontSize: '22px', fontWeight: 700 }}>
+                  →
+                </div>
+
+                <div style={{ textAlign: 'center', padding: '1.2rem', backgroundColor: 'rgba(255, 255, 255, 0.02)', borderRadius: '12px', border: '1px solid rgba(237, 226, 208, 0.07)' }}>
+                  <div style={{ fontSize: '10.5px', color: '#F59E0B', fontWeight: 800, marginBottom: '6px', letterSpacing: '0.08em' }}>STEP 3</div>
+                  <div style={{ fontSize: '14.5px', fontWeight: 700, color: '#FBF8F3' }}>NEAR Attestation</div>
+                  <div style={{ fontSize: '11.5px', color: 'var(--signet-muted)', marginTop: '4px' }}>Non-transferable on-chain record</div>
                 </div>
               </div>
             </div>
