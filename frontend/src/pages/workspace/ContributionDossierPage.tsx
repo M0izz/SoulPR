@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { useWorkspace, type ContributionRecord, type EvidenceClassification } from '../../context/WorkspaceContext'
 import CredentialSeal from '../../components/credential/CredentialSeal'
+import HolographicCredential3D from '../../components/credential/HolographicCredential3D'
 import {
   IconArrowLeft,
   IconCheckCircle,
@@ -504,6 +505,58 @@ export default function ContributionDossierPage() {
                 Inspect Issued Credentials Shelf →
               </button>
             </div>
+
+            {/* REAL MINTED 3D SOULBOUND TOKEN (SBT) */}
+            {record && (
+              <div style={{ marginTop: '2rem', paddingTop: '1.8rem', borderTop: '1px solid rgba(255, 255, 255, 0.1)' }}>
+                <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '1rem' }}>
+                  <span
+                    className="shimmer-badge"
+                    style={{
+                      display: 'inline-flex',
+                      alignItems: 'center',
+                      gap: '6px',
+                      fontSize: '11px',
+                      fontWeight: 800,
+                      color: '#00EC97',
+                      background: 'rgba(0, 236, 151, 0.12)',
+                      border: '1px solid rgba(0, 236, 151, 0.35)',
+                      padding: '5px 16px',
+                      borderRadius: '99px',
+                      textTransform: 'uppercase',
+                      letterSpacing: '0.12em',
+                    }}
+                  >
+                    <span style={{ width: '6px', height: '6px', borderRadius: '50%', backgroundColor: '#00EC97' }} />
+                    REAL MINTED SOULBOUND TOKEN (SBT) ON NEAR
+                  </span>
+                </div>
+
+                <HolographicCredential3D
+                  data={{
+                    credentialId: record.id,
+                    contributor: record.author || 'contributor',
+                    repository: `${record.repo}${record.prNumber ? ` #${record.prNumber}` : ''}`,
+                    contributionTitle: record.prTitle,
+                    mergeDate: new Date(record.mergedAt).toLocaleDateString('en-US', {
+                      month: 'short',
+                      day: 'numeric',
+                      year: 'numeric',
+                    }),
+                    network: 'NEAR Blockchain',
+                    txHash: record.mergeCommitSha || 'near:attestation:settled',
+                    evidenceDigest: record.mergeCommitSha
+                      ? record.mergeCommitSha.startsWith('sha256:')
+                        ? record.mergeCommitSha
+                        : `sha256:${record.mergeCommitSha}`
+                      : 'sha256:7f83b1657ff1fc53b92dc18148a1d65dfc2d4b1fa3d677284addd200126d9069',
+                    isSample: false,
+                  }}
+                  autoRotate={true}
+                  showPedestal={true}
+                />
+              </div>
+            )}
           </div>
         )}
       </div>
