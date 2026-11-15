@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react'
 import { useSearchParams, useNavigate } from 'react-router-dom'
 import { api } from '../lib/api'
 import nearConnector from '../lib/near'
+import NearWalletConnectModal from '../components/wallet/NearWalletConnectModal'
 import {
   IconCheck,
   IconLock,
@@ -27,6 +28,7 @@ export default function LinkWallet() {
   const [error, setError] = useState<string | null>(null)
   const [showDevInput, setShowDevInput] = useState(false)
   const [devAccountId, setDevAccountId] = useState('')
+  const [showWcModal, setShowWcModal] = useState(false)
 
   // NEAR mode is default for SIGNET (NEAR-first), opt-out via VITE_NEAR_ENABLED=false
   const useNear = (import.meta.env.VITE_NEAR_ENABLED ?? 'true') !== 'false'
@@ -416,28 +418,57 @@ export default function LinkWallet() {
                 </div>
 
                 {step2 === 'active' && useNear && (
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', marginTop: '10px' }}>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', marginTop: '10px' }}>
+                    {/* Primary Universal WalletConnect Action */}
+                    <button
+                      type="button"
+                      onClick={() => setShowWcModal(true)}
+                      className="btn-signet-primary"
+                      style={{
+                        width: '100%',
+                        fontSize: '13px',
+                        padding: '11px 18px',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        gap: '10px',
+                        background: 'linear-gradient(135deg, #1E3A8A 0%, #2563EB 50%, #B9572B 100%)',
+                        boxShadow: '0 4px 16px rgba(37, 99, 235, 0.25)',
+                        border: 'none',
+                        cursor: 'pointer',
+                        borderRadius: '8px',
+                      }}
+                    >
+                      <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
+                        <path
+                          d="M6.3 8.7a8.2 8.2 0 0 1 11.4 0l.4.4a.5.5 0 0 1 0 .7l-1.3 1.3a.5.5 0 0 1-.7 0l-.6-.6a5.8 5.8 0 0 0-8 0l-.6.6a.5.5 0 0 1-.7 0L5.9 9.8a.5.5 0 0 1 0-.7l.4-.4zm13.7 2.3l1.8 1.8a.5.5 0 0 1 0 .7l-8 8a.5.5 0 0 1-.7 0l-5.6-5.6a.5.5 0 0 1 0-.7l1.8-1.8a.5.5 0 0 1 .7 0l4.3 4.3 6.7-6.7a.5.5 0 0 1 .7 0z"
+                          fill="#FFFFFF"
+                        />
+                      </svg>
+                      Connect with WalletConnect (Any NEAR Wallet)
+                    </button>
+
                     <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
                       <button
                         onClick={connectMyNearWallet}
-                        className="btn-signet-primary"
-                        style={{ fontSize: '12.5px', padding: '8px 14px' }}
+                        className="btn-signet-secondary"
+                        style={{ fontSize: '12px', padding: '6px 12px' }}
                       >
-                        <IconExternalLink size={13} color="#EDE2D0" />
+                        <IconExternalLink size={12} color="currentColor" />
                         MyNearWallet Web
                       </button>
                       <button
                         onClick={connectInjectedNear}
                         className="btn-signet-secondary"
-                        style={{ fontSize: '12.5px', padding: '8px 14px' }}
+                        style={{ fontSize: '12px', padding: '6px 12px' }}
                       >
-                        <IconWallet size={13} color="currentColor" />
+                        <IconWallet size={12} color="currentColor" />
                         Sender / Meteor
                       </button>
                       <button
                         onClick={() => setShowDevInput(!showDevInput)}
                         className="btn-signet-secondary"
-                        style={{ fontSize: '12.5px', padding: '8px 14px' }}
+                        style={{ fontSize: '12px', padding: '6px 12px' }}
                       >
                         Testnet Direct ID
                       </button>
@@ -562,6 +593,18 @@ export default function LinkWallet() {
           )}
         </div>
       </div>
+
+      {/* Universal NEAR WalletConnect Modal */}
+      <NearWalletConnectModal
+        isOpen={showWcModal}
+        onClose={() => setShowWcModal(false)}
+        onConnect={(acc) => {
+          setWallet(acc.accountId)
+          if (acc.publicKey) {
+            setNearPubKey(acc.publicKey)
+          }
+        }}
+      />
     </main>
   )
 }

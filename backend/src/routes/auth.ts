@@ -39,7 +39,7 @@ function verifySignedState(stateStr: string, secret: string): any | null {
  */
 router.get("/github", (req: Request, res: Response) => {
   const originQuery = typeof req.query.origin === "string" ? req.query.origin : undefined;
-  const returnToQuery = typeof req.query.return_to === "string" ? req.query.return_to : "/link-wallet";
+  const returnToQuery = typeof req.query.return_to === "string" ? req.query.return_to : "/dashboard";
   const frontendUrl = getFrontendUrl(req, originQuery);
 
   const clientId = process.env.GITHUB_CLIENT_ID;
@@ -92,7 +92,7 @@ router.get("/github/callback", async (req: Request, res: Response) => {
   const sessionSecret = process.env.SESSION_SECRET ?? "receipt_secret_dev_key";
 
   let frontendUrl = getFrontendUrl(req);
-  let returnToPath = "/link-wallet";
+  let returnToPath = "/dashboard";
 
   const verifiedState = verifySignedState(rawState, sessionSecret);
   if (verifiedState) {

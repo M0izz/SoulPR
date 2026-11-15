@@ -32,7 +32,7 @@ function verifyNearSignature(
     const pk = PublicKey.fromString(publicKey);
     // NEAR signatures arrive base64-encoded; decode to bytes for verification
     const sigBytes = Buffer.from(signature, "base64");
-    return pk.verify(sigBytes, Buffer.from(message, "utf8"));
+    return pk.verify(Buffer.from(message, "utf8"), sigBytes);
   } catch {
     return false;
   }

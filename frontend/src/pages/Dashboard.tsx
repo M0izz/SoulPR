@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { Link, useNavigate } from 'react-router-dom'
+import { Link, useNavigate, useSearchParams } from 'react-router-dom'
 import api, { type RepoItem } from '../lib/api'
 import { fetchGitHubUserStats, type GitHubStats } from '../lib/github'
 import ThemeToggle from '../components/ThemeToggle'
@@ -330,11 +330,44 @@ function SettingsPanel({
         </div>
 
         <div style={{ background: 'var(--paper-raised)', border: '1px solid var(--rule)', borderRadius: '14px', padding: '1.4rem' }}>
-          <div style={{ fontWeight: 800, fontSize: '13px', color: 'var(--ink)', marginBottom: '4px' }}>Target Blockchain Protocol</div>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '4px' }}>
+            <div style={{ fontWeight: 800, fontSize: '13px', color: 'var(--ink)' }}>Target Blockchain Protocol</div>
+            <Link
+              to="/link-wallet"
+              style={{
+                fontSize: '12px',
+                fontWeight: 700,
+                color: '#B9572B',
+                textDecoration: 'none',
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '4px',
+              }}
+            >
+              {walletAddress ? 'Manage / Change Wallet →' : 'Connect via WalletConnect →'}
+            </Link>
+          </div>
           <div style={{ fontSize: '12px', color: 'var(--ink-muted)', marginBottom: '12px' }}>Decentralized attestation layer for non-transferable credential records</div>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '10px 14px', border: '1px solid var(--rule)', borderRadius: '8px', fontSize: '12.5px', fontWeight: 700, color: 'var(--ink)', backgroundColor: 'var(--paper)' }}>
-            <span style={{ width: '8px', height: '8px', borderRadius: '50%', background: '#B9572B', display: 'inline-block' }} />
-            NEAR Protocol (Testnet) · Account Mapping: {walletAddress ? `${walletAddress.slice(0, 10)}...` : `${githubUser}.near (Staged)`}
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '8px', padding: '10px 14px', border: '1px solid var(--rule)', borderRadius: '8px', fontSize: '12.5px', fontWeight: 700, color: 'var(--ink)', backgroundColor: 'var(--paper)' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+              <span style={{ width: '8px', height: '8px', borderRadius: '50%', background: '#B9572B', display: 'inline-block' }} />
+              NEAR Protocol (Testnet) · Account Mapping: {walletAddress ? `${walletAddress}` : `${githubUser}.near (Staged)`}
+            </div>
+            <Link
+              to="/link-wallet"
+              style={{
+                fontSize: '11.5px',
+                padding: '4px 10px',
+                borderRadius: '6px',
+                backgroundColor: 'rgba(185, 87, 43, 0.1)',
+                color: '#B9572B',
+                border: '1px solid rgba(185, 87, 43, 0.25)',
+                textDecoration: 'none',
+                fontWeight: 700,
+              }}
+            >
+              {walletAddress ? 'Linked ✓' : 'Connect Any Wallet'}
+            </Link>
           </div>
         </div>
 
@@ -367,6 +400,7 @@ function SettingsPanel({
 // ─── MAIN DASHBOARD COMPONENT ─────────────────────────────────
 export default function Dashboard() {
   const navigate = useNavigate()
+  const [searchParams] = useSearchParams()
   const [activeNav, setActiveNav] = useState<NavId>('overview')
   const [credentials] = useState<CredentialSummary[]>([])
   const [ghStats, setGhStats] = useState<GitHubStats | null>(null)
@@ -385,11 +419,25 @@ export default function Dashboard() {
       setLoadingStats(true)
       let currentGhUser = 'moizz'
 
+      const urlUser = searchParams.get('githubUsername')
+      if (urlUser) {
+        localStorage.setItem('signet_github_user', urlUser)
+        currentGhUser = urlUser
+        setUserGithub(urlUser)
+      } else {
+        const storedUser = localStorage.getItem('signet_github_user')
+        if (storedUser) {
+          currentGhUser = storedUser
+          setUserGithub(storedUser)
+        }
+      }
+
       try {
         const status = await api.getWalletStatus()
         if (status.authenticated && status.githubUsername) {
           currentGhUser = status.githubUsername
           setUserGithub(status.githubUsername)
+          localStorage.setItem('signet_github_user', status.githubUsername)
         }
         if (status.linked && status.walletAddress) {
           setUserWallet(status.walletAddress)

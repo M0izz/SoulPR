@@ -26,7 +26,9 @@ export default function Auth() {
     if (urlUser) {
       localStorage.setItem('signet_github_user', urlUser)
       setActiveUser(urlUser)
-      setInfoMessage(`Successfully authenticated as @${urlUser}! You can now access your dashboard or link your wallet.`)
+      // Directly navigate to dashboard after login as requested
+      navigate('/dashboard', { replace: true })
+      return
     }
 
     if (urlError) {
@@ -45,21 +47,20 @@ export default function Auth() {
       }
     }
     checkExistingSession()
-  }, [searchParams])
+  }, [searchParams, navigate])
 
-  // Primary Live GitHub OAuth Action
+  // Primary Live GitHub OAuth Action -> redirects straight to /dashboard upon completion
   const handleGitHubAuth = () => {
     const backendUrl = import.meta.env.VITE_BACKEND_URL ?? 'http://localhost:3001'
     const origin = window.location.origin
-    window.location.href = `${backendUrl}/auth/github?origin=${encodeURIComponent(origin)}&return_to=/auth`
+    window.location.href = `${backendUrl}/auth/github?origin=${encodeURIComponent(origin)}&return_to=/dashboard`
   }
 
-  // Quick fallback dev login if backend OAuth or connection is offline
+  // Quick fallback dev login if backend OAuth or connection is offline -> directly to dashboard
   const handleQuickDemoLogin = (username = 'moizz') => {
     localStorage.setItem('signet_github_user', username)
     setActiveUser(username)
-    setInfoMessage(`Authenticated as demo contributor @${username}. Welcome!`)
-    setErrorMessage(null)
+    navigate('/dashboard')
   }
 
   const handleSignOut = async () => {

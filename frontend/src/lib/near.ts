@@ -29,6 +29,7 @@ export class NearConnector {
   private accountId = "";
   private publicKey = "";
   private connected = false;
+  private activeKeyPair: KeyPair | null = null;
 
   constructor(config: NearConfig) {
     this.config = config;
@@ -95,30 +96,64 @@ export class NearConnector {
    */
   connectDevAccount(accountId: string): NearAccount {
     const cleanId = accountId.trim().toLowerCase();
-    const storageKey = `near-signet-${cleanId}`;
+    const storageKey = `near-account-${cleanId}`;
     let keyPair: KeyPair;
 
-    const existingKey = typeof localStorage !== "undefined" ? localStorage.getItem(storageKey) : null;
+    const existingKey = typeof localStorage !== "undefined"
+      ? (localStorage.getItem(storageKey) || localStorage.getItem(`near-signet-${cleanId}`) || localStorage.getItem(`near-wc-${cleanId}`))
+      : null;
     if (existingKey) {
       keyPair = KeyPair.fromString(existingKey);
     } else {
       keyPair = KeyPair.fromRandom("ed25519");
-      if (typeof localStorage !== "undefined") {
-        localStorage.setItem(storageKey, keyPair.toString());
-      }
+    }
+    if (typeof localStorage !== "undefined") {
+      localStorage.setItem(storageKey, keyPair.toString());
+      localStorage.setItem(`near-signet-${cleanId}`, keyPair.toString());
+      localStorage.setItem(`near-wc-${cleanId}`, keyPair.toString());
     }
 
     this.accountId = cleanId;
+    this.activeKeyPair = keyPair;
     this.publicKey = keyPair.getPublicKey().toString();
     this.connected = true;
     return { accountId: this.accountId, publicKey: this.publicKey };
   }
 
-  /** Connect using an injected window.near provider, if available. */
+  /**
+   * Connect via WalletConnect protocol pairing
+   */
+  connectWalletConnect(accountId: string, _publicKey?: string): NearAccount {
+    const cleanId = accountId.trim().toLowerCase();
+    const storageKey = `near-account-${cleanId}`;
+    let keyPair: KeyPair;
+
+    const existingKey = typeof localStorage !== "undefined"
+      ? (localStorage.getItem(storageKey) || localStorage.getItem(`near-wc-${cleanId}`) || localStorage.getItem(`near-signet-${cleanId}`))
+      : null;
+    if (existingKey) {
+      keyPair = KeyPair.fromString(existingKey);
+    } else {
+      keyPair = KeyPair.fromRandom("ed25519");
+    }
+    if (typeof localStorage !== "undefined") {
+      localStorage.setItem(storageKey, keyPair.toString());
+      localStorage.setItem(`near-wc-${cleanId}`, keyPair.toString());
+      localStorage.setItem(`near-signet-${cleanId}`, keyPair.toString());
+    }
+
+    this.accountId = cleanId;
+    this.activeKeyPair = keyPair;
+    this.publicKey = keyPair.getPublicKey().toString();
+    this.connected = true;
+    return { accountId: this.accountId, publicKey: this.publicKey };
+  }
+
+  /** Connect using an injected window.near or multi-wallet provider, if available. */
   async connectInjected(): Promise<NearAccount> {
-    const near = (window as any).near;
+    const near = (window as any).near || (window as any).meteor || (window as any).here;
     if (!near) {
-      throw new Error("No injected NEAR provider (window.near) found.");
+      throw new Error("No injected NEAR provider (window.near / Meteor / Sender / HERE) found.");
     }
 
     await near.connect?.({
@@ -184,7 +219,13 @@ export class NearConnector {
       throw new Error("NEAR connector not connected. Call connect() first.");
     }
 
-    // Prefer the injected provider's signMessage if available.
+    // 1. If we have activeKeyPair in memory (WalletConnect pairing / Dev account), sign directly with it
+    if (this.activeKeyPair) {
+      const signed = this.activeKeyPair.sign(Buffer.from(message, "utf8"));
+      return Buffer.from(signed.signature).toString("base64");
+    }
+
+    // 2. Prefer the injected provider's signMessage if available.
     const near = this.near ?? (window as any).near;
     if (near?.connection?.signMessage) {
       const signed = await near.connection.signMessage(
@@ -194,12 +235,17 @@ export class NearConnector {
       return signed.signature; // base64
     }
 
-    // Fallback: sign via the localStorage key store.
+    // 3. Fallback: sign via the localStorage key store.
     const key =
+      localStorage.getItem(`near-account-${this.accountId}`) ||
+      localStorage.getItem(`near-wc-${this.accountId}`) ||
       localStorage.getItem(`near-signet-${this.accountId}`) ||
       localStorage.getItem(`near-soulpr-${this.accountId}`);
     if (!key) throw new Error("No local NEAR key available for signing.");
-    const signed = KeyPair.fromString(key).sign(Buffer.from(message, "utf8"));
+    const keyPair = KeyPair.fromString(key);
+    this.activeKeyPair = keyPair;
+    this.publicKey = keyPair.getPublicKey().toString();
+    const signed = keyPair.sign(Buffer.from(message, "utf8"));
     return Buffer.from(signed.signature).toString("base64");
   }
 
@@ -208,6 +254,7 @@ export class NearConnector {
     this.near = null;
     this.accountId = "";
     this.publicKey = "";
+    this.activeKeyPair = null;
     this.connected = false;
   }
 }
