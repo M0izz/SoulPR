@@ -2651,6 +2651,56 @@ button:disabled {
   box-shadow: 0 16px 36px -10px rgba(0, 0, 0, 0.7), 0 0 25px rgba(224, 109, 56, 0.15);
 }
 
+/* ── Biblically Accurate Ophanim Gyroscope Keyframes ── */
+@keyframes ophanimCyanRotate {
+  0% {
+    transform: rotateX(68deg) rotateY(-28deg) rotateZ(0deg);
+  }
+  100% {
+    transform: rotateX(68deg) rotateY(-28deg) rotateZ(360deg);
+  }
+}
+
+@keyframes ophanimGoldRotate {
+  0% {
+    transform: rotateX(-58deg) rotateY(32deg) rotateZ(360deg);
+  }
+  100% {
+    transform: rotateX(-58deg) rotateY(32deg) rotateZ(0deg);
+  }
+}
+
+@keyframes ophanimInnerRotate {
+  0% {
+    transform: rotateX(45deg) rotateY(65deg) rotateZ(0deg);
+  }
+  100% {
+    transform: rotateX(45deg) rotateY(65deg) rotateZ(-360deg);
+  }
+}
+
+@keyframes ophanimCoreFloat {
+  0%, 100% {
+    transform: translateY(0px) rotateX(10deg) rotateY(-6deg);
+  }
+  50% {
+    transform: translateY(-10px) rotateX(6deg) rotateY(6deg);
+  }
+}
+
+@keyframes celestialBeamPulse {
+  0%, 100% {
+    opacity: 0.55;
+    filter: blur(14px);
+    transform: scaleX(0.95);
+  }
+  50% {
+    opacity: 0.85;
+    filter: blur(18px);
+    transform: scaleX(1.08);
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   *,
   *::before,

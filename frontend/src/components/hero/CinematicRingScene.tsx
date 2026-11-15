@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react'
+import React from 'react'
 import SignetInsignia from '../brand/SignetInsignia'
 
 interface CinematicRingSceneProps {
@@ -6,417 +6,524 @@ interface CinematicRingSceneProps {
 }
 
 /**
- * Enhanced SIGNET Cinematic Architectural Ring & Seal Sequence
- * Elevates the physical ring-stamping metaphor to match the luxury cryptographic protocol:
- * 1. Heavy chamfered titanium & gold-inlay signet ring descends in 3D perspective.
- * 2. Specular metallic reflection sweeps across the beveled facets.
- * 3. Presses firmly into the cryptographic intaglio vault dais with mechanical precision.
- * 4. Stamping creates an illuminated golden seal impression with radiant shockwaves and particle aura.
- * 5. Remains alive with continuous gentle levitation and breathing ambient light.
+ * Biblically Accurate Ophanim (Gyroscopic) Cryptographic Seal Engine
+ * Features multi-axis revolving nested gimbal rings ("wheels within wheels"):
+ * 1. Radiant luminous cyan neon outer orbit ring revolving on a 3D tilted plane.
+ * 2. Golden celestial astrolabe dial ring with radial tick marks counter-revolving.
+ * 3. Inner coordinate gimbal ring revolving on a third intersecting axis.
+ * 4. Center floating architectural titanium & rose-gold intaglio seal matrix.
+ * 5. Vertical celestial light beam descending onto a multi-tier glowing floor dais.
+ * 6. Floating glassmorphic HUD badges: "CRYPTOGRAPHIC SEAL" & "ATTESTATION SETTLED".
  */
-export const CinematicRingScene: React.FC<CinematicRingSceneProps> = ({ onAnimationComplete }) => {
-  const [stage, setStage] = useState<'enter' | 'sweep' | 'descend' | 'stamp' | 'settled'>('enter')
-  const [replayKey, setReplayKey] = useState(0)
-
-  useEffect(() => {
-    setStage('enter')
-    const t1 = setTimeout(() => setStage('sweep'), 700)
-    const t2 = setTimeout(() => setStage('descend'), 1600)
-    const t3 = setTimeout(() => setStage('stamp'), 2400)
-    const t4 = setTimeout(() => {
-      setStage('settled')
-      if (onAnimationComplete) onAnimationComplete()
-    }, 3200)
-
-    return () => {
-      clearTimeout(t1)
-      clearTimeout(t2)
-      clearTimeout(t3)
-      clearTimeout(t4)
-    }
-  }, [replayKey, onAnimationComplete])
-
-  const isStamped = stage === 'stamp' || stage === 'settled'
-
+export const CinematicRingScene: React.FC<CinematicRingSceneProps> = () => {
   return (
     <div
-      key={replayKey}
-      onClick={() => setReplayKey((k) => k + 1)}
       style={{
         position: 'relative',
         width: '100%',
-        maxWidth: '520px',
-        height: '460px',
+        maxWidth: '560px',
+        height: '500px',
         margin: '0 auto',
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
-        perspective: '1300px',
+        perspective: '1400px',
         userSelect: 'none',
-        cursor: 'pointer',
       }}
       role="region"
-      aria-label="SIGNET Architectural Signet Ring & Cryptographic Stamping Dais (Click to restamp)"
-      title="Click to replay the cryptographic stamping sequence"
+      aria-label="SIGNET Ophanim Cryptographic Seal Engine"
     >
-      {/* ── Ambient Radial Halo Behind Dais ── */}
+      {/* ── Background Celestial Glow Behind Gyroscope ── */}
       <div
         style={{
           position: 'absolute',
-          bottom: '50px',
-          width: '380px',
-          height: '240px',
+          top: '30%',
+          left: '50%',
+          transform: 'translate(-50%, -50%)',
+          width: '420px',
+          height: '360px',
           borderRadius: '50%',
-          background: isStamped
-            ? 'radial-gradient(ellipse at center, rgba(224, 109, 56, 0.28) 0%, rgba(245, 158, 11, 0.12) 45%, transparent 75%)'
-            : 'radial-gradient(ellipse at center, rgba(224, 109, 56, 0.12) 0%, transparent 70%)',
-          filter: 'blur(35px)',
-          transition: 'all 0.6s cubic-bezier(0.16, 1, 0.3, 1)',
+          background:
+            'radial-gradient(circle, rgba(245, 158, 11, 0.16) 0%, rgba(56, 189, 248, 0.08) 45%, transparent 75%)',
+          filter: 'blur(55px)',
           pointerEvents: 'none',
           zIndex: 0,
         }}
       />
 
-      {/* ── THE CRYPTOGRAPHIC INTAGLIO DAIS (VAULT PLATFORM) ── */}
+      {/* ── Floor Perspective Tech Grid ── */}
       <div
         style={{
           position: 'absolute',
-          bottom: '30px',
-          width: '360px',
-          height: '240px',
-          borderRadius: '50%',
-          transform: 'rotateX(64deg)',
+          bottom: '0px',
+          width: '100%',
+          height: '140px',
+          backgroundImage:
+            'linear-gradient(to right, rgba(237, 226, 208, 0.06) 1px, transparent 1px), linear-gradient(to top, rgba(237, 226, 208, 0.06) 1px, transparent 1px)',
+          backgroundSize: '36px 36px',
+          transform: 'rotateX(75deg)',
+          maskImage: 'radial-gradient(ellipse at 50% 60%, black 20%, transparent 80%)',
+          WebkitMaskImage: 'radial-gradient(ellipse at 50% 60%, black 20%, transparent 80%)',
+          pointerEvents: 'none',
+          zIndex: 1,
+        }}
+      />
+
+      {/* ── Vertical Celestial Light Beam ── */}
+      <div
+        style={{
+          position: 'absolute',
+          top: '20px',
+          bottom: '60px',
+          width: '56px',
+          background:
+            'linear-gradient(180deg, rgba(245, 158, 11, 0) 0%, rgba(245, 158, 11, 0.15) 30%, rgba(224, 109, 56, 0.3) 70%, rgba(245, 158, 11, 0.65) 100%)',
+          animation: 'celestialBeamPulse 4s ease-in-out infinite',
+          pointerEvents: 'none',
+          zIndex: 2,
+        }}
+      />
+
+      {/* ── Bottom Dais (Floor Light Altar) ── */}
+      <div
+        style={{
+          position: 'absolute',
+          bottom: '40px',
+          width: '190px',
+          height: '52px',
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',
-          zIndex: 1,
+          pointerEvents: 'none',
+          zIndex: 3,
         }}
       >
-        {/* Outer Heavy Beveled Bronze Rim */}
+        {/* Outer glowing floor ring */}
         <div
           style={{
             position: 'absolute',
-            inset: 0,
+            width: '180px',
+            height: '46px',
             borderRadius: '50%',
-            background: 'linear-gradient(145deg, #2D2520 0%, #151311 50%, #2A221E 100%)',
-            border: '2px solid rgba(245, 158, 11, 0.35)',
-            boxShadow: isStamped
-              ? '0 25px 60px rgba(0, 0, 0, 0.8), 0 0 30px rgba(224, 109, 56, 0.35), inset 0 2px 16px rgba(245, 158, 11, 0.2)'
-              : '0 20px 50px rgba(0, 0, 0, 0.7), inset 0 2px 10px rgba(255, 255, 255, 0.05)',
-            transition: 'box-shadow 0.5s ease',
+            border: '1.5px solid rgba(245, 158, 11, 0.5)',
+            boxShadow: '0 0 25px rgba(245, 158, 11, 0.4), inset 0 0 15px rgba(245, 158, 11, 0.2)',
+            transform: 'rotateX(75deg)',
           }}
         />
 
-        {/* Concentric Cryptographic Rune Ring */}
+        {/* Multi-tiered metallic dais platform */}
         <div
           style={{
             position: 'absolute',
-            width: '280px',
-            height: '280px',
+            width: '124px',
+            height: '32px',
             borderRadius: '50%',
-            border: '1.5px dashed rgba(245, 158, 11, 0.4)',
-            boxShadow: isStamped ? '0 0 20px rgba(245, 158, 11, 0.35)' : 'none',
-            animation: 'dais-rotate-slow 40s linear infinite',
+            background: 'linear-gradient(180deg, #2D2621 0%, #151311 100%)',
+            border: '2px solid #F59E0B',
+            boxShadow: '0 10px 25px rgba(0,0,0,0.8)',
+            transform: 'rotateX(75deg)',
+          }}
+        />
+
+        {/* Core radiant light lens */}
+        <div
+          style={{
+            position: 'absolute',
+            width: '76px',
+            height: '20px',
+            borderRadius: '50%',
+            background: 'radial-gradient(circle, #FFF7D6 0%, #F59E0B 65%, transparent 100%)',
+            filter: 'blur(3px)',
+            boxShadow: '0 0 30px #F59E0B',
+            transform: 'rotateX(75deg)',
+          }}
+        />
+      </div>
+
+      {/* ── 3D OPHANIM GYROSCOPE SPHERE (WHEELS WITHIN WHEELS) ── */}
+      <div
+        style={{
+          position: 'relative',
+          width: '440px',
+          height: '440px',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          transformStyle: 'preserve-3d',
+          zIndex: 4,
+        }}
+      >
+        {/* ========================================================
+            RING 1: LUMINOUS CYAN NEON ORBIT GIMBAL
+            Tilted at 68deg X, -28deg Y, rotating smoothly on Z
+            ======================================================== */}
+        <div
+          style={{
+            position: 'absolute',
+            width: '400px',
+            height: '400px',
+            borderRadius: '50%',
+            border: '3.5px solid #38BDF8',
+            boxShadow:
+              '0 0 28px rgba(56, 189, 248, 0.85), inset 0 0 20px rgba(56, 189, 248, 0.45)',
+            transformStyle: 'preserve-3d',
+            animation: 'ophanimCyanRotate 18s linear infinite',
             pointerEvents: 'none',
           }}
-        />
+        >
+          {/* Orbital Neon Satellite Node 1 */}
+          <div
+            style={{
+              position: 'absolute',
+              top: '50%',
+              left: '-7px',
+              width: '14px',
+              height: '14px',
+              borderRadius: '50%',
+              background: '#FFFFFF',
+              boxShadow: '0 0 16px #38BDF8, 0 0 28px #38BDF8',
+              transform: 'translateY(-50%)',
+            }}
+          />
+          {/* Orbital Neon Satellite Node 2 */}
+          <div
+            style={{
+              position: 'absolute',
+              top: '50%',
+              right: '-7px',
+              width: '14px',
+              height: '14px',
+              borderRadius: '50%',
+              background: '#FFFFFF',
+              boxShadow: '0 0 16px #38BDF8, 0 0 28px #38BDF8',
+              transform: 'translateY(-50%)',
+            }}
+          />
+        </div>
 
-        {/* Inner Laser Track Ring */}
+        {/* ========================================================
+            RING 2: CELESTIAL ASTROLABE / GOLDEN CHRONOMETER TICKET RING
+            Tilted at -58deg X, 32deg Y, counter-rotating smoothly
+            ======================================================== */}
         <div
           style={{
             position: 'absolute',
-            width: '220px',
-            height: '220px',
+            width: '340px',
+            height: '340px',
             borderRadius: '50%',
-            border: '1px solid rgba(56, 189, 248, 0.35)',
-            boxShadow: isStamped ? '0 0 15px rgba(56, 189, 248, 0.3)' : 'none',
+            transformStyle: 'preserve-3d',
+            animation: 'ophanimGoldRotate 14s linear infinite',
+            pointerEvents: 'none',
           }}
-        />
+        >
+          <svg
+            width="340"
+            height="340"
+            viewBox="0 0 340 340"
+            style={{
+              width: '100%',
+              height: '100%',
+              overflow: 'visible',
+            }}
+          >
+            <defs>
+              <filter id="goldDialGlow" x="-20%" y="-20%" width="140%" height="140%">
+                <feDropShadow dx="0" dy="0" stdDeviation="4" floodColor="#F59E0B" floodOpacity="0.75" />
+              </filter>
+            </defs>
 
-        {/* Core Seal Bed (Intaglio Wax & Metal Reservoir) */}
+            {/* Main Outer Gold Rim */}
+            <circle
+              cx="170"
+              cy="170"
+              r="165"
+              fill="none"
+              stroke="#F59E0B"
+              strokeWidth="2.5"
+              filter="url(#goldDialGlow)"
+            />
+
+            {/* Concentric Dashed Gauge Line */}
+            <circle
+              cx="170"
+              cy="170"
+              r="156"
+              fill="none"
+              stroke="#FDE68A"
+              strokeWidth="1.2"
+              strokeDasharray="4 6"
+              opacity="0.8"
+            />
+
+            {/* Inner Concentric Hairline */}
+            <circle
+              cx="170"
+              cy="170"
+              r="144"
+              fill="none"
+              stroke="#D97706"
+              strokeWidth="1"
+              opacity="0.6"
+            />
+
+            {/* 72 Chronometer Precision Tick Marks */}
+            <g stroke="#FDE68A" strokeWidth="1.5" opacity="0.9">
+              {[...Array(72)].map((_, i) => {
+                const angle = (i * 360) / 72
+                const isMajor = i % 6 === 0
+                const tickLen = isMajor ? 12 : 6
+                const rad = (angle * Math.PI) / 180
+                const x1 = 170 + 165 * Math.cos(rad)
+                const y1 = 170 + 165 * Math.sin(rad)
+                const x2 = 170 + (165 - tickLen) * Math.cos(rad)
+                const y2 = 170 + (165 - tickLen) * Math.sin(rad)
+                return (
+                  <line
+                    key={i}
+                    x1={x1}
+                    y1={y1}
+                    x2={x2}
+                    y2={y2}
+                    strokeWidth={isMajor ? 2.2 : 1.2}
+                    stroke={isMajor ? '#FFF7D6' : '#F59E0B'}
+                  />
+                )
+              })}
+            </g>
+          </svg>
+        </div>
+
+        {/* ========================================================
+            RING 3: INNER COORDINATE GIMBAL RING
+            Tilted at 45deg X, 65deg Y, revolving on a 3rd axis
+            ======================================================== */}
+        <div
+          style={{
+            position: 'absolute',
+            width: '270px',
+            height: '270px',
+            borderRadius: '50%',
+            border: '2px solid rgba(245, 158, 11, 0.45)',
+            boxShadow: '0 0 16px rgba(245, 158, 11, 0.3), inset 0 0 12px rgba(245, 158, 11, 0.15)',
+            transformStyle: 'preserve-3d',
+            animation: 'ophanimInnerRotate 10s linear infinite',
+            pointerEvents: 'none',
+          }}
+        >
+          {/* Inner Cyan Coordinate Points */}
+          <div
+            style={{
+              position: 'absolute',
+              top: '-5px',
+              left: '50%',
+              width: '10px',
+              height: '10px',
+              borderRadius: '50%',
+              background: '#38BDF8',
+              boxShadow: '0 0 12px #38BDF8',
+              transform: 'translateX(-50%)',
+            }}
+          />
+          <div
+            style={{
+              position: 'absolute',
+              bottom: '-5px',
+              left: '50%',
+              width: '10px',
+              height: '10px',
+              borderRadius: '50%',
+              background: '#F59E0B',
+              boxShadow: '0 0 12px #F59E0B',
+              transform: 'translateX(-50%)',
+            }}
+          />
+        </div>
+
+        {/* ========================================================
+            CENTER CORE: ARCHITECTURAL TITANIUM & ROSE-GOLD SEAL DISC
+            Levitating at center with subtle breathing hover
+            ======================================================== */}
         <div
           style={{
             position: 'relative',
-            width: '160px',
-            height: '160px',
+            width: '174px',
+            height: '174px',
             borderRadius: '50%',
-            backgroundColor: '#0E0C0B',
-            border: '2px solid rgba(224, 109, 56, 0.5)',
-            boxShadow: 'inset 0 4px 18px rgba(0, 0, 0, 0.95), 0 0 25px rgba(224, 109, 56, 0.2)',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            overflow: 'hidden',
+            transformStyle: 'preserve-3d',
+            animation: 'ophanimCoreFloat 6s ease-in-out infinite',
+            zIndex: 5,
           }}
         >
-          {/* Subtle gold leaf flecks */}
+          {/* Heavy Titanium Bezel Outer Body */}
           <div
             style={{
               position: 'absolute',
               inset: 0,
-              background:
-                'radial-gradient(circle at 35% 35%, rgba(245, 158, 11, 0.15) 0%, transparent 60%)',
-            }}
-          />
-
-          {/* Embossed Wax Seal Impression appearing on stamping */}
-          <div
-            style={{
-              position: 'relative',
-              width: '92px',
-              height: '92px',
               borderRadius: '50%',
               background:
-                'radial-gradient(circle, #E06D38 0%, #B9572B 60%, #7C2D12 100%)',
-              border: '2px solid #FDE68A',
-              boxShadow: isStamped
-                ? '0 0 35px rgba(224, 109, 56, 0.8), inset 0 2px 8px rgba(255, 255, 255, 0.4), inset 0 -3px 8px rgba(0,0,0,0.6)'
-                : 'none',
-              opacity: isStamped ? 1 : 0,
-              transform: isStamped ? 'scale(1)' : 'scale(0.75)',
-              transition: 'opacity 0.5s ease, transform 0.4s cubic-bezier(0.16, 1, 0.3, 1)',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-            }}
-          >
-            <SignetInsignia size={52} color="#FFF7D6" variant="seal" />
-          </div>
-        </div>
-
-        {/* Stamping Radiance Shockwave Ring */}
-        {isStamped && (
-          <div
-            style={{
-              position: 'absolute',
-              width: '320px',
-              height: '320px',
-              borderRadius: '50%',
-              border: '2px solid rgba(245, 158, 11, 0.65)',
-              animation: 'seal-shockwave 2.2s cubic-bezier(0.16, 1, 0.3, 1) infinite',
-              pointerEvents: 'none',
-            }}
-          />
-        )}
-      </div>
-
-      {/* ── THE ARCHITECTURAL SIGNET RING (HEAVY METALLURGY) ── */}
-      <div
-        style={{
-          position: 'relative',
-          zIndex: 3,
-          width: '210px',
-          height: '260px',
-          display: 'flex',
-          flexDirection: 'column',
-          alignItems: 'center',
-          transformStyle: 'preserve-3d',
-          transform:
-            stage === 'enter'
-              ? 'translateY(-70px) rotateX(20deg) rotateY(-22deg) scale(0.92)'
-              : stage === 'sweep'
-              ? 'translateY(-35px) rotateX(12deg) rotateY(14deg) scale(1.02)'
-              : stage === 'descend'
-              ? 'translateY(18px) rotateX(6deg) rotateY(0deg) scale(1)'
-              : stage === 'stamp'
-              ? 'translateY(36px) rotateX(2deg) scale(0.97)'
-              : 'translateY(28px) rotateX(4deg) scale(0.99)',
-          transition:
-            stage === 'descend'
-              ? 'transform 0.45s cubic-bezier(0.4, 0, 0.2, 1)'
-              : stage === 'stamp'
-              ? 'transform 0.12s cubic-bezier(0.1, 0.9, 0.2, 1)'
-              : stage === 'settled'
-              ? 'transform 0.6s cubic-bezier(0.16, 1, 0.3, 1)'
-              : 'transform 0.9s cubic-bezier(0.16, 1, 0.3, 1)',
-          animation: stage === 'settled' ? 'ring-gentle-hover 5s ease-in-out infinite' : undefined,
-        }}
-      >
-        {/* Ring Shank (Beveled Titanium & Rose-Gold Inlay) */}
-        <div
-          style={{
-            width: '150px',
-            height: '150px',
-            borderRadius: '50%',
-            border: '18px solid #28231F',
-            boxShadow:
-              'inset 0 4px 14px rgba(255,255,255,0.18), inset 0 -8px 18px rgba(0,0,0,0.9), 0 16px 40px rgba(0,0,0,0.8), 0 0 20px rgba(245, 158, 11, 0.25)',
-            position: 'relative',
-            background:
-              'linear-gradient(135deg, #38312B 0%, #1A1715 45%, #2E2823 80%, #151311 100%)',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-          }}
-        >
-          {/* Specular Glint Across Bezel */}
-          <div
-            style={{
-              position: 'absolute',
-              inset: '-12px',
-              borderRadius: '50%',
-              background:
-                'linear-gradient(115deg, transparent 38%, rgba(254, 243, 199, 0.4) 50%, transparent 62%)',
-              pointerEvents: 'none',
-              animation: 'ring-specular-sweep 5s ease-in-out infinite',
-            }}
-          />
-
-          {/* Rose Gold Inner Inlay Ring */}
-          <div
-            style={{
-              position: 'absolute',
-              inset: '3px',
-              borderRadius: '50%',
-              border: '2px solid rgba(245, 158, 11, 0.6)',
-              pointerEvents: 'none',
-            }}
-          />
-
-          {/* Intaglio Engraved Ring Face (Seal Matrix) */}
-          <div
-            style={{
-              width: '90px',
-              height: '90px',
-              borderRadius: '14px',
-              backgroundColor: '#0C0A09',
-              border: '2.5px solid #F59E0B',
+                'linear-gradient(135deg, #3C342E 0%, #1A1715 45%, #2D2722 80%, #151311 100%)',
+              border: '18px solid #28231F',
               boxShadow:
-                'inset 0 4px 14px rgba(0,0,0,0.95), 0 0 24px rgba(245, 158, 11, 0.35)',
+                '0 25px 60px rgba(0, 0, 0, 0.9), inset 0 4px 12px rgba(255, 255, 255, 0.18), inset 0 -8px 18px rgba(0, 0, 0, 0.9), 0 0 25px rgba(245, 158, 11, 0.3)',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
-              position: 'relative',
-              overflow: 'hidden',
             }}
           >
-            {/* Core intaglio matrix reflection */}
+            {/* Polished Rose-Gold Inner Inlay Ring */}
             <div
               style={{
                 position: 'absolute',
-                inset: 0,
-                background:
-                  'radial-gradient(circle at 40% 30%, rgba(245, 158, 11, 0.2) 0%, transparent 70%)',
+                inset: '2px',
+                borderRadius: '50%',
+                border: '2.5px solid rgba(245, 158, 11, 0.75)',
+                boxShadow: '0 0 10px rgba(245, 158, 11, 0.4)',
+                pointerEvents: 'none',
               }}
             />
-            <SignetInsignia size={58} color="#FDE68A" variant="engraved" />
+
+            {/* Specular Glint Across Metal Surface */}
+            <div
+              style={{
+                position: 'absolute',
+                inset: '-12px',
+                borderRadius: '50%',
+                background:
+                  'linear-gradient(115deg, transparent 38%, rgba(254, 243, 199, 0.45) 50%, transparent 62%)',
+                pointerEvents: 'none',
+                animation: 'ring-specular-sweep 6s ease-in-out infinite',
+              }}
+            />
+
+            {/* Deep Obsidian Chamber with Rounded Corners */}
+            <div
+              style={{
+                width: '92px',
+                height: '92px',
+                borderRadius: '16px',
+                backgroundColor: '#090807',
+                border: '2.5px solid #F59E0B',
+                boxShadow:
+                  'inset 0 4px 16px rgba(0, 0, 0, 0.95), 0 0 24px rgba(245, 158, 11, 0.4)',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                position: 'relative',
+                overflow: 'hidden',
+              }}
+            >
+              {/* Inner ambient golden radial illumination */}
+              <div
+                style={{
+                  position: 'absolute',
+                  inset: 0,
+                  background:
+                    'radial-gradient(circle at 40% 35%, rgba(245, 158, 11, 0.28) 0%, transparent 70%)',
+                }}
+              />
+
+              {/* Glowing Golden Geometric Insignia */}
+              <SignetInsignia size={60} color="#FDE68A" variant="engraved" />
+            </div>
           </div>
         </div>
-
-        {/* Ring Band Stem / Neck Connection */}
-        <div
-          style={{
-            width: '32px',
-            height: '42px',
-            background: 'linear-gradient(180deg, #2D2722 0%, #171412 100%)',
-            borderLeft: '1.5px solid rgba(245, 158, 11, 0.4)',
-            borderRight: '1.5px solid rgba(245, 158, 11, 0.4)',
-            borderRadius: '4px',
-            marginTop: '-6px',
-            boxShadow: '0 6px 14px rgba(0,0,0,0.7)',
-          }}
-        />
       </div>
 
-      {/* ── High-Tech Floating Micro-HUD Indicators ── */}
-      {isStamped && (
-        <>
-          {/* Top-Left: Cryptographic Seal */}
-          <div
-            className="signet-fluid-drift-a"
-            style={{
-              position: 'absolute',
-              top: '30px',
-              left: '-10px',
-              zIndex: 4,
-              display: 'flex',
-              alignItems: 'center',
-              gap: '6px',
-              background: 'rgba(22, 18, 15, 0.85)',
-              backdropFilter: 'blur(16px)',
-              border: '1px solid rgba(245, 158, 11, 0.4)',
-              borderRadius: '99px',
-              padding: '6px 14px',
-              boxShadow: '0 8px 24px rgba(0, 0, 0, 0.6), 0 0 16px rgba(245, 158, 11, 0.25)',
-              fontSize: '10.5px',
-              fontWeight: 700,
-              color: '#FEF3C7',
-              letterSpacing: '0.08em',
-              textTransform: 'uppercase',
-              pointerEvents: 'none',
-            }}
-          >
-            <span
-              style={{
-                width: '7px',
-                height: '7px',
-                borderRadius: '50%',
-                background: '#F59E0B',
-                boxShadow: '0 0 8px #F59E0B',
-              }}
-            />
-            Cryptographic Seal
-          </div>
+      {/* ── High-Tech Floating Micro-HUD Badges (Matching Reference Image) ── */}
+      {/* Top-Left: Cryptographic Seal */}
+      <div
+        className="signet-fluid-drift-a"
+        style={{
+          position: 'absolute',
+          top: '40px',
+          left: '20px',
+          zIndex: 6,
+          display: 'flex',
+          alignItems: 'center',
+          gap: '8px',
+          background: 'rgba(24, 18, 12, 0.85)',
+          backdropFilter: 'blur(16px)',
+          WebkitBackdropFilter: 'blur(16px)',
+          border: '1.5px solid rgba(245, 158, 11, 0.45)',
+          borderRadius: '99px',
+          padding: '7px 18px',
+          boxShadow: '0 10px 28px rgba(0, 0, 0, 0.7), 0 0 18px rgba(245, 158, 11, 0.3)',
+          fontSize: '11px',
+          fontWeight: 800,
+          color: '#FEF3C7',
+          letterSpacing: '0.1em',
+          textTransform: 'uppercase',
+          pointerEvents: 'none',
+        }}
+      >
+        <span
+          style={{
+            width: '8px',
+            height: '8px',
+            borderRadius: '50%',
+            background: '#F59E0B',
+            boxShadow: '0 0 10px #F59E0B',
+          }}
+        />
+        CRYPTOGRAPHIC SEAL
+      </div>
 
-          {/* Bottom-Right: Attestation Settled */}
-          <div
-            className="signet-fluid-drift-b"
-            style={{
-              position: 'absolute',
-              bottom: '50px',
-              right: '-10px',
-              zIndex: 4,
-              display: 'flex',
-              alignItems: 'center',
-              gap: '6px',
-              background: 'rgba(15, 23, 42, 0.85)',
-              backdropFilter: 'blur(16px)',
-              border: '1px solid rgba(56, 189, 248, 0.4)',
-              borderRadius: '99px',
-              padding: '6px 14px',
-              boxShadow: '0 8px 24px rgba(0, 0, 0, 0.6), 0 0 16px rgba(56, 189, 248, 0.25)',
-              fontSize: '10.5px',
-              fontWeight: 700,
-              color: '#F0F9FF',
-              letterSpacing: '0.08em',
-              textTransform: 'uppercase',
-              pointerEvents: 'none',
-            }}
-          >
-            <span
-              style={{
-                width: '7px',
-                height: '7px',
-                borderRadius: '50%',
-                background: '#38BDF8',
-                boxShadow: '0 0 8px #38BDF8',
-              }}
-            />
-            Attestation Settled
-          </div>
-        </>
-      )}
+      {/* Bottom-Right: Attestation Settled */}
+      <div
+        className="signet-fluid-drift-b"
+        style={{
+          position: 'absolute',
+          bottom: '55px',
+          right: '15px',
+          zIndex: 6,
+          display: 'flex',
+          alignItems: 'center',
+          gap: '8px',
+          background: 'rgba(12, 22, 38, 0.85)',
+          backdropFilter: 'blur(16px)',
+          WebkitBackdropFilter: 'blur(16px)',
+          border: '1.5px solid rgba(56, 189, 248, 0.45)',
+          borderRadius: '99px',
+          padding: '7px 18px',
+          boxShadow: '0 10px 28px rgba(0, 0, 0, 0.7), 0 0 18px rgba(56, 189, 248, 0.3)',
+          fontSize: '11px',
+          fontWeight: 800,
+          color: '#F0F9FF',
+          letterSpacing: '0.1em',
+          textTransform: 'uppercase',
+          pointerEvents: 'none',
+        }}
+      >
+        <span
+          style={{
+            width: '8px',
+            height: '8px',
+            borderRadius: '50%',
+            background: '#38BDF8',
+            boxShadow: '0 0 10px #38BDF8',
+          }}
+        />
+        ATTESTATION SETTLED
+      </div>
 
-      {/* ── Dynamic Keyframes ── */}
-      <style>{`
-        @keyframes dais-rotate-slow {
-          0% { transform: rotate(0deg); }
-          100% { transform: rotate(360deg); }
-        }
-        @keyframes ring-specular-sweep {
-          0% { transform: rotate(0deg); opacity: 0.25; }
-          50% { transform: rotate(180deg); opacity: 0.75; }
-          100% { transform: rotate(360deg); opacity: 0.25; }
-        }
-        @keyframes ring-gentle-hover {
-          0%, 100% { transform: translateY(28px) rotateX(4deg) scale(0.99); }
-          50% { transform: translateY(23px) rotateX(6deg) scale(1.01); }
-        }
-        @keyframes seal-shockwave {
-          0% { transform: scale(0.65); opacity: 0.9; }
-          100% { transform: scale(1.35); opacity: 0; }
-        }
-      `}</style>
+      {/* Faint Background HUD Corner Telemetry Marks */}
+      <div
+        style={{
+          position: 'absolute',
+          top: '25px',
+          right: '25px',
+          fontSize: '9.5px',
+          fontFamily: 'var(--font-mono)',
+          color: 'rgba(237, 226, 208, 0.22)',
+          textAlign: 'right',
+          lineHeight: 1.4,
+          pointerEvents: 'none',
+        }}
+      >
+        <div>OPHANIM_ENGINE_v2.4</div>
+        <div>GYRO_ROTATION: MULTI_AXIS</div>
+        <div>NEAR_INDEX: #408_FINAL</div>
+      </div>
     </div>
   )
 }
