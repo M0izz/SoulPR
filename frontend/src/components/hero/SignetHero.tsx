@@ -1,19 +1,9 @@
-import React, { useState, useEffect } from 'react'
+import React from 'react'
 import { useNavigate } from 'react-router-dom'
-import HolographicCredential3D from '../credential/HolographicCredential3D'
+import CinematicRingScene from './CinematicRingScene'
 
 export const SignetHero: React.FC = () => {
   const navigate = useNavigate()
-  const [reducedMotion, setReducedMotion] = useState(false)
-
-  useEffect(() => {
-    const mediaQuery = window.matchMedia('(prefers-reduced-motion: reduce)')
-    setReducedMotion(mediaQuery.matches)
-
-    const handler = (e: MediaQueryListEvent) => setReducedMotion(e.matches)
-    mediaQuery.addEventListener('change', handler)
-    return () => mediaQuery.removeEventListener('change', handler)
-  }, [])
 
   return (
     <section
@@ -258,7 +248,7 @@ export const SignetHero: React.FC = () => {
           </div>
         </div>
 
-        {/* ── Right Column: Premier 3D Holographic Credential with Floating Badges ── */}
+        {/* ── Right Column: Enhanced Architectural Signet Ring & Stamping Sequence ── */}
         <div
           style={{
             position: 'relative',
@@ -268,134 +258,7 @@ export const SignetHero: React.FC = () => {
             width: '100%',
           }}
         >
-          {/* Floating Micro-Badge 1: On-Chain Attestation (Top Left) */}
-          <div
-            className="signet-fluid-drift-a"
-            style={{
-              position: 'absolute',
-              top: '5px',
-              left: '-15px',
-              zIndex: 4,
-              display: 'flex',
-              alignItems: 'center',
-              gap: '6px',
-              background: 'rgba(15, 23, 42, 0.85)',
-              backdropFilter: 'blur(16px)',
-              border: '1px solid rgba(56, 189, 248, 0.4)',
-              borderRadius: '99px',
-              padding: '6px 14px',
-              boxShadow: '0 8px 24px rgba(0, 0, 0, 0.6), 0 0 16px rgba(56, 189, 248, 0.25)',
-              fontSize: '10.5px',
-              fontWeight: 700,
-              color: '#F0F9FF',
-              letterSpacing: '0.06em',
-              textTransform: 'uppercase',
-              pointerEvents: 'none',
-            }}
-          >
-            <span
-              style={{
-                width: '7px',
-                height: '7px',
-                borderRadius: '50%',
-                background: '#38BDF8',
-                boxShadow: '0 0 8px #38BDF8',
-              }}
-            />
-            NEAR Attestation
-          </div>
-
-          {/* Floating Micro-Badge 2: Immutable SHA-256 Provenance (Top Right) */}
-          <div
-            className="signet-fluid-drift-b"
-            style={{
-              position: 'absolute',
-              top: '40px',
-              right: '-20px',
-              zIndex: 4,
-              display: 'flex',
-              alignItems: 'center',
-              gap: '6px',
-              background: 'rgba(24, 18, 12, 0.88)',
-              backdropFilter: 'blur(16px)',
-              border: '1px solid rgba(245, 158, 11, 0.4)',
-              borderRadius: '99px',
-              padding: '6px 14px',
-              boxShadow: '0 8px 24px rgba(0, 0, 0, 0.6), 0 0 16px rgba(245, 158, 11, 0.25)',
-              fontSize: '10.5px',
-              fontWeight: 700,
-              color: '#FEF3C7',
-              letterSpacing: '0.06em',
-              textTransform: 'uppercase',
-              pointerEvents: 'none',
-            }}
-          >
-            <span
-              style={{
-                width: '7px',
-                height: '7px',
-                borderRadius: '50%',
-                background: '#F59E0B',
-                boxShadow: '0 0 8px #F59E0B',
-              }}
-            />
-            SHA-256 Provenance
-          </div>
-
-          {/* Floating Micro-Badge 3: Zero Write Scopes (Bottom Left) */}
-          <div
-            className="signet-fluid-drift-c"
-            style={{
-              position: 'absolute',
-              bottom: '40px',
-              left: '10px',
-              zIndex: 4,
-              display: 'flex',
-              alignItems: 'center',
-              gap: '6px',
-              background: 'rgba(18, 28, 20, 0.88)',
-              backdropFilter: 'blur(16px)',
-              border: '1px solid rgba(42, 125, 79, 0.45)',
-              borderRadius: '99px',
-              padding: '6px 14px',
-              boxShadow: '0 8px 24px rgba(0, 0, 0, 0.6), 0 0 16px rgba(42, 125, 79, 0.25)',
-              fontSize: '10.5px',
-              fontWeight: 700,
-              color: '#DCFCE7',
-              letterSpacing: '0.06em',
-              textTransform: 'uppercase',
-              pointerEvents: 'none',
-            }}
-          >
-            <span
-              style={{
-                width: '7px',
-                height: '7px',
-                borderRadius: '50%',
-                background: '#2A7D4F',
-                boxShadow: '0 0 8px #2A7D4F',
-              }}
-            />
-            Zero Write Scopes
-          </div>
-
-          {/* 3D Holographic Credential Rotating on Y-Axis */}
-          <div style={{ width: '100%', maxWidth: '540px' }}>
-            <HolographicCredential3D
-              autoRotate={!reducedMotion}
-              showPedestal={true}
-              data={{
-                credentialId: 'SIG-2025-0426-001',
-                contributor: 'm0izz.testnet',
-                repository: 'm0izz/signet',
-                contributionTitle: 'Add evidence dossier support',
-                mergeDate: 'Apr 26, 2025 · 14:32 UTC',
-                network: 'NEAR Blockchain',
-                evidenceDigest: '7f83b1657ff1fc53b92dc18148a1d65dfc2d4b1fa3d677284addd200126d9069',
-                isSample: true,
-              }}
-            />
-          </div>
+          <CinematicRingScene />
         </div>
       </div>
 
