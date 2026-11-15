@@ -15,6 +15,7 @@ import {
   IconWallet,
   IconRefresh,
   IconChevronDown,
+  IconSearch,
 } from '../Icons'
 
 // Navigation items matching Section 5 of the SIGNET PRD
@@ -36,6 +37,12 @@ const NAV_ITEMS = [
     label: 'My Credentials',
     description: 'Issued & pending credentials',
     icon: (size: number) => <IconAward size={size} />,
+  },
+  {
+    to: '/contributors',
+    label: 'Contributor Explorer',
+    description: 'Lookup any developer by GitHub or Wallet',
+    icon: (size: number) => <IconSearch size={size} />,
   },
   {
     to: '/verification',

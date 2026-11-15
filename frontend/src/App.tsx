@@ -17,6 +17,7 @@ import ContributionsPage from './pages/workspace/ContributionsPage'
 import ContributionDossierPage from './pages/workspace/ContributionDossierPage'
 import CredentialsPage from './pages/workspace/CredentialsPage'
 import VerificationLookupPage from './pages/workspace/VerificationLookupPage'
+import ContributorExplorerPage from './pages/workspace/ContributorExplorerPage'
 import SettingsPage from './pages/workspace/SettingsPage'
 
 export default function App() {
@@ -48,6 +49,7 @@ export default function App() {
           <Route path="/contributions" element={<ContributionsPage />} />
           <Route path="/contributions/:id" element={<ContributionDossierPage />} />
           <Route path="/credentials" element={<CredentialsPage />} />
+          <Route path="/contributors" element={<ContributorExplorerPage />} />
           <Route path="/verification" element={<VerificationLookupPage />} />
           <Route path="/settings" element={<SettingsPage />} />
         </Route>

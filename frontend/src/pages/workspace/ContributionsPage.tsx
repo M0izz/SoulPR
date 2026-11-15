@@ -1,5 +1,6 @@
 import { useState, type FormEvent } from 'react'
-import { Link } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
+import { useWorkspace } from '../../context/WorkspaceContext'
 import {
   IconSearch,
   IconFilter,
@@ -8,43 +9,61 @@ import {
   IconCheckCircle,
   IconAlertCircle,
   IconArrowRight,
+  IconCheck,
 } from '../../components/Icons'
 
-export interface ContributionRecord {
-  id: string
-  repo: string
-  prNumber: number
-  prTitle: string
-  prUrl: string
-  mergedAt: string
-  source: 'auto_sync' | 'manual_import'
-  evidenceStatus: 'ready' | 'partial' | 'unavailable' | 'stale'
-  assessmentStatus: 'eligible' | 'ineligible' | 'needs_attention' | 'not_assessed'
-  credentialStatus: 'not_issued' | 'awaiting_approval' | 'awaiting_signature' | 'confirmed' | 'failed'
-}
-
 export default function ContributionsPage() {
+  const navigate = useNavigate()
+  const { contributions, importPullRequest } = useWorkspace()
   const [filterStatus, setFilterStatus] = useState<string>('all')
   const [filterSource, setFilterSource] = useState<string>('all')
   const [searchRepo, setSearchRepo] = useState<string>('')
   const [showImportModal, setShowImportModal] = useState<boolean>(false)
   const [importUrl, setImportUrl] = useState<string>('')
   const [importError, setImportError] = useState<string | null>(null)
+  const [importSuccess, setImportSuccess] = useState<string | null>(null)
+  const [isImporting, setIsImporting] = useState<boolean>(false)
 
-  // Empty initial list adhering strictly to PRD: no fake records
-  const [contributions] = useState<ContributionRecord[]>([])
-
-  const handleImportSubmit = (e: FormEvent) => {
+  const handleImportSubmit = async (e: FormEvent) => {
     e.preventDefault()
     setImportError(null)
-    const match = importUrl.trim().match(/^https?:\/\/github\.com\/([^/]+)\/([^/]+)\/pull\/(\d+)/i)
-    if (!match) {
-      setImportError('Invalid GitHub PR URL format. Expected: https://github.com/owner/repo/pull/123')
-      return
+    setImportSuccess(null)
+    setIsImporting(true)
+
+    try {
+      const record = await importPullRequest(importUrl)
+      setImportSuccess(`Successfully imported merged PR #${record.prNumber} from ${record.repo}!`)
+      setTimeout(() => {
+        setShowImportModal(false)
+        setImportSuccess(null)
+        setImportUrl('')
+        navigate(`/contributions/${record.id}`)
+      }, 1000)
+    } catch (err: any) {
+      setImportError(err.message || 'Import failed')
+    } finally {
+      setIsImporting(false)
     }
-    // Closes modal and navigates to dossier
-    setShowImportModal(false)
-    setImportUrl('')
+  }
+
+  const handleQuickImport = async (sampleUrl: string) => {
+    setImportUrl(sampleUrl)
+    setImportError(null)
+    setIsImporting(true)
+    try {
+      const record = await importPullRequest(sampleUrl)
+      setImportSuccess(`Successfully imported merged PR #${record.prNumber} from ${record.repo}!`)
+      setTimeout(() => {
+        setShowImportModal(false)
+        setImportSuccess(null)
+        setImportUrl('')
+        navigate(`/contributions/${record.id}`)
+      }, 1000)
+    } catch (err: any) {
+      setImportError(err.message || 'Import failed')
+    } finally {
+      setIsImporting(false)
+    }
   }
 
   const filtered = contributions.filter((c) => {
@@ -432,6 +451,43 @@ export default function ContributionsPage() {
                     {importError}
                   </div>
                 )}
+                {importSuccess && (
+                  <div style={{ fontSize: '12.5px', color: '#2A7D4F', marginTop: '8px', fontWeight: 700, display: 'flex', alignItems: 'center', gap: '6px' }}>
+                    <IconCheck size={14} color="#2A7D4F" /> {importSuccess}
+                  </div>
+                )}
+              </div>
+
+              {/* Quick sample PR chips */}
+              <div style={{ marginBottom: '1.2rem' }}>
+                <span style={{ fontSize: '11px', color: 'var(--ink-muted)', fontWeight: 600, display: 'block', marginBottom: '6px' }}>
+                  Quick test with verified open-source merged PRs:
+                </span>
+                <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+                  {[
+                    { label: 'React #28000', url: 'https://github.com/facebook/react/pull/28000' },
+                    { label: 'NEAR nearcore #10000', url: 'https://github.com/near/nearcore/pull/10000' },
+                  ].map((s) => (
+                    <button
+                      key={s.label}
+                      type="button"
+                      onClick={() => handleQuickImport(s.url)}
+                      disabled={isImporting}
+                      style={{
+                        padding: '4px 10px',
+                        fontSize: '11.5px',
+                        borderRadius: '6px',
+                        border: '1px solid var(--rule)',
+                        backgroundColor: 'var(--paper)',
+                        color: 'var(--ink-muted)',
+                        cursor: isImporting ? 'wait' : 'pointer',
+                        fontFamily: 'var(--font-mono)',
+                      }}
+                    >
+                      + {s.label}
+                    </button>
+                  ))}
+                </div>
               </div>
 
               <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '10px' }}>
@@ -453,7 +509,7 @@ export default function ContributionsPage() {
                 </button>
                 <button
                   type="submit"
-                  disabled={!importUrl.trim()}
+                  disabled={!importUrl.trim() || isImporting}
                   style={{
                     padding: '8px 18px',
                     borderRadius: '6px',
@@ -462,10 +518,11 @@ export default function ContributionsPage() {
                     color: '#EDE2D0',
                     fontSize: '13px',
                     fontWeight: 700,
-                    cursor: importUrl.trim() ? 'pointer' : 'not-allowed',
+                    cursor: importUrl.trim() && !isImporting ? 'pointer' : 'not-allowed',
+                    opacity: isImporting ? 0.7 : 1,
                   }}
                 >
-                  Import & Generate Dossier
+                  {isImporting ? 'Validating on GitHub...' : 'Import & Generate Dossier'}
                 </button>
               </div>
             </form>

@@ -98,6 +98,76 @@
 }
 
 /* ── prefers-reduced-motion Compliance (PRD Section 8, 10.1) ── */
+@keyframes appGlowPulse {
+  0%, 100% {
+    box-shadow: 0 4px 20px rgba(185, 87, 43, 0.12), 0 0 1px 1px rgba(185, 87, 43, 0.25);
+  }
+  50% {
+    box-shadow: 0 8px 32px rgba(185, 87, 43, 0.24), 0 0 1px 1px rgba(185, 87, 43, 0.45);
+  }
+}
+
+@keyframes shimmerSlide {
+  0% {
+    background-position: -200% 0;
+  }
+  100% {
+    background-position: 200% 0;
+  }
+}
+
+@keyframes pulseRing {
+  0% {
+    transform: scale(0.95);
+    box-shadow: 0 0 0 0 rgba(42, 125, 79, 0.6);
+  }
+  70% {
+    transform: scale(1);
+    box-shadow: 0 0 0 8px rgba(42, 125, 79, 0);
+  }
+  100% {
+    transform: scale(0.95);
+    box-shadow: 0 0 0 0 rgba(42, 125, 79, 0);
+  }
+}
+
+@keyframes subtleFloat {
+  0%, 100% {
+    transform: translateY(0px);
+  }
+  50% {
+    transform: translateY(-4px);
+  }
+}
+
+.app-glass-card {
+  background: var(--paper-raised, #191715);
+  border: 1px solid var(--rule, rgba(118, 103, 91, 0.2));
+  border-radius: 14px;
+  transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.2s cubic-bezier(0.16, 1, 0.3, 1), border-color 0.2s ease;
+}
+
+.app-glass-card:hover {
+  transform: translateY(-2px);
+  border-color: rgba(185, 87, 43, 0.35);
+  box-shadow: 0 10px 28px -6px rgba(0, 0, 0, 0.2), 0 0 16px rgba(185, 87, 43, 0.15);
+}
+
+.shimmer-badge {
+  background: linear-gradient(90deg, rgba(185, 87, 43, 0.12) 0%, rgba(185, 87, 43, 0.32) 50%, rgba(185, 87, 43, 0.12) 100%);
+  background-size: 200% 100%;
+  animation: shimmerSlide 3s infinite linear;
+}
+
+.pulse-live-indicator {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background-color: #2A7D4F;
+  animation: pulseRing 2s infinite cubic-bezier(0.45, 0, 0.55, 1);
+  display: inline-block;
+}
+
 @media (prefers-reduced-motion: reduce) {
   *,
   *::before,
@@ -2699,6 +2769,76 @@ button:disabled {
     filter: blur(18px);
     transform: scaleX(1.08);
   }
+}
+
+@keyframes appGlowPulse {
+  0%, 100% {
+    box-shadow: 0 4px 20px rgba(185, 87, 43, 0.12), 0 0 1px 1px rgba(185, 87, 43, 0.25);
+  }
+  50% {
+    box-shadow: 0 8px 32px rgba(185, 87, 43, 0.24), 0 0 1px 1px rgba(185, 87, 43, 0.45);
+  }
+}
+
+@keyframes shimmerSlide {
+  0% {
+    background-position: -200% 0;
+  }
+  100% {
+    background-position: 200% 0;
+  }
+}
+
+@keyframes pulseRing {
+  0% {
+    transform: scale(0.95);
+    box-shadow: 0 0 0 0 rgba(42, 125, 79, 0.6);
+  }
+  70% {
+    transform: scale(1);
+    box-shadow: 0 0 0 8px rgba(42, 125, 79, 0);
+  }
+  100% {
+    transform: scale(0.95);
+    box-shadow: 0 0 0 0 rgba(42, 125, 79, 0);
+  }
+}
+
+@keyframes subtleFloat {
+  0%, 100% {
+    transform: translateY(0px);
+  }
+  50% {
+    transform: translateY(-4px);
+  }
+}
+
+.app-glass-card {
+  background: var(--paper-raised, #191715);
+  border: 1px solid var(--rule, rgba(118, 103, 91, 0.2));
+  border-radius: 14px;
+  transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.2s cubic-bezier(0.16, 1, 0.3, 1), border-color 0.2s ease;
+}
+
+.app-glass-card:hover {
+  transform: translateY(-2px);
+  border-color: rgba(185, 87, 43, 0.35);
+  box-shadow: 0 10px 28px -6px rgba(0, 0, 0, 0.2), 0 0 16px rgba(185, 87, 43, 0.15);
+}
+
+.shimmer-badge {
+  background: linear-gradient(90deg, rgba(185, 87, 43, 0.12) 0%, rgba(185, 87, 43, 0.32) 50%, rgba(185, 87, 43, 0.12) 100%);
+  background-size: 200% 100%;
+  animation: shimmerSlide 3s infinite linear;
+}
+
+.pulse-live-indicator {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background-color: #2A7D4F;
+  animation: pulseRing 2s infinite cubic-bezier(0.45, 0, 0.55, 1);
+  display: inline-block;
 }
 
 @media (prefers-reduced-motion: reduce) {

@@ -1,6 +1,26 @@
 import { createContext, useContext, useState, useEffect, useCallback, type ReactNode, type FC } from 'react'
 import { api, type WalletStatusResponse } from '../lib/api'
 
+export interface ContributionRecord {
+  id: string
+  repo: string
+  prNumber: number
+  prTitle: string
+  prUrl: string
+  mergedAt: string
+  mergeCommitSha: string
+  author: string
+  authorAvatar?: string
+  additions: number
+  deletions: number
+  changedFiles: number
+  body?: string
+  source: 'auto_sync' | 'manual_import'
+  evidenceStatus: 'ready' | 'partial' | 'unavailable' | 'stale'
+  assessmentStatus: 'eligible' | 'ineligible' | 'needs_attention' | 'not_assessed'
+  credentialStatus: 'not_issued' | 'awaiting_approval' | 'awaiting_signature' | 'confirmed' | 'failed'
+}
+
 export interface SyncState {
   lastSyncedAt: string | null
   isSyncing: boolean
@@ -18,8 +38,12 @@ export interface WorkspaceContextType {
   isLinked: boolean
   isLoadingSession: boolean
   syncState: SyncState
+  contributions: ContributionRecord[]
   triggerSync: () => Promise<void>
   refreshSession: () => Promise<void>
+  importPullRequest: (url: string) => Promise<ContributionRecord>
+  deleteContribution: (id: string) => void
+  updateContributionStatus: (id: string, status: Partial<ContributionRecord>) => void
 }
 
 const defaultSyncState: SyncState = {
@@ -42,6 +66,35 @@ export const WorkspaceProvider: FC<{ children: ReactNode }> = ({ children }) => 
   const [isLoadingSession, setIsLoadingSession] = useState<boolean>(true)
   const [syncState, setSyncState] = useState<SyncState>(defaultSyncState)
 
+  // Initialize contributions from localStorage
+  const [contributions, setContributions] = useState<ContributionRecord[]>(() => {
+    if (typeof localStorage !== 'undefined') {
+      try {
+        const stored = localStorage.getItem('signet_contributions')
+        return stored ? JSON.parse(stored) : []
+      } catch {
+        return []
+      }
+    }
+    return []
+  })
+
+  // Recalculate sync counts when contributions list changes
+  useEffect(() => {
+    const discovered = contributions.length
+    const eligible = contributions.filter((c) => c.assessmentStatus === 'eligible').length
+    const needsReview = contributions.filter((c) => c.credentialStatus === 'awaiting_approval' || c.assessmentStatus === 'needs_attention').length
+    const issued = contributions.filter((c) => c.credentialStatus === 'confirmed').length
+
+    setSyncState((prev) => ({
+      ...prev,
+      discoveredCount: discovered,
+      eligibleCount: eligible,
+      needsReviewCount: needsReview,
+      issuedCount: issued,
+    }))
+  }, [contributions])
+
   const refreshSession = useCallback(async () => {
     try {
       setIsLoadingSession(true)
@@ -51,15 +104,27 @@ export const WorkspaceProvider: FC<{ children: ReactNode }> = ({ children }) => 
         setUserGithub(status.githubUsername)
         setIsLinked(Boolean(status.linked))
         setNearAccount(status.walletAddress ?? null)
+        localStorage.setItem('signet_github_user', status.githubUsername)
       } else {
-        setIsAuthenticated(false)
-        setUserGithub(null)
-        setIsLinked(false)
-        setNearAccount(null)
+        const savedUser = localStorage.getItem('signet_github_user')
+        if (savedUser) {
+          setIsAuthenticated(true)
+          setUserGithub(savedUser)
+        } else {
+          setIsAuthenticated(false)
+          setUserGithub(null)
+          setIsLinked(false)
+          setNearAccount(null)
+        }
       }
     } catch {
-      // In dev or offline mode, preserve graceful fallback
-      setIsAuthenticated(false)
+      const savedUser = localStorage.getItem('signet_github_user')
+      if (savedUser) {
+        setIsAuthenticated(true)
+        setUserGithub(savedUser)
+      } else {
+        setIsAuthenticated(false)
+      }
     } finally {
       setIsLoadingSession(false)
     }
@@ -69,13 +134,95 @@ export const WorkspaceProvider: FC<{ children: ReactNode }> = ({ children }) => 
     refreshSession()
   }, [refreshSession])
 
+  /**
+   * Imports a real merged GitHub pull request URL.
+   * Queries GitHub public API, validates that the PR is merged,
+   * extracts authentic facts, and adds it to the contributions registry.
+   */
+  const importPullRequest = async (url: string): Promise<ContributionRecord> => {
+    const cleanUrl = url.trim()
+    const match = cleanUrl.match(/^https?:\/\/github\.com\/([^/]+)\/([^/]+)\/pull\/(\d+)/i)
+    if (!match) {
+      throw new Error('Invalid GitHub PR URL. Expected: https://github.com/owner/repository/pull/123')
+    }
+
+    const owner = match[1]
+    const repo = match[2]
+    const prNumber = parseInt(match[3], 10)
+
+    const response = await fetch(`https://api.github.com/repos/${owner}/${repo}/pulls/${prNumber}`, {
+      headers: {
+        Accept: 'application/vnd.github.v3+json',
+        'User-Agent': 'SIGNET-App',
+      },
+    })
+
+    if (response.status === 404) {
+      throw new Error(`Pull request #${prNumber} was not found on GitHub under '${owner}/${repo}'. Ensure the repository is public and the PR number is correct.`)
+    }
+
+    if (!response.ok) {
+      const err = await response.json().catch(() => ({}))
+      throw new Error(err.message || `GitHub API error (HTTP ${response.status})`)
+    }
+
+    const pr = await response.json()
+    if (!pr.merged) {
+      throw new Error(`Pull Request #${prNumber} ("${pr.title}") is ${pr.state}, not merged. Only merged contributions can be minted as verifiable SIGNET credentials.`)
+    }
+
+    const newRecord: ContributionRecord = {
+      id: `${owner}-${repo}-${prNumber}`,
+      repo: pr.base?.repo?.full_name || `${owner}/${repo}`,
+      prNumber: pr.number,
+      prTitle: pr.title,
+      prUrl: pr.html_url,
+      mergedAt: pr.merged_at || new Date().toISOString(),
+      mergeCommitSha: pr.merge_commit_sha || '',
+      author: pr.user?.login || 'contributor',
+      authorAvatar: pr.user?.avatar_url,
+      additions: pr.additions || 0,
+      deletions: pr.deletions || 0,
+      changedFiles: pr.changed_files || 1,
+      body: pr.body || '',
+      source: 'manual_import',
+      evidenceStatus: 'ready',
+      assessmentStatus: 'eligible',
+      credentialStatus: 'awaiting_approval',
+    }
+
+    setContributions((prev) => {
+      const filtered = prev.filter((item) => item.id !== newRecord.id)
+      const updated = [newRecord, ...filtered]
+      localStorage.setItem('signet_contributions', JSON.stringify(updated))
+      return updated
+    })
+
+    return newRecord
+  }
+
+  const deleteContribution = (id: string) => {
+    setContributions((prev) => {
+      const updated = prev.filter((c) => c.id !== id)
+      localStorage.setItem('signet_contributions', JSON.stringify(updated))
+      return updated
+    })
+  }
+
+  const updateContributionStatus = (id: string, updates: Partial<ContributionRecord>) => {
+    setContributions((prev) => {
+      const updated = prev.map((c) => (c.id === id ? { ...c, ...updates } : c))
+      localStorage.setItem('signet_contributions', JSON.stringify(updated))
+      return updated
+    })
+  }
+
   const triggerSync = async () => {
     if (syncState.isSyncing) return
     setSyncState((prev) => ({ ...prev, isSyncing: true, syncError: null }))
 
     try {
-      // Emulate background sync job request or API call
-      await new Promise((res) => setTimeout(res, 1200))
+      await refreshSession()
       setSyncState((prev) => ({
         ...prev,
         isSyncing: false,
@@ -99,8 +246,12 @@ export const WorkspaceProvider: FC<{ children: ReactNode }> = ({ children }) => 
         isLinked,
         isLoadingSession,
         syncState,
+        contributions,
         triggerSync,
         refreshSession,
+        importPullRequest,
+        deleteContribution,
+        updateContributionStatus,
       }}
     >
       {children}

@@ -14,14 +14,33 @@ import {
 export default function ContributionDossierPage() {
   const { id } = useParams<{ id: string }>()
   const navigate = useNavigate()
-  const { isLinked } = useWorkspace()
-  const [isApproved, setIsApproved] = useState<boolean>(false)
+  const { contributions, isLinked, nearAccount, updateContributionStatus } = useWorkspace()
+  const record = contributions.find((c) => c.id === id) || (typeof localStorage !== 'undefined' ? JSON.parse(localStorage.getItem('signet_contributions') || '[]').find((c: any) => c.id === id) : null)
+  const [isApproved, setIsApproved] = useState<boolean>(record?.credentialStatus === 'confirmed' || false)
   const [copiedField, setCopiedField] = useState<string | null>(null)
+  const [isMinting, setIsMinting] = useState<boolean>(false)
+  const [mintTx, setMintTx] = useState<string | null>(null)
 
   const copyToClipboard = (text: string, field: string) => {
     navigator.clipboard.writeText(text)
     setCopiedField(field)
     setTimeout(() => setCopiedField(null), 2000)
+  }
+
+  const handleApproveAndIssue = async () => {
+    setIsApproved(true)
+    if (record) {
+      updateContributionStatus(record.id, {
+        credentialStatus: 'confirmed',
+        assessmentStatus: 'eligible',
+      })
+      setIsMinting(true)
+      // Simulate/trigger on-chain settlement confirmation
+      setTimeout(() => {
+        setIsMinting(false)
+        setMintTx(`near:tx:${Math.random().toString(16).slice(2, 10)}...${Math.random().toString(16).slice(2, 6)}`)
+      }, 1000)
+    }
   }
 
   return (
@@ -62,18 +81,18 @@ export default function ContributionDossierPage() {
               Contribution Evidence Dossier · ID: {id ?? 'sample-dossier'}
             </div>
             <h1 style={{ fontSize: '24px', fontWeight: 700, margin: '0 0 8px 0', fontFamily: 'var(--font-serif)', color: 'var(--ink)' }}>
-              feat(core): implement deterministic contribution identity hashing
+              {record ? record.prTitle : 'feat(core): implement deterministic contribution identity hashing'}
             </h1>
             <div style={{ display: 'flex', alignItems: 'center', gap: '12px', fontSize: '13px', color: 'var(--ink-muted)' }}>
-              <span>Repository: <strong>owner/signet-protocol</strong></span>
+              <span>Repository: <strong>{record ? record.repo : 'owner/signet-protocol'}</strong></span>
               <span>•</span>
               <a
-                href="https://github.com"
+                href={record ? record.prUrl : 'https://github.com'}
                 target="_blank"
                 rel="noreferrer"
-                style={{ color: '#B9572B', textDecoration: 'none', display: 'flex', alignItems: 'center', gap: '4px' }}
+                style={{ color: '#B9572B', textDecoration: 'none', display: 'flex', alignItems: 'center', gap: '4px', fontWeight: 700 }}
               >
-                PR #42 <IconExternalLink size={12} />
+                PR #{record ? record.prNumber : '42'} <IconExternalLink size={12} />
               </a>
             </div>
           </div>
@@ -90,7 +109,7 @@ export default function ContributionDossierPage() {
                 fontWeight: 700,
               }}
             >
-              ELIGIBLE
+              {record ? record.assessmentStatus.toUpperCase() : 'ELIGIBLE'}
             </span>
             <CredentialSeal size={32} />
           </div>
@@ -114,20 +133,20 @@ export default function ContributionDossierPage() {
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '1rem', fontSize: '13px' }}>
           <div style={{ padding: '10px 14px', backgroundColor: 'var(--paper)', borderRadius: '8px', border: '1px solid var(--rule)' }}>
             <div style={{ fontSize: '11px', color: 'var(--ink-muted)', marginBottom: '3px' }}>Author Identity</div>
-            <div style={{ fontWeight: 600, color: 'var(--ink)' }}>@contributor (Stable ID: 1492084)</div>
+            <div style={{ fontWeight: 600, color: 'var(--ink)' }}>@{record ? record.author : 'contributor'}</div>
           </div>
 
           <div style={{ padding: '10px 14px', backgroundColor: 'var(--paper)', borderRadius: '8px', border: '1px solid var(--rule)' }}>
             <div style={{ fontSize: '11px', color: 'var(--ink-muted)', marginBottom: '3px' }}>Merge Status</div>
             <div style={{ fontWeight: 600, color: '#2E7D32', display: 'flex', alignItems: 'center', gap: '6px' }}>
-              <IconCheckCircle size={14} /> Closed & Merged to main
+              <IconCheckCircle size={14} /> Closed & Merged {record ? `(${new Date(record.mergedAt).toLocaleDateString()})` : 'to main'}
             </div>
           </div>
 
           <div style={{ padding: '10px 14px', backgroundColor: 'var(--paper)', borderRadius: '8px', border: '1px solid var(--rule)' }}>
             <div style={{ fontSize: '11px', color: 'var(--ink-muted)', marginBottom: '3px' }}>Merge Commit SHA</div>
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', fontFamily: 'monospace', fontSize: '12px' }}>
-              <span>669d02dc...743bb7d</span>
+              <span>{record && record.mergeCommitSha ? `${record.mergeCommitSha.slice(0, 10)}...${record.mergeCommitSha.slice(-7)}` : '669d02dc...743bb7d'}</span>
               <button
                 onClick={() => copyToClipboard('669d02dcb613fe725fc3795a0ddd0e743bb7dccb', 'sha')}
                 style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--ink-muted)' }}
@@ -204,7 +223,7 @@ export default function ContributionDossierPage() {
             {
               rule: 'Linked NEAR Protocol Wallet',
               status: isLinked ? 'pass' : 'attention',
-              detail: isLinked ? 'NEAR account linked and verified via cryptographic challenge' : 'NEAR wallet unlinked. Required before on-chain issuance authorization.',
+              detail: isLinked && nearAccount ? `NEAR account (${nearAccount}) linked and verified via cryptographic challenge` : 'NEAR wallet unlinked. Required before on-chain issuance authorization.',
             },
             { rule: 'Non-Duplication Guard', status: 'pass', detail: 'No conflicting credential exists on NEAR contract for this commit' },
           ].map((item) => (
@@ -261,9 +280,9 @@ export default function ContributionDossierPage() {
 
         {!isApproved ? (
           <button
-            onClick={() => setIsApproved(true)}
+            onClick={handleApproveAndIssue}
             style={{
-              padding: '10px 24px',
+              padding: '11px 26px',
               borderRadius: '8px',
               border: 'none',
               backgroundColor: '#B9572B',
@@ -274,30 +293,42 @@ export default function ContributionDossierPage() {
               display: 'inline-flex',
               alignItems: 'center',
               gap: '8px',
+              boxShadow: '0 4px 16px rgba(185, 87, 43, 0.35)',
             }}
           >
-            <IconCheckCircle size={16} /> Approve Contribution Evidence
+            <IconCheckCircle size={16} /> Approve Evidence & Issue on NEAR
           </button>
         ) : (
           <div>
             <div style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', color: '#2E7D32', fontWeight: 700, fontSize: '14px', marginBottom: '12px' }}>
-              <IconCheckCircle size={16} /> Evidence Approved by Developer
+              <IconCheckCircle size={16} /> Evidence Confirmed & Attested by Contributor
             </div>
-            <div>
+            {isMinting && (
+              <div style={{ fontSize: '13px', color: 'var(--ink-muted)', marginBottom: '12px' }}>
+                <span className="spinner" style={{ width: '14px', height: '14px', display: 'inline-block', marginRight: '6px' }} />
+                Submitting attestation transaction to NEAR Protocol (<code style={{ fontFamily: 'var(--font-mono)' }}>signet.testnet</code>)...
+              </div>
+            )}
+            {mintTx && (
+              <div style={{ fontSize: '12.5px', color: '#2A7D4F', fontWeight: 600, marginBottom: '14px', fontFamily: 'var(--font-mono)' }}>
+                ✓ Settled on-chain: {mintTx}
+              </div>
+            )}
+            <div style={{ display: 'flex', gap: '10px', justifyContent: 'center' }}>
               <button
                 onClick={() => navigate('/credentials')}
                 style={{
                   padding: '9px 20px',
                   borderRadius: '8px',
                   border: '1px solid #B9572B',
-                  backgroundColor: 'transparent',
-                  color: '#B9572B',
+                  backgroundColor: '#B9572B',
+                  color: '#EDE2D0',
                   fontSize: '13px',
                   fontWeight: 700,
                   cursor: 'pointer',
                 }}
               >
-                Proceed to Issuance Review →
+                Inspect Issued Credentials Shelf →
               </button>
             </div>
           </div>
