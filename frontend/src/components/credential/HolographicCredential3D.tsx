@@ -40,11 +40,7 @@ export const HolographicCredential3D: React.FC<HolographicCredential3DProps> = (
   className,
   style,
 }) => {
-  const [isRotating, setIsRotating] = useState(autoRotate)
-  const [manualFlipped, setManualFlipped] = useState(false)
   const [copied, setCopied] = useState(false)
-  const [tilt, setTilt] = useState({ x: 0, y: 0 })
-
   const cardRef = useRef<HTMLDivElement>(null)
 
   const handleCopy = (e: React.MouseEvent, text: string) => {
@@ -52,21 +48,6 @@ export const HolographicCredential3D: React.FC<HolographicCredential3DProps> = (
     navigator.clipboard?.writeText(text)
     setCopied(true)
     setTimeout(() => setCopied(false), 1500)
-  }
-
-  const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
-    if (!cardRef.current || isRotating) return
-    const rect = cardRef.current.getBoundingClientRect()
-    const x = e.clientX - rect.left - rect.width / 2
-    const y = e.clientY - rect.top - rect.height / 2
-    setTilt({
-      x: -(y / (rect.height / 2)) * 12,
-      y: (x / (rect.width / 2)) * 14,
-    })
-  }
-
-  const handleMouseLeave = () => {
-    setTilt({ x: 0, y: 0 })
   }
 
   return (
@@ -84,12 +65,12 @@ export const HolographicCredential3D: React.FC<HolographicCredential3DProps> = (
         ...style,
       }}
     >
-      {/* ── 3D SCENE PERSPECTIVE CONTAINER ── */}
+      {/* ── 3D SCENE PERSPECTIVE CONTAINER (STRICT HORIZONTAL / LANDSCAPE) ── */}
       <div
         style={{
           perspective: '1300px',
-          width: '100%',
-          maxWidth: '540px',
+          width: '540px',
+          maxWidth: '100%',
           height: '340px',
           position: 'relative',
           display: 'flex',
@@ -97,8 +78,6 @@ export const HolographicCredential3D: React.FC<HolographicCredential3DProps> = (
           justifyContent: 'center',
           zIndex: 2,
         }}
-        onMouseMove={handleMouseMove}
-        onMouseLeave={handleMouseLeave}
       >
         {/* ROTATING 3D CARD ANCHOR */}
         <div
@@ -108,15 +87,7 @@ export const HolographicCredential3D: React.FC<HolographicCredential3DProps> = (
             height: '100%',
             position: 'relative',
             transformStyle: 'preserve-3d',
-            transition: isRotating
-              ? 'none'
-              : 'transform 0.5s cubic-bezier(0.16, 1, 0.3, 1)',
-            transform: isRotating
-              ? undefined
-              : manualFlipped
-              ? `rotateY(180deg) rotateX(${tilt.x}deg)`
-              : `rotateX(${tilt.x}deg) rotateY(${tilt.y}deg)`,
-            animation: isRotating
+            animation: autoRotate
               ? 'signetHoloSpin 14s linear infinite'
               : undefined,
           }}
@@ -206,8 +177,8 @@ export const HolographicCredential3D: React.FC<HolographicCredential3DProps> = (
               style={{
                 position: 'absolute',
                 top: 0,
-                left: '42px',
-                width: '90px',
+                left: '38px',
+                width: '96px',
                 display: 'flex',
                 flexDirection: 'column',
                 alignItems: 'center',
@@ -218,13 +189,13 @@ export const HolographicCredential3D: React.FC<HolographicCredential3DProps> = (
               {/* Ribbon Header */}
               <div
                 style={{
-                  width: '36px',
-                  height: '48px',
+                  width: '38px',
+                  height: '56px',
                   background:
-                    'linear-gradient(180deg, #1E1B18 0%, #100E0D 100%)',
+                    'linear-gradient(180deg, #091220 0%, #020617 100%)',
                   borderLeft: '2px solid #F59E0B',
                   borderRight: '2px solid #F59E0B',
-                  boxShadow: '0 4px 10px rgba(0, 0, 0, 0.6)',
+                  boxShadow: '0 4px 12px rgba(0, 0, 0, 0.7)',
                 }}
               />
 
@@ -232,17 +203,17 @@ export const HolographicCredential3D: React.FC<HolographicCredential3DProps> = (
               <div
                 style={{
                   position: 'relative',
-                  width: '88px',
-                  height: '88px',
-                  marginTop: '-14px',
+                  width: '94px',
+                  height: '94px',
+                  marginTop: '-16px',
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'center',
                   filter:
-                    'drop-shadow(0 8px 18px rgba(245, 158, 11, 0.45)) drop-shadow(0 2px 6px rgba(0,0,0,0.8))',
+                    'drop-shadow(0 8px 20px rgba(245, 158, 11, 0.55)) drop-shadow(0 2px 8px rgba(0,0,0,0.85))',
                 }}
               >
-                <svg width="88" height="88" viewBox="0 0 100 100">
+                <svg width="94" height="94" viewBox="0 0 100 100">
                   <defs>
                     <radialGradient id="goldGradient" cx="35%" cy="30%" r="70%">
                       <stop offset="0%" stopColor="#FFF7D6" />
@@ -317,15 +288,15 @@ export const HolographicCredential3D: React.FC<HolographicCredential3DProps> = (
                 <div
                   style={{
                     position: 'absolute',
-                    top: '82px',
-                    width: '32px',
-                    height: '24px',
+                    top: '86px',
+                    width: '36px',
+                    height: '48px',
                     background:
-                      'linear-gradient(180deg, #1E1B18 0%, #100E0D 100%)',
+                      'linear-gradient(180deg, #091220 0%, #020617 100%)',
                     borderLeft: '2px solid #F59E0B',
                     borderRight: '2px solid #F59E0B',
-                    clipPath: 'polygon(0 0, 100% 0, 100% 100%, 50% 65%, 0 100%)',
-                    boxShadow: '0 4px 8px rgba(0,0,0,0.5)',
+                    clipPath: 'polygon(0 0, 100% 0, 100% 100%, 50% 70%, 0 100%)',
+                    boxShadow: '0 4px 10px rgba(0,0,0,0.6)',
                   }}
                 />
               </div>
@@ -420,7 +391,13 @@ export const HolographicCredential3D: React.FC<HolographicCredential3DProps> = (
               >
                 {/* Developer */}
                 <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                  <span style={{ color: '#94A3B8', width: '74px' }}>Developer</span>
+                  <span style={{ color: '#94A3B8', width: '84px', display: 'flex', alignItems: 'center', gap: '5px' }}>
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#94A3B8" strokeWidth="2">
+                      <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
+                      <circle cx="12" cy="7" r="4" />
+                    </svg>
+                    Developer
+                  </span>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
                     <span
                       className="signet-mono"
@@ -447,7 +424,15 @@ export const HolographicCredential3D: React.FC<HolographicCredential3DProps> = (
 
                 {/* Repository */}
                 <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                  <span style={{ color: '#94A3B8', width: '74px' }}>Repository</span>
+                  <span style={{ color: '#94A3B8', width: '84px', display: 'flex', alignItems: 'center', gap: '5px' }}>
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#94A3B8" strokeWidth="2">
+                      <circle cx="18" cy="18" r="3" />
+                      <circle cx="6" cy="6" r="3" />
+                      <path d="M6 9v12" />
+                      <path d="M18 9a9 9 0 0 0-9 9" />
+                    </svg>
+                    Repository
+                  </span>
                   <span
                     className="signet-mono"
                     style={{ color: '#F1F5F9', fontWeight: 600 }}
@@ -458,12 +443,19 @@ export const HolographicCredential3D: React.FC<HolographicCredential3DProps> = (
 
                 {/* Contribution */}
                 <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                  <span style={{ color: '#94A3B8', width: '74px' }}>Contribution</span>
+                  <span style={{ color: '#94A3B8', width: '84px', display: 'flex', alignItems: 'center', gap: '5px' }}>
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#94A3B8" strokeWidth="2">
+                      <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+                      <polyline points="14 2 14 8 20 8" />
+                      <polyline points="9 15 11 17 15 13" />
+                    </svg>
+                    Contribution
+                  </span>
                   <span
                     style={{
                       color: '#F1F5F9',
                       fontWeight: 500,
-                      maxWidth: '170px',
+                      maxWidth: '160px',
                       overflow: 'hidden',
                       textOverflow: 'ellipsis',
                       whiteSpace: 'nowrap',
@@ -475,7 +467,15 @@ export const HolographicCredential3D: React.FC<HolographicCredential3DProps> = (
 
                 {/* Merged */}
                 <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                  <span style={{ color: '#94A3B8', width: '74px' }}>Merged</span>
+                  <span style={{ color: '#94A3B8', width: '84px', display: 'flex', alignItems: 'center', gap: '5px' }}>
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#94A3B8" strokeWidth="2">
+                      <rect x="3" y="4" width="18" height="18" rx="2" ry="2" />
+                      <line x1="16" y1="2" x2="16" y2="6" />
+                      <line x1="8" y1="2" x2="8" y2="6" />
+                      <line x1="3" y1="10" x2="21" y2="10" />
+                    </svg>
+                    Merged
+                  </span>
                   <span className="signet-mono" style={{ color: '#94A3B8' }}>
                     {data.mergeDate}
                   </span>
@@ -845,44 +845,6 @@ export const HolographicCredential3D: React.FC<HolographicCredential3DProps> = (
           />
         </div>
       )}
-
-      {/* ── INTERACTIVE CONTROLS PILL ── */}
-      <div
-        style={{
-          display: 'flex',
-          alignItems: 'center',
-          gap: '10px',
-          marginTop: showPedestal ? '10px' : '15px',
-          zIndex: 4,
-        }}
-      >
-        <button
-          onClick={() => {
-            setIsRotating(!isRotating)
-            if (isRotating) setManualFlipped(false)
-          }}
-          className="btn-signet-secondary"
-          style={{
-            fontSize: '12px',
-            padding: '6px 14px',
-            background: isRotating ? 'var(--stamp-bg)' : 'var(--paper-raised)',
-            borderColor: isRotating ? 'var(--signet-orange)' : 'var(--rule)',
-            color: isRotating ? 'var(--signet-orange)' : 'var(--ink-muted)',
-          }}
-        >
-          {isRotating ? '⏸ Pause Rotation' : '▶ Auto-Rotate 360°'}
-        </button>
-
-        {!isRotating && (
-          <button
-            onClick={() => setManualFlipped(!manualFlipped)}
-            className="btn-signet-primary"
-            style={{ fontSize: '12px', padding: '6px 14px' }}
-          >
-            {manualFlipped ? 'Flip to Front' : 'Flip to Back'}
-          </button>
-        )}
-      </div>
     </div>
   )
 }
