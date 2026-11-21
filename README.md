@@ -1,4 +1,4 @@
-# S I G N E T (formerly SoulPR) — Evidence-First Contribution Credentials
+# SIGNET (formerly SoulPR) — Evidence-First Contribution Credentials
 
 > **Your work is your mark. Turn eligible merged open-source contributions, maintained projects, and community reviews into permanent, verifiable Soulbound credentials on NEAR Protocol.**
 
